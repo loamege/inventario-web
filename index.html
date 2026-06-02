@@ -133,6 +133,8 @@ tbody tr:hover{background:#F5F0FF}
   <div>
     <button class="btn" style="background:var(--ambar);color:var(--noche);font-size:12px;padding:5px 12px" onclick="exportarExcelCompleto()">EXPORTAR EXCEL</button>
     <button class="btn" style="background:var(--ambar);color:var(--noche);font-size:12px;padding:5px 12px" onclick="importarExcel()">IMPORTAR EXCEL</button>
+    <button class="btn" style="background:#7C3AED;color:#fff;font-size:12px;padding:5px 12px" onclick="exportarBackup()">📦 BACKUP</button>
+    <button class="btn" style="background:#7C3AED;color:#fff;font-size:12px;padding:5px 12px" onclick="importarBackup()">📂 RESTAURAR</button>
     <button class="btn" style="background:#2563EB;color:#fff;font-size:12px;padding:5px 12px" onclick="sincronizarFirebase()">SYNC FIREBASE</button>
     <button class="btn btn-outline" style="font-size:12px;padding:5px 12px;margin-left:8px" onclick="cerrarSesion()">SALIR</button>
   </div>
@@ -1249,6 +1251,37 @@ function exportarExcelCompleto() {
 
   XLSX.writeFile(wb, 'lucidata-' + hoy().replace(/-/g, '') + '.xlsx');
   toast('Exportado como Excel');
+}
+
+function exportarBackup() {
+  var a = document.createElement('a');
+  a.href = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
+  a.download = 'lucidata.json';
+  a.click();
+  toast('Backup descargado');
+}
+
+function importarBackup() {
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = function(e) {
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var d = JSON.parse(ev.target.result);
+        Object.assign(data, d);
+        localStorage.setItem(STORE_KEY, JSON.stringify(data));
+        if (fbDoc) fbDoc.set(data).catch(function(){});
+        renderCotizador(); renderVentas(); renderInventario(); renderKardex(); renderPendientes(); renderCotizaciones();
+        toast('Datos restaurados correctamente');
+      } catch(err) {
+        toast('Error: archivo inválido');
+      }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
 }
 
 function importarExcel() {
