@@ -202,6 +202,15 @@ tbody tr:hover{background:#F5F0FF}
     </select>
     <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="editarSKU()">EDITAR SKU</button>
   </div>
+  <div class="search-bar" style="margin-top:6px;gap:6px;flex-wrap:wrap">
+    <select id="inv-filtro-prov" onchange="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;flex:1;min-width:120px">
+      <option value="">Todos los proveedores</option>
+    </select>
+    <input id="inv-filtro-costo-min" type="number" placeholder="Costo desde" oninput="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;width:100px">
+    <input id="inv-filtro-costo-max" type="number" placeholder="Costo hasta" oninput="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;width:100px">
+    <input id="inv-filtro-venta-min" type="number" placeholder="Venta desde" oninput="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;width:100px">
+    <input id="inv-filtro-venta-max" type="number" placeholder="Venta hasta" oninput="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;width:100px">
+  </div>
   <div class="movil">
     <table><thead><tr>
       <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
@@ -351,11 +360,19 @@ function guardarDatos() {
   data._syncVersion++;
   localStorage.setItem(STORE_KEY, JSON.stringify(data));
   if (fbDoc) {
+    document.getElementById('sync-status').textContent = '⟳';
     fbDoc.set(data).then(function() {
       document.getElementById('sync-status').textContent = '✓';
     }).catch(function(e) {
-      console.warn('Firebase write failed:', e);
+      console.warn('Firebase write failed, retrying...', e);
       document.getElementById('sync-status').textContent = '✗';
+      setTimeout(function() {
+        fbDoc.set(data).then(function() {
+          document.getElementById('sync-status').textContent = '✓';
+        }).catch(function() {
+          document.getElementById('sync-status').textContent = '✗';
+        });
+      }, 3000);
     });
   }
 }
@@ -667,9 +684,24 @@ function anadirNuevoStock() {
 
 // ===== INVENTARIO =====
 function renderInventario() {
+  // Poblar filtro proveedor
+  var selProv = document.getElementById('inv-filtro-prov');
+  var currentProv = selProv.value;
+  var provs = [...new Set(data.productos.map(function(p){return p.proveedor||''}).filter(Boolean))].sort();
+  selProv.innerHTML = '<option value="">Todos los proveedores</option>' + provs.map(function(v){return '<option value="'+esc(v)+'"'+(v===currentProv?' selected':'')+'>'+esc(v)+'</option>'}).join('');
+
   const q = (document.getElementById('inv-search').value || '').toLowerCase();
   let list = data.productos;
   if (q) list = list.filter(p => p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q));
+  if (currentProv) list = list.filter(function(p){return (p.proveedor||'')===currentProv});
+  var costMin = parseFloat(document.getElementById('inv-filtro-costo-min').value);
+  if (!isNaN(costMin)) list = list.filter(function(p){return (p.precioCosto||0)>=costMin});
+  var costMax = parseFloat(document.getElementById('inv-filtro-costo-max').value);
+  if (!isNaN(costMax)) list = list.filter(function(p){return (p.precioCosto||0)<=costMax});
+  var vtMin = parseFloat(document.getElementById('inv-filtro-venta-min').value);
+  if (!isNaN(vtMin)) list = list.filter(function(p){return (p.precioVenta||0)>=vtMin});
+  var vtMax = parseFloat(document.getElementById('inv-filtro-venta-max').value);
+  if (!isNaN(vtMax)) list = list.filter(function(p){return (p.precioVenta||0)<=vtMax});
   var sort = document.getElementById('inv-sort').value;
   if (sort) {
     list = list.slice().sort(function(a,b) {
@@ -685,18 +717,73 @@ function renderInventario() {
   }
   document.getElementById('inv-count').textContent = list.length + ' producto(s)';
   document.getElementById('inv-body').innerHTML = list.map(p => {
+    var skuEnc = esc(p.sku);
     const img = p.imagen ? `<img class="img-preview" src="${p.imagen}" alt="">` : '--';
-    const sku = esc(p.sku);
     return `<tr>
-      <td>${sku}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
+      <td>${skuEnc}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
       <td>$${fmt(p.precioCosto)}</td><td>$${fmt(p.precioVenta)}</td>
       <td>${p.stock}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
-      <td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${sku}')">Eliminar</button></td>
+      <td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido('${skuEnc}')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${skuEnc}')">Eliminar</button></td>
     </tr>`;
   }).join('');
 }
 
-// ===== COTIZADOR =====
+function editarProductoRapido(sku) {
+  var prod = data.productos.find(function(p){return p.sku===sku});
+  if (!prod) return;
+  abrirModal('Editar producto: ' + esc(sku),
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
+      '<p><label style="font-size:11px;color:#666">Precio Costo</label><br><input id="edt-costo" type="number" step="0.01" value="'+(prod.precioCosto||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+      '<p><label style="font-size:11px;color:#666">Precio Venta</label><br><input id="edt-venta" type="number" step="0.01" value="'+(prod.precioVenta||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+      '<p><label style="font-size:11px;color:#666">Stock</label><br><input id="edt-stock" type="number" value="'+(prod.stock||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+      '<p><label style="font-size:11px;color:#666">Proveedor</label><br><input id="edt-proveedor" value="'+esc(prod.proveedor||'')+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+    '</div>' +
+    '<p><label style="font-size:11px;color:#666">Obs. Compra</label><br><textarea id="edt-obs" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px">'+esc(prod.observacionCompra||'')+'</textarea></p>' +
+    '<div style="margin-top:8px;padding:12px;border:2px dashed #ccc;border-radius:8px;text-align:center">' +
+      (prod.imagen ? '<div style="margin-bottom:8px"><img src="'+prod.imagen+'" style="max-width:120px;max-height:120px;border-radius:4px"></div>' : '') +
+      '<button class="btn btn-outline" style="font-size:12px;padding:4px 10px" onclick="document.getElementById(\'edt-img-file\').click()">SELECCIONAR IMAGEN</button>' +
+      ' <span style="font-size:11px;color:#888">o pega desde portapapeles</span>' +
+      '<input id="edt-img-file" type="file" accept="image/*" style="display:none">' +
+    '</div>',
+    function() {
+      prod.precioCosto = parseFloat(document.getElementById('edt-costo').value) || 0;
+      prod.precioVenta = parseFloat(document.getElementById('edt-venta').value) || 0;
+      prod.stock = parseInt(document.getElementById('edt-stock').value) || 0;
+      prod.proveedor = document.getElementById('edt-proveedor').value.trim();
+      prod.observacionCompra = document.getElementById('edt-obs').value.trim();
+      guardarDatos();
+      renderInventario();
+      toast('Producto actualizado: ' + sku);
+    }
+  );
+  setTimeout(function() {
+    // File input handler
+    var fi = document.getElementById('edt-img-file');
+    if (fi) fi.onchange = function() {
+      var f = fi.files[0]; if (!f) return;
+      var r = new FileReader();
+      r.onload = function(ev) { prod.imagen = ev.target.result; editarProductoRapido(sku); toast('Imagen actualizada'); };
+      r.readAsDataURL(f);
+    };
+    // Paste handler
+    var modal = document.querySelector('.modal-content');
+    if (modal) {
+      modal.addEventListener('paste', function(e) {
+        var items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        for (var i=0; i<items.length; i++) {
+          if (items[i].type.indexOf('image')===0) {
+            var blob = items[i].getAsFile();
+            var r = new FileReader();
+            r.onload = function(ev) { prod.imagen = ev.target.result; editarProductoRapido(sku); toast('Imagen agregada'); };
+            r.readAsDataURL(blob);
+            break;
+          }
+        }
+      });
+    }
+  }, 100);
+}
 function hoy() {
   return new Date().toISOString().split('T')[0];
 }
