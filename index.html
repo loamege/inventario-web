@@ -1622,8 +1622,7 @@ function eliminarProductoDirecto(sku) {
 
 function eliminarVenta(idStr) {
   if (!confirm('Eliminar esta venta? El stock NO se revertir&aacute; autom&aacute;ticamente.')) return;
-  const id = parseFloat(idStr);
-  data.ventas = data.ventas.filter(function(v) { return v.id !== id; });
+  data.ventas = data.ventas.filter(function(v) { return String(v.id) !== String(idStr); });
   guardarDatos();
   renderVentas();
   toast('Venta eliminada');
@@ -1639,8 +1638,7 @@ function eliminarCotizacion(codigo) {
 
 function eliminarKardex(idStr) {
   if (!confirm('Eliminar este movimiento? El stock se revertir&aacute; autom&aacute;ticamente.')) return;
-  const id = parseFloat(idStr);
-  const k = data.kardex.find(function(x) { return x.id === id; });
+  const k = data.kardex.find(function(x) { return String(x.id) === String(idStr); });
   if (!k) { toast('Movimiento no encontrado'); return; }
   const prod = data.productos.find(function(p) { return p.sku === k.sku; });
   if (prod) {
