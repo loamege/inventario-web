@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luz de Luci&eacute;rnaga - Inventario</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore-compat.js"></script>
+<style>
+:root{--noche:#2D2A3B;--ambar:#F5C542;--crema:#FFF8EF;--verde:#7A9A6B;--blanco:#FFFFFF;--gris:#E8E8F0;--texto:#222}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:var(--crema);color:var(--texto)}
+header{background:var(--noche);color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:20px;font-weight:600}
+.tabs{background:var(--noche);display:flex;gap:0;padding:0 16px}
+.tab{background:transparent;color:#aaa;border:none;padding:10px 20px;cursor:pointer;font-size:14px;transition:.2s;border-bottom:3px solid transparent}
+.tab:hover{color:#fff}
+.tab.active{color:var(--ambar);border-bottom-color:var(--ambar)}
+.content{padding:20px;display:none}
+.content.active{display:block}
+h2{color:var(--noche);margin-bottom:16px;font-size:18px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:700px}
+.form-grid label{font-weight:600;font-size:13px;color:var(--noche);align-self:center}
+.form-grid input,.form-grid textarea,.form-grid select{padding:8px;border:1px solid #ccc;border-radius:4px;font-size:13px;width:100%}
+.form-grid textarea{resize:vertical;min-height:60px}
+.btn{padding:8px 18px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--noche);color:#fff}
+.btn-primary:hover{background:#3D3A5B}
+.btn-ambar{background:var(--ambar);color:var(--noche)}
+.btn-ambar:hover{background:#E0B83A}
+.btn-danger{background:#DC2626;color:#fff}
+.btn-danger:hover{background:#B91C1C}
+.btn-outline{background:transparent;border:1px solid var(--noche);color:var(--noche)}
+.btn-outline:hover{background:var(--noche);color:#fff}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+thead th{background:var(--noche);color:#fff;padding:8px;text-align:left;font-weight:600;position:sticky;top:0}
+tbody td{padding:6px 8px;border-bottom:1px solid #ddd}
+tbody tr:hover{background:#F5F0FF}
+.img-preview{max-width:100px;max-height:60px;border-radius:4px;object-fit:cover}
+.search-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.search-bar input{flex:1;max-width:400px;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:13px}
+.resumen{display:flex;gap:24px;margin-bottom:16px;flex-wrap:wrap}
+.resumen-item{background:#fff;padding:12px 20px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);text-align:center}
+.resumen-item .label{font-size:11px;color:#888;text-transform:uppercase}
+.resumen-item .value{font-size:22px;font-weight:700;color:var(--noche)}
+.resumen-item .value.verde{color:var(--verde)}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;justify-content:center;align-items:center}
+.modal.open{display:flex}
+.modal-box{background:#fff;border-radius:12px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto}
+.modal-box h3{margin-bottom:12px}
+.modal-box p{font-size:14px;margin:4px 0}
+.modal-box .btn{margin-top:12px}
+.cot-row td input{width:100%;border:none;padding:4px;font-size:13px;background:transparent}
+.cot-row td input:focus{outline:1px solid var(--ambar);background:#FFFDF0}
+.cot-header input{border:1px solid #ccc;padding:6px;border-radius:4px;font-size:13px}
+.movil{overflow-x:auto}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--noche);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:2000;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+.empty{text-align:center;padding:40px;color:#aaa;font-size:14px}
+@media(max-width:700px){
+  .form-grid{grid-template-columns:1fr}
+  .tabs{overflow-x:auto;gap:0}
+  .tab{font-size:12px;padding:8px 12px;white-space:nowrap}
+  .content{padding:12px}
+  header{padding:10px 12px;flex-wrap:wrap;gap:8px}
+  header h1{font-size:16px}
+  header>div{display:flex;flex-wrap:wrap;gap:4px;width:100%;justify-content:flex-end}
+  header>div .btn{font-size:10px!important;padding:4px 8px!important}
+  .btn{padding:6px 12px;font-size:12px}
+  .btn-group{gap:4px}
+  .btn-group .btn{font-size:11px;padding:5px 10px}
+  .search-bar input{max-width:100%}
+  table{font-size:12px}
+  thead th{padding:5px 4px;font-size:11px}
+  tbody td{padding:4px;font-size:11px}
+  .resumen{gap:8px}
+  .resumen-item{padding:8px 12px;flex:1;min-width:80px}
+  .resumen-item .value{font-size:17px}
+  .modal-box{padding:16px;max-width:95%;width:95%}
+  .login-card{padding:24px 20px}
+  .login-card h1{font-size:18px}
+  .cot-row td input{font-size:12px;padding:2px}
+  .img-preview{max-width:60px;max-height:40px}
+}
+@media(max-width:400px){
+  .tab{font-size:11px;padding:6px 8px}
+  .btn-group .btn{font-size:10px;padding:4px 6px}
+  table{font-size:11px}
+  thead th{padding:3px 2px;font-size:10px}
+  tbody td{padding:3px 2px}
+  header h1{font-size:14px}
+}
+
+/* LOGIN */
+.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#2D2A4A,#1E1B38);display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-card{background:#fff;border-radius:16px;padding:40px;width:360px;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-card h1{font-size:22px;color:var(--noche);margin-bottom:4px}
+.login-card .sub{font-size:13px;color:#888;margin-bottom:24px}
+.login-card label{font-size:13px;color:#555;display:block;margin-top:14px;margin-bottom:4px}
+.login-card input{width:100%;padding:10px 12px;border:1px solid #ccc;border-radius:8px;font-size:14px;box-sizing:border-box}
+.login-card input:focus{outline:2px solid var(--ambar);border-color:transparent}
+.login-card .btn{width:100%;margin-top:20px;padding:12px;font-size:15px;justify-content:center}
+.login-card .error{color:#DC2626;font-size:13px;margin-top:8px;display:none}
+.login-card .error{color:#DC2626;font-size:13px;margin-top:8px;display:none}
+</style>
+</head>
+<body>
+
+<div class="login-overlay" id="login-overlay">
+  <div class="login-card" id="login-card">
+    <h1>LUZ DE LUCI&Eacute;RNAGA</h1>
+    <div class="sub">Sistema de Inventario</div>
+
+    <div id="login-form">
+      <label>Usuario</label>
+      <input id="login-user" type="text" placeholder="Ingresa tu usuario" autocomplete="username">
+      <label>Contrase&ntilde;a</label>
+      <input id="login-pass" type="password" placeholder="Ingresa tu contrase&ntilde;a" autocomplete="current-password">
+      <button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
+      <div class="error" id="login-error">Usuario o contrase&ntilde;a incorrectos</div>
+    </div>
+  </div>
+</div>
+
+<header>
+  <h1>LUZ DE LUCI&Eacute;RNAGA</h1>
+  <span style="font-size:12px;color:var(--ambar)">Sistema de Inventario</span>
+  <span id="sync-status" style="font-size:11px;color:#888;margin-left:8px"></span>
+  <div>
+    <button class="btn" style="background:var(--ambar);color:var(--noche);font-size:12px;padding:5px 12px" onclick="exportarExcelCompleto()">EXPORTAR EXCEL</button>
+    <button class="btn" style="background:var(--ambar);color:var(--noche);font-size:12px;padding:5px 12px" onclick="importarExcel()">IMPORTAR EXCEL</button>
+    <button class="btn" style="background:#2563EB;color:#fff;font-size:12px;padding:5px 12px" onclick="sincronizarFirebase()">SYNC FIREBASE</button>
+    <button class="btn btn-outline" style="font-size:12px;padding:5px 12px;margin-left:8px" onclick="cerrarSesion()">SALIR</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" data-tab="formulario">Formulario</button>
+  <button class="tab" data-tab="inventario">Inventario</button>
+  <button class="tab" data-tab="cotizador">Cotizador</button>
+  <button class="tab" data-tab="ventas">Ventas</button>
+  <button class="tab" data-tab="cotizaciones">Cotizaciones</button>
+  <button class="tab" data-tab="kardex">Kardex</button>
+  <button class="tab" data-tab="pendientes">Pendientes WC</button>
+</div>
+
+<div id="contenido-formulario" class="content active">
+  <h2>Registro de Productos</h2>
+  <div class="btn-group">
+    <button class="btn btn-primary" onclick="selImg()">SELECCIONAR IMAGEN</button>
+    <button class="btn btn-ambar" onclick="agregarProducto()">AGREGAR NUEVO PRODUCTO</button>
+    <button class="btn btn-outline" onclick="buscarProducto()">BUSCAR</button>
+    <button class="btn btn-outline" onclick="actualizarProducto()">ACTUALIZAR INFORMACI&Oacute;N</button>
+    <button class="btn btn-outline" onclick="limpiarFormulario()">LIMPIAR</button>
+    <button class="btn btn-outline" onclick="anadirNuevoStock()">A&Ntilde;ADIR NUEVO STOCK</button>
+    <button class="btn btn-danger" onclick="eliminarProducto()">ELIMINAR</button>
+  </div>
+  <div style="display:flex;gap:20px;flex-wrap:wrap">
+    <div class="form-grid" style="flex:1">
+      <label>SKU</label><input id="f-sku">
+      <label>C&oacute;digo de Barra</label><input id="f-cod">
+      <label>Nombre del Producto</label><input id="f-nombre">
+      <label>Precio Costo</label><input id="f-costo" type="number" step="0.01">
+      <label>Precio Venta</label><input id="f-venta" type="number" step="0.01">
+      <label>Stock</label><input id="f-stock" type="number">
+      <label>Proveedor</label><input id="f-proveedor">
+      <label>Observaci&oacute;n Compra</label><textarea id="f-obscompra"></textarea>
+    </div>
+    <div style="flex-shrink:0">
+      <div style="width:200px;height:180px;border:2px dashed #bbb;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f9f9f9" id="preview-container">
+        <span id="preview-text" style="color:#aaa;font-size:12px;text-align:center">Arrastra o selecciona<br>una imagen</span>
+        <img id="preview-img" style="display:none;width:100%;height:100%;object-fit:cover">
+      </div>
+      <input id="f-img-input" type="file" accept="image/*" style="display:none" onchange="onImgFile(event)">
+      <p style="font-size:11px;color:#888;margin-top:4px;text-align:center">o pega desde portapapeles</p>
+    </div>
+  </div>
+  <div style="margin-top:12px;font-size:11px;color:#888">
+    <label>Ruta:</label><input id="f-ruta" style="width:300px;border:none;background:transparent;font-size:11px;color:#888" readonly>
+  </div>
+</div>
+
+<div id="contenido-inventario" class="content">
+  <h2>Inventario</h2>
+  <div class="search-bar">
+    <input id="inv-search" placeholder="Buscar por SKU o nombre..." oninput="renderInventario()">
+    <span id="inv-count" style="font-size:13px;color:#888;align-self:center"></span>
+    <select id="inv-sort" onchange="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="">Sin orden</option>
+      <option value="sku-asc">SKU A→Z</option>
+      <option value="sku-desc">SKU Z→A</option>
+      <option value="nombre-asc">Nombre A→Z</option>
+      <option value="nombre-desc">Nombre Z→A</option>
+      <option value="stock-asc">Stock ↑</option>
+      <option value="stock-desc">Stock ↓</option>
+    </select>
+    <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="editarSKU()">EDITAR SKU</button>
+  </div>
+  <div class="movil">
+    <table><thead><tr>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
+    </tr></thead><tbody id="inv-body"></tbody></table>
+  </div>
+</div>
+
+<div id="contenido-cotizador" class="content">
+  <h2>Cotizador</h2>
+  <div class="btn-group">
+    <button class="btn btn-outline" onclick="buscarProdCot()">BUSCAR PRODUCTO</button>
+    <button class="btn btn-outline" onclick="limpiarCotizacion()">LIMPIAR COTIZACI&Oacute;N</button>
+    <button class="btn btn-ambar" onclick="exportarExcel()">EXPORTAR EXCEL</button>
+    <button class="btn btn-ambar" onclick="exportarPDF()">EXPORTAR PDF</button>
+    <button class="btn btn-primary" onclick="registrarVenta()">REGISTRAR VENTA</button>
+  </div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+    <div><strong>N&deg; Cotizaci&oacute;n:</strong> <span id="cot-codigo">COT-0001</span></div>
+    <div><strong>Fecha:</strong> <span id="cot-fecha"></span></div>
+  </div>
+  <div style="max-width:950px">
+    <table><thead><tr><th>#</th><th>SKU</th><th>Producto</th><th>Imagen</th><th>Cant.</th><th>P. Unitario</th><th>Total</th><th>Obs.</th></tr></thead>
+    <tbody id="cot-body"></tbody>
+    <tfoot><tr><td colspan="5"></td><td><strong>TOTAL:</strong></td><td id="cot-total">$0</td><td></td></tr></tfoot></table>
+  </div>
+  <div style="margin-top:12px;max-width:900px">
+    <label><strong>Notas:</strong></label>
+    <textarea id="cot-notas" style="width:100%;height:60px;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:13px"></textarea>
+  </div>
+</div>
+
+<div id="contenido-ventas" class="content">
+  <h2>Registro de Ventas</h2>
+  <div class="resumen">
+    <div class="resumen-item"><div class="label">Total Ventas</div><div class="value verde" id="v-total">$0</div></div>
+    <div class="resumen-item"><div class="label">Productos Vendidos</div><div class="value" id="v-cant">0</div></div>
+    <div class="resumen-item"><div class="label">&Uacute;ltima Venta</div><div class="value" id="v-ultima" style="font-size:16px">--</div></div>
+  </div>
+  <div class="movil">
+    <table><thead><tr>
+      <th>Fecha</th><th>SKU</th><th>Producto</th><th>Cant.</th><th>P. Unitario</th><th>Total</th><th>Cliente</th><th>Pago</th><th>Estado</th><th>Referencia</th><th>Observaci&oacute;n</th><th>Acci&oacute;n</th>
+    </tr></thead><tbody id="ventas-body"></tbody></table>
+  </div>
+</div>
+
+<div id="contenido-kardex" class="content">
+  <h2>Kardex - Control de Inventario</h2>
+  <div class="btn-group">
+    <button class="btn btn-primary" onclick="registrarEntrada()">REGISTRAR ENTRADA</button>
+    <button class="btn btn-outline" onclick="registrarSalida()">REGISTRAR SALIDA</button>
+    <button class="btn btn-ambar" onclick="registrarAjuste()">REGISTRAR AJUSTE</button>
+  </div>
+  <div class="search-bar">
+    <input id="kardex-search" placeholder="Buscar por SKU..." oninput="renderKardex()">
+    <span id="kardex-stock" style="font-size:14px;font-weight:600;color:var(--noche);align-self:center"></span>
+  </div>
+  <div class="movil">
+    <table><thead><tr>
+      <th>Fecha</th><th>SKU</th><th>Producto</th><th>Tipo</th><th>Concepto</th><th>Cantidad</th><th>Stock Ant.</th><th>Stock Res.</th><th>Referencia</th><th>Proveedor</th><th>Obs. Compra</th><th>Obs. Venta</th><th>Acci&oacute;n</th>
+    </tr></thead><tbody id="kardex-body"></tbody></table>
+  </div>
+</div>
+
+<div id="contenido-cotizaciones" class="content">
+  <h2>Historial de Cotizaciones</h2>
+  <div class="resumen">
+    <div class="resumen-item"><div class="label">Cotizaciones</div><div class="value" id="cotiz-cant">0</div></div>
+    <div class="resumen-item"><div class="label">&Uacute;ltima Cot.</div><div class="value" id="cotiz-ultima" style="font-size:16px">--</div></div>
+  </div>
+  <div class="movil">
+    <table><thead><tr>
+      <th>#</th><th>C&oacute;digo</th><th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Estado</th><th>Acci&oacute;n</th>
+    </tr></thead><tbody id="cotiz-body"></tbody></table>
+  </div>
+</div>
+
+<div id="contenido-pendientes" class="content">
+  <h2>Pendientes para WooCommerce</h2>
+  <div class="resumen">
+    <div class="resumen-item"><div class="label">Pendientes</div><div class="value" id="pend-cant">0</div></div>
+  </div>
+  <div class="movil">
+    <table><thead><tr>
+      <th>Fecha</th><th>Tipo</th><th>SKU</th><th>Nombre / Cliente</th><th>Detalle</th><th>Estado</th><th>Acci&oacute;n</th>
+    </tr></thead><tbody id="pend-body"></tbody></table>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn btn-primary" id="modal-confirm" onclick="">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== FIREBASE (solo en HTTPS, fire-and-forget) =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBi5ncFSJqKC9_dXPsDvKX6r6qsVlxI5nQ",
+  authDomain: "luz-luciernaga-inventario.firebaseapp.com",
+  projectId: "luz-luciernaga-inventario",
+  storageBucket: "luz-luciernaga-inventario.firebasestorage.app",
+  messagingSenderId: "90928980531",
+  appId: "1:90928980531:web:1fd04429160802c5183946"
+};
+let fbDoc = null;
+try {
+  if (typeof firebase !== 'undefined' && location.protocol === 'https:') {
+    const app = firebase.initializeApp(firebaseConfig);
+    fbDoc = app.firestore().doc('inventario/datos');
+  }
+} catch(e) { console.warn('Firebase no disponible'); }
+
+// ===== DATA LAYER (localStorage síncrono + Firebase async al fondo) =====
+const STORE_KEY = 'lucidata';
+
+function datosDefault() {
+  return { productos: [], cotizacion: { codigo: 'COT-0001', cliente: '', items: [], notas: '' }, ventas: [], kardex: [], cotizaciones: [], proxCot: 1, pendientes: [] };
+}
+
+function cargarDatos() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (!d.cotizacion) d.cotizacion = { codigo: 'COT-0001', cliente: '', items: [], notas: '' };
+      if (!d.cotizacion.items) d.cotizacion.items = [];
+      if (!d.proxCot) d.proxCot = 1;
+      if (!d.ventas) d.ventas = [];
+      if (!d.kardex) d.kardex = [];
+      if (!d.productos) d.productos = [];
+      if (!d.pendientes) d.pendientes = [];
+      return d;
+    }
+  } catch(e) {}
+  return datosDefault();
+}
+
+function guardarDatos() {
+  if (!data._syncVersion) data._syncVersion = 0;
+  data._syncVersion++;
+  localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  if (fbDoc) {
+    fbDoc.set(data).then(function() {
+      document.getElementById('sync-status').textContent = '✓';
+    }).catch(function(e) {
+      console.warn('Firebase write failed:', e);
+      document.getElementById('sync-status').textContent = '✗';
+    });
+  }
+}
+
+let data = (function() {
+  var d = cargarDatos();
+  if (fbDoc) {
+    fbDoc.get().then(function(snap) {
+      if (snap.exists) {
+        var fbData = snap.data();
+        var localVer = d._syncVersion || 0;
+        var fbVer = fbData._syncVersion || 0;
+        var localCount = (d.productos || []).length;
+        var fbCount = (fbData.productos || []).length;
+        if (fbVer > localVer || fbCount > localCount) {
+          localStorage.setItem(STORE_KEY, JSON.stringify(fbData));
+          Object.assign(d, fbData);
+          renderCotizador();
+          renderVentas();
+          renderInventario();
+          renderKardex();
+          renderPendientes();
+          toast('Datos sincronizados desde Firebase');
+        }
+      }
+    }).catch(function(){});
+  }
+  return d;
+})();
+
+function sincronizarFirebase() {
+  if (!fbDoc) { toast('Firebase no disponible (solo HTTPS)'); return; }
+  document.getElementById('sync-status').textContent = 'Sincronizando...';
+  fbDoc.get().then(function(snap) {
+    if (snap.exists) {
+      var fbData = snap.data();
+      localStorage.setItem(STORE_KEY, JSON.stringify(fbData));
+      Object.assign(data, fbData);
+      renderCotizador();
+      renderVentas();
+      renderInventario();
+      renderKardex();
+      renderPendientes();
+      toast('Sincronizado desde Firebase: ' + (fbData.productos ? fbData.productos.length : 0) + ' productos');
+    } else {
+      toast('No hay datos en Firebase');
+    }
+  }).catch(function(e) { toast('Error al sincronizar: ' + e.message); });
+}
+
+// ===== TOAST =====
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===== MODAL =====
+function abrirModal(titulo, html, onConfirm) {
+  document.getElementById('modal-title').textContent = titulo;
+  document.getElementById('modal-body').innerHTML = html;
+  const btn = document.getElementById('modal-confirm');
+  btn.onclick = function() {
+    const r = onConfirm();
+    if (r !== false) cerrarModal();
+  };
+  document.getElementById('modal').classList.add('open');
+}
+
+function cerrarModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function inputModalHtml(label, val) {
+  return `<p><strong>${label}:</strong></p><input id="modal-input" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px" value="${val || ''}">`;
+}
+
+// ===== TABS =====
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.content').forEach(x => x.classList.remove('active'));
+    this.classList.add('active');
+    const id = this.dataset.tab;
+    document.getElementById('contenido-' + id).classList.add('active');
+    if (id === 'inventario') renderInventario();
+    if (id === 'cotizador') renderCotizador();
+    if (id === 'ventas') renderVentas();
+    if (id === 'kardex') renderKardex();
+    if (id === 'cotizaciones') renderCotizaciones();
+    if (id === 'pendientes') renderPendientes();
+  });
+});
+function cambiarTab(id) {
+  const tab = document.querySelector('.tab[data-tab="' + id + '"]');
+  if (tab) tab.click();
+}
+
+// ===== FORMULARIO =====
+document.addEventListener('paste', function(e) {
+  const items = e.clipboardData.items;
+  for (let item of items) {
+    if (item.type.startsWith('image/')) {
+      const blob = item.getAsFile();
+      if (blob) {
+        const reader = new FileReader();
+    reader.onload = async function(ev) {
+          document.getElementById('f-ruta').value = '(portapapeles)';
+          mostrarPreview(ev.target.result);
+        };
+        reader.readAsDataURL(blob);
+      }
+    }
+  }
+});
+
+function selImg() {
+  document.getElementById('f-img-input').click();
+}
+
+function onImgFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById('f-ruta').value = file.name;
+    mostrarPreview(ev.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function mostrarPreview(src) {
+  document.getElementById('preview-text').style.display = 'none';
+  const img = document.getElementById('preview-img');
+  img.src = src;
+  img.style.display = 'block';
+}
+
+function getPreviewDataUrl() {
+  const img = document.getElementById('preview-img');
+  if (img.style.display !== 'none' && img.src) return img.src;
+  return '';
+}
+
+function limpiarFormulario() {
+  ['f-sku','f-cod','f-nombre','f-costo','f-venta','f-stock','f-proveedor','f-obscompra','f-ruta'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('preview-text').style.display = 'block';
+  document.getElementById('preview-img').style.display = 'none';
+  document.getElementById('preview-img').src = '';
+  document.getElementById('f-img-input').value = '';
+}
+
+function getFormData() {
+  return {
+    sku: document.getElementById('f-sku').value.trim(),
+    codBarra: document.getElementById('f-cod').value.trim(),
+    nombre: document.getElementById('f-nombre').value.trim(),
+    precioCosto: parseFloat(document.getElementById('f-costo').value) || 0,
+    precioVenta: parseFloat(document.getElementById('f-venta').value) || 0,
+    stock: parseInt(document.getElementById('f-stock').value) || 0,
+    proveedor: document.getElementById('f-proveedor').value.trim(),
+    observacionCompra: document.getElementById('f-obscompra').value.trim(),
+    imagen: getPreviewDataUrl()
+  };
+}
+
+function setFormData(p) {
+  document.getElementById('f-sku').value = p.sku || '';
+  document.getElementById('f-cod').value = p.codBarra || '';
+  document.getElementById('f-nombre').value = p.nombre || '';
+  document.getElementById('f-costo').value = p.precioCosto || '';
+  document.getElementById('f-venta').value = p.precioVenta || '';
+  document.getElementById('f-stock').value = p.stock || '';
+  document.getElementById('f-proveedor').value = p.proveedor || '';
+  document.getElementById('f-obscompra').value = p.observacionCompra || '';
+  if (p.imagen) {
+    mostrarPreview(p.imagen);
+    document.getElementById('f-ruta').value = '(imagen)';
+  }
+}
+
+async function agregarProducto() {
+  const f = getFormData();
+  if (!f.sku || !f.nombre) { toast('SKU y Nombre son obligatorios'); return; }
+  if (data.productos.find(p => p.sku === f.sku)) { toast('Ya existe un producto con ese SKU'); return; }
+  data.productos.push({ ...f, id: Date.now() });
+  if (f.stock > 0) {
+    data.kardex.push({
+      id: Date.now() + 1, fecha: hoy(), sku: f.sku, nombre: f.nombre,
+      tipo: 'Entrada', concepto: 'Compra', cantidad: f.stock,
+      stockAnt: 0, stockRes: f.stock, referencia: '',
+      proveedor: f.proveedor, observacionCompra: f.observacionCompra, observacionVenta: ''
+    });
+  }
+  guardarDatos();
+  if (!data.pendientes) data.pendientes = [];
+  data.pendientes.unshift({ id: Date.now(), fecha: hoy(), tipo: 'producto', sku: f.sku, nombre: f.nombre, precio: f.precioVenta, stock: f.stock, estado: 'pendiente' });
+  guardarDatos();
+  limpiarFormulario();
+  toast('Producto agregado. Stock: ' + f.stock + ' uds.');
+}
+
+function buscarProducto() {
+  const q = document.getElementById('f-sku').value.trim() || document.getElementById('f-nombre').value.trim();
+  if (!q) { toast('Escribe SKU o Nombre para buscar'); return; }
+  const results = data.productos.filter(p => p.sku.toLowerCase().includes(q.toLowerCase()) ||
+    p.nombre.toLowerCase().includes(q.toLowerCase()));
+  if (results.length === 0) { toast('No se encontraron productos'); return; }
+  let html = results.map((p, i) =>
+    `<p><a href="#" onclick="return seleccionarProductoBusqueda('${esc(p.sku)}')" style="color:var(--noche);font-weight:600">${esc(p.nombre)}</a> &mdash; SKU: ${esc(p.sku)} | Stock: ${p.stock} | $${fmt(p.precioVenta)}</p>`
+  ).join('');
+  html += '<p style="margin-top:8px;font-size:12px;color:#888">Haz clic en un producto para cargarlo</p>';
+  abrirModal('Productos encontrados (' + results.length + ')', html, function() {});
+} 
+function seleccionarProductoBusqueda(sku) {
+  const prod = data.productos.find(p => p.sku === sku);
+  if (prod) { setFormData(prod); cerrarModal(); toast('Cargado: ' + prod.nombre); }
+  return false;
+}
+
+async function actualizarProducto() {
+  const skuOriginal = document.getElementById('f-sku').value.trim();
+  if (!skuOriginal) { toast('Busca un producto primero'); return; }
+  const idx = data.productos.findIndex(p => p.sku === skuOriginal);
+  if (idx === -1) { toast('Producto no encontrado'); return; }
+  const f = getFormData();
+  data.productos[idx] = {
+    ...data.productos[idx],
+    codBarra: f.codBarra, nombre: f.nombre,
+    precioCosto: f.precioCosto, precioVenta: f.precioVenta,
+    proveedor: f.proveedor, observacionCompra: f.observacionCompra,
+    imagen: f.imagen || data.productos[idx].imagen
+  };
+  guardarDatos();
+  toast('Producto eliminado');
+}
+
+function editarSKU() {
+  var skuActual = document.getElementById('f-sku').value.trim();
+  abrirModalProducto('Editar SKU', function(prod) {
+    cerrarModal();
+    abrirModal('Nuevo SKU para ' + esc(prod.nombre),
+      '<p>SKU actual: <strong>' + esc(prod.sku) + '</strong></p><p>Nuevo SKU:</p><input id="modal-nuevo-sku" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px" value="' + esc(prod.sku) + '">',
+      function() {
+        var nuevo = document.getElementById('modal-nuevo-sku').value.trim();
+        if (!nuevo) { toast('El SKU no puede estar vac&iacute;o'); return; }
+        if (nuevo !== prod.sku && data.productos.find(function(p) { return p.sku === nuevo; })) { toast('Ya existe un producto con ese SKU'); return; }
+        var oldSku = prod.sku;
+        prod.sku = nuevo;
+        data.kardex.forEach(function(k) { if (k.sku === oldSku) k.sku = nuevo; });
+        data.ventas.forEach(function(v) { if (v.sku === oldSku) v.sku = nuevo; });
+        data.cotizacion.items.forEach(function(item) { if (item.sku === oldSku) item.sku = nuevo; });
+        guardarDatos();
+        renderInventario();
+        document.getElementById('f-sku').value = nuevo;
+        toast('SKU actualizado: ' + oldSku + ' → ' + nuevo);
+      }
+    );
+  });
+}
+
+async function eliminarProducto() {
+  const sku = document.getElementById('f-sku').value.trim();
+  if (!sku) { toast('Busca un producto primero'); return; }
+  if (!confirm('Eliminar producto ' + sku + '?')) return;
+  data.productos = data.productos.filter(p => p.sku !== sku);
+  guardarDatos();
+  limpiarFormulario();
+  toast('Producto eliminado');
+}
+
+function anadirNuevoStock() {
+  abrirModal('A&ntilde;adir Nuevo Stock',
+    `<p>Ingresa SKU del producto:</p><input id="modal-buscar" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">`,
+    function() {
+      const q = document.getElementById('modal-buscar').value.trim();
+      if (!q) return;
+      const prod = data.productos.find(p => p.sku === q);
+      if (!prod) { toast('SKU no encontrado en inventario'); return; }
+      abrirModal('Cantidad de compra',
+        `<p><strong>${esc(prod.nombre)}</strong></p><p>Stock actual: ${prod.stock} uds.</p>
+         <p>Proveedor:</p><input id="modal-prov" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px" value="${esc(prod.proveedor)}">
+         <p style="margin-top:8px">Cantidad a agregar:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">`,
+        function() {
+          const cant = parseInt(document.getElementById('modal-cant').value) || 1;
+          if (cant <= 0) { toast('Cantidad debe ser mayor a 0'); return; }
+          const prov = document.getElementById('modal-prov').value.trim() || prod.proveedor;
+          const stockAnt = prod.stock;
+          prod.stock += cant;
+          prod.proveedor = prov;
+          data.kardex.push({
+            id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+            tipo: 'Entrada', concepto: 'Compra', cantidad: cant,
+            stockAnt, stockRes: prod.stock, referencia: '',
+            proveedor: prov, observacionCompra: prod.observacionCompra || '', observacionVenta: ''
+          });
+          guardarDatos();
+          toast('Stock a&ntilde;adido: ' + stockAnt + ' → ' + prod.stock);
+        }
+      );
+      return false;
+    }
+  );
+  setTimeout(function() { var el = document.getElementById('modal-buscar'); if(el) el.focus(); }, 100);
+}
+
+// ===== INVENTARIO =====
+function renderInventario() {
+  const q = (document.getElementById('inv-search').value || '').toLowerCase();
+  let list = data.productos;
+  if (q) list = list.filter(p => p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q));
+  var sort = document.getElementById('inv-sort').value;
+  if (sort) {
+    list = list.slice().sort(function(a,b) {
+      var cmp;
+      if (sort === 'sku-asc') cmp = a.sku.localeCompare(b.sku);
+      else if (sort === 'sku-desc') cmp = b.sku.localeCompare(a.sku);
+      else if (sort === 'nombre-asc') cmp = a.nombre.localeCompare(b.nombre);
+      else if (sort === 'nombre-desc') cmp = b.nombre.localeCompare(a.nombre);
+      else if (sort === 'stock-asc') cmp = (a.stock||0) - (b.stock||0);
+      else if (sort === 'stock-desc') cmp = (b.stock||0) - (a.stock||0);
+      return cmp;
+    });
+  }
+  document.getElementById('inv-count').textContent = list.length + ' producto(s)';
+  document.getElementById('inv-body').innerHTML = list.map(p => {
+    const img = p.imagen ? `<img class="img-preview" src="${p.imagen}" alt="">` : '--';
+    const sku = esc(p.sku);
+    return `<tr>
+      <td>${sku}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
+      <td>$${fmt(p.precioCosto)}</td><td>$${fmt(p.precioVenta)}</td>
+      <td>${p.stock}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
+      <td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${sku}')">Eliminar</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== COTIZADOR =====
+function hoy() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function fmt(n) { return (n || 0).toLocaleString('es-CL'); }
+
+function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderCotizador() {
+  document.getElementById('cot-fecha').textContent = hoy();
+  document.getElementById('cot-codigo').textContent = data.cotizacion.codigo;
+  document.getElementById('cot-notas').value = data.cotizacion.notas || '';
+  const items = data.cotizacion.items;
+  const maxRows = 10;
+  let html = '';
+  for (let i = 0; i < maxRows; i++) {
+    const item = items[i] || null;
+    const prod = item ? data.productos.find(p => p.sku === item.sku) : null;
+    const imgHtml = prod && prod.imagen
+      ? '<img src="' + prod.imagen + '" style="width:40px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #ddd" alt="">'
+      : '--';
+    html += `<tr class="cot-row">
+      <td>${i + 1}</td>
+      <td><input class="cot-sku" value="${esc(item ? item.sku : '')}" data-i="${i}" onchange="onCotChange(${i})"></td>
+      <td><input class="cot-prod" value="${esc(item ? item.nombre : '')}" data-i="${i}" onchange="onCotChange(${i})"></td>
+      <td style="text-align:center">${imgHtml}</td>
+      <td><input class="cot-cant" type="number" min="1" value="${item ? item.cantidad : ''}" data-i="${i}" onchange="onCotChange(${i})"></td>
+      <td><input class="cot-precio" type="number" step="0.01" min="0" value="${item ? item.precioUnitario : ''}" data-i="${i}" onchange="onCotChange(${i})"></td>
+      <td id="cot-rowtotal-${i}">$${item ? fmt(item.cantidad * item.precioUnitario) : '0'}</td>
+      <td><input class="cot-obs" value="${esc(item ? item.observacion : '')}" data-i="${i}" onchange="onCotChange(${i})"></td>
+    </tr>`;
+  }
+  document.getElementById('cot-body').innerHTML = html;
+  actualizarTotalCot();
+}
+
+async function onCotChange(i) {
+  const rows = document.querySelectorAll('.cot-row');
+  const sku = rows[i].querySelector('.cot-sku').value.trim();
+  const nombre = rows[i].querySelector('.cot-prod').value.trim();
+  const cantidad = parseInt(rows[i].querySelector('.cot-cant').value) || 0;
+  const precio = parseFloat(rows[i].querySelector('.cot-precio').value) || 0;
+  const obs = rows[i].querySelector('.cot-obs').value.trim();
+  if (sku || nombre || cantidad || precio) {
+    data.cotizacion.items[i] = { sku, nombre, cantidad, precioUnitario: precio, observacion: obs };
+    const td = document.getElementById('cot-rowtotal-' + i);
+    if (td) td.textContent = '$' + fmt(cantidad * precio);
+  } else {
+    if (data.cotizacion.items[i]) delete data.cotizacion.items[i];
+  }
+  data.cotizacion.items = data.cotizacion.items.filter(Boolean);
+  actualizarTotalCot();
+  guardarDatos();
+}
+
+function actualizarTotalCot() {
+  let total = 0;
+  data.cotizacion.items.forEach(item => {
+    total += (item.cantidad || 0) * (item.precioUnitario || 0);
+  });
+  document.getElementById('cot-total').textContent = '$' + fmt(total);
+}
+
+function exportarPDF() {
+  const items = data.cotizacion.items;
+  if (items.length === 0) { toast('No hay productos en la cotizaci&oacute;n'); return; }
+
+  const cliente = prompt('Nombre del cliente:', data.cotizacion.cliente || '');
+  if (cliente === null) return;
+  data.cotizacion.cliente = cliente || '(Sin cliente)';
+
+  let maxNum = 0;
+  data.kardex.forEach(k => {
+    const m = (k.referencia || '').match(/COT-(\d+)/);
+    if (m) { const n = parseInt(m[1]); if (n > maxNum) maxNum = n; }
+  });
+  const sugerido = Math.max(maxNum + 1, data.proxCot);
+  const codStr = prompt('C&oacute;digo de cotizaci&oacute;n (despu&eacute;s de COT-):', String(sugerido).padStart(4,'0'));
+  if (!codStr) return;
+  const codigo = 'COT-' + codStr.padStart(4, '0');
+  data.cotizacion.codigo = codigo;
+  data.proxCot = parseInt(codStr) + 1;
+  guardarDatos();
+
+  const fecha = hoy();
+  const notas = document.getElementById('cot-notas').value.trim();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  doc.setFontSize(18);
+  doc.setTextColor(30, 64, 175);
+  doc.text(codigo, 20, 25);
+
+  doc.setFontSize(11);
+  doc.setTextColor(100);
+  doc.text('Fecha: ' + fecha, 20, 34);
+  doc.text('Cliente: ' + (data.cotizacion.cliente || ''), 20, 41);
+
+  doc.setDrawColor(220, 38, 38);
+  doc.setLineWidth(0.8);
+  doc.line(20, 46, 190, 46);
+
+  const filas = items.map(function(item, i) {
+    const sub = (item.cantidad || 0) * (item.precioUnitario || 0);
+    return [(i+1), item.sku, item.nombre, item.cantidad, '$' + fmt(item.precioUnitario), '$' + fmt(sub), item.observacion || ''];
+  });
+  const total = items.reduce(function(s, item) { return s + (item.cantidad || 0) * (item.precioUnitario || 0); }, 0);
+
+  doc.autoTable({
+    head: [['#', 'SKU', 'Producto', 'Cant.', 'P. Unitario', 'Total', 'Obs.']],
+    body: filas,
+    startY: 52,
+    theme: 'grid',
+    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontSize: 10 },
+    bodyStyles: { fontSize: 10 },
+    columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 28 }, 3: { halign: 'center' }, 4: { halign: 'right' }, 5: { halign: 'right' } },
+    foot: [['', '', '', '', '', '', '']],
+    footStyles: { fillColor: [240, 240, 240] }
+  });
+
+  const finalY = doc.lastAutoTable.finalY || 80;
+  doc.setFontSize(14);
+  doc.setTextColor(0);
+  doc.setFont(undefined, 'bold');
+  doc.text('TOTAL: $' + fmt(total), 190, finalY + 10, { align: 'right' });
+
+  if (notas) {
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(80);
+    doc.setFillColor(255, 248, 239);
+    doc.rect(20, finalY + 18, 170, 12, 'F');
+    doc.setDrawColor(245, 197, 66);
+    doc.setLineWidth(1);
+    doc.line(20, finalY + 18, 20, finalY + 30);
+    doc.text('Notas: ' + notas, 26, finalY + 26);
+  }
+
+  doc.setFontSize(8);
+  doc.setTextColor(180);
+  doc.text('Generado por Luz de Luci&eacute;rnaga — ' + fecha, 105, 285, { align: 'center' });
+
+  const blob = doc.output('blob');
+  const file = new File([blob], codigo + '.pdf', { type: 'application/pdf' });
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({ files: [file], title: codigo }).catch(function(){});
+  } else {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = codigo + '.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('PDF descargado: ' + codigo);
+  }
+
+  // Guardar en historial de cotizaciones
+  if (!data.cotizaciones) data.cotizaciones = [];
+  data.cotizaciones.unshift({
+    codigo: codigo,
+    fecha: fecha,
+    cliente: data.cotizacion.cliente || '(Sin cliente)',
+    items: JSON.parse(JSON.stringify(items)),
+    total: total,
+    notas: notas,
+    estado: 'Enviada'
+  });
+  guardarDatos();
+  renderCotizaciones();
+}
+function agregarProdCot() {
+  abrirModal('Agregar producto a cotizaci&oacute;n',
+    `<p>Ingresa SKU o nombre:</p><input id="modal-buscar" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">`,
+    function() {
+      const q = document.getElementById('modal-buscar').value.trim();
+      if (!q) return;
+      const prod = data.productos.find(p => p.sku === q) ||
+                   data.productos.find(p => p.nombre.toLowerCase().includes(q.toLowerCase()));
+      if (!prod) { toast('Producto no encontrado'); return; }
+      if (data.cotizacion.items.length >= 10) { toast('M&aacute;ximo 10 productos'); return; }
+      abrirModal('Cantidad',
+        `<p><strong>${esc(prod.nombre)}</strong></p><p>Stock: ${prod.stock} uds. Precio: $${fmt(prod.precioVenta)}</p>
+         <p>Observaci&oacute;n:</p><input id="modal-obs" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">
+         <p style="margin-top:8px">Cantidad:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">`,
+        function() {
+          const cant = parseInt(document.getElementById('modal-cant').value) || 1;
+          const obs = document.getElementById('modal-obs').value.trim();
+          data.cotizacion.items.push({
+            sku: prod.sku, nombre: prod.nombre, cantidad: cant,
+            precioUnitario: prod.precioVenta, observacion: obs
+          });
+          renderCotizador();
+          toast('Agregado: ' + prod.nombre);
+        }
+      );
+      return false;
+    }
+  );
+  setTimeout(() => document.getElementById('modal-buscar').focus(), 100);
+}
+
+function buscarProdCot() {
+  abrirModal('Buscar en inventario',
+    `<p>Ingresa SKU o nombre:</p><input id="modal-buscar" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">`,
+    function() {
+      const q = document.getElementById('modal-buscar').value.trim();
+      if (!q) return;
+      const results = data.productos.filter(p => p.sku.toLowerCase().includes(q) ||
+        p.nombre.toLowerCase().includes(q.toLowerCase()));
+      if (results.length === 0) { toast('Sin resultados'); return; }
+      let html = results.map((p, i) =>
+        `<p><a href="#" onclick="return agregarDesdeBusqueda(${i})" style="color:var(--noche);font-weight:600">${esc(p.nombre)}</a> | SKU: ${esc(p.sku)} | $${fmt(p.precioVenta)} | Stock: ${p.stock}</p>`
+      ).join('');
+      html += `<p style="margin-top:8px;font-size:12px;color:#888">Haz clic en un producto para agregarlo</p>`;
+      document.getElementById('modal-body').innerHTML = html;
+      window._busquedaResults = results;
+      return false;
+    }
+  );
+  setTimeout(() => document.getElementById('modal-buscar').focus(), 100);
+}
+window._busquedaResults = [];
+function agregarDesdeBusqueda(i) {
+  const p = window._busquedaResults[i];
+  if (!p) return false;
+  if (data.cotizacion.items.length >= 10) { toast('M&aacute;ximo 10 productos'); return false; }
+  abrirModal('Cantidad',
+    `<p><strong>${esc(p.nombre)}</strong></p><p>Stock: ${p.stock} uds. Precio: $${fmt(p.precioVenta)}</p>
+     <p>Observaci&oacute;n:</p><input id="modal-obs" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">
+     <p style="margin-top:8px">Cantidad:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">`,
+    function() {
+      const cant = parseInt(document.getElementById('modal-cant').value) || 1;
+      const obs = document.getElementById('modal-obs').value.trim();
+      data.cotizacion.items.push({
+        sku: p.sku, nombre: p.nombre, cantidad: cant,
+        precioUnitario: p.precioVenta, observacion: obs
+      });
+      renderCotizador();
+      toast('Agregado: ' + p.nombre);
+    }
+  );
+  return false;
+}
+
+async function limpiarCotizacion() {
+  if (!confirm('Limpiar todos los productos de la cotizaci&oacute;n?')) return;
+  data.cotizacion.items = [];
+  guardarDatos();
+  renderCotizador();
+  toast('Cotizaci&oacute;n limpiada');
+}
+
+async function pedirCodigoCotizacion() {
+  // Buscar &uacute;ltimo COT en kardex
+  let maxNum = 0;
+  data.kardex.forEach(k => {
+    const m = (k.referencia || '').match(/COT-(\d+)/);
+    if (m) { const n = parseInt(m[1]); if (n > maxNum) maxNum = n; }
+  });
+  const sugerido = Math.max(maxNum + 1, data.proxCot);
+  const cod = prompt('C&oacute;digo de cotizaci&oacute;n (despu&eacute;s de COT-):', String(sugerido).padStart(4,'0'));
+  if (!cod) return false;
+  data.cotizacion.codigo = 'COT-' + cod.padStart(4,'0');
+  data.proxCot = parseInt(cod) + 1;
+  guardarDatos();
+  renderCotizador();
+  return true;
+}
+
+function obtenerSiguienteKardexRow() {
+  return data.kardex.length + 1;
+}
+
+async function registrarVenta() {
+  if (!await pedirCodigoCotizacion()) return;
+  data.cotizacion.notas = document.getElementById('cot-notas').value.trim();
+  guardarDatos();
+  const items = data.cotizacion.items;
+  if (items.length === 0) { toast('No hay productos en la cotizaci&oacute;n'); return; }
+  if (!confirm('Registrar venta de ' + items.length + ' producto(s)?')) return;
+  let cliente = data.cotizacion.cliente || prompt('Nombre del cliente:', 'Cliente final') || 'Cliente final';
+  let pago = prompt('M&eacute;todo de pago (Transferencia/Tarjeta/Efectivo/Otro):', 'Transferencia') || 'Transferencia';
+  let stockIssues = false;
+  const codigo = data.cotizacion.codigo;
+  items.forEach(item => {
+    const prod = data.productos.find(p => p.sku === item.sku);
+    if (!prod) return;
+    let cant = item.cantidad;
+    if (prod.stock < cant) {
+      toast('Stock insuficiente para ' + prod.nombre + ' (' + prod.stock + ' de ' + cant + ')');
+      cant = prod.stock;
+      stockIssues = true;
+    }
+    if (cant <= 0) return;
+    const stockAnt = prod.stock;
+    prod.stock -= cant;
+    const obsVenta = item.observacion || '';
+    data.kardex.push({
+      id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+      tipo: 'Salida', concepto: 'Venta', cantidad: -cant,
+      stockAnt: stockAnt, stockRes: prod.stock,
+      referencia: 'Cot. ' + codigo,
+      proveedor: '', observacionCompra: '', observacionVenta: obsVenta
+    });
+    data.ventas.push({
+      id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+      cantidad: cant, precioUnitario: item.precioUnitario,
+      total: cant * item.precioUnitario,
+      cliente: cliente, pago: pago, estado: 'Pagado',
+      referencia: codigo, observacion: obsVenta
+    });
+  });
+  if (!data.cotizaciones) data.cotizaciones = [];
+  const cotTotal = items.reduce(function(s, it) { return s + (it.cantidad || 0) * (it.precioUnitario || 0); }, 0);
+  const existIdx = data.cotizaciones.findIndex(function(c) { return c.codigo === codigo; });
+  const cotEntry = {
+    codigo: codigo, fecha: hoy(), cliente: cliente,
+    items: JSON.parse(JSON.stringify(items)),
+    total: cotTotal, notas: data.cotizacion.notas,
+    estado: 'Vendida'
+  };
+  if (existIdx >= 0) {
+    data.cotizaciones[existIdx] = cotEntry;
+  } else {
+    data.cotizaciones.unshift(cotEntry);
+  }
+  data.cotizacion.items = [];
+  data.cotizacion.cliente = '';
+  data.cotizacion.notas = '';
+  if (!data.pendientes) data.pendientes = [];
+  data.pendientes.unshift({ id: Date.now(), fecha: hoy(), tipo: 'venta', cliente: cliente, codigo: codigo, items: items.length, total: cotTotal, estado: 'pendiente' });
+  guardarDatos();
+  renderCotizador();
+  renderVentas();
+  renderKardex();
+  toast(stockIssues ? 'Venta registrada con ajustes de stock' : 'Venta registrada: ' + items.length + ' producto(s)');
+}
+
+// ===== VENTAS =====
+function renderVentas() {
+  const list = data.ventas;
+  let totalVtas = 0, totalCant = 0;
+  list.forEach(v => { totalVtas += v.total || 0; totalCant += v.cantidad || 0; });
+  document.getElementById('v-total').textContent = '$' + fmt(totalVtas);
+  document.getElementById('v-cant').textContent = totalCant;
+  document.getElementById('v-ultima').textContent = list.length > 0 ? list[list.length-1].fecha : '--';
+  document.getElementById('ventas-body').innerHTML = list.map(v => {
+    const url = v.referencia ? `Cot. ${esc(v.referencia)}` : '--';
+    const vid = v.id;
+    return `<tr>
+      <td>${esc(v.fecha)}</td><td>${esc(v.sku)}</td><td>${esc(v.nombre)}</td>
+      <td>${v.cantidad}</td><td>$${fmt(v.precioUnitario)}</td><td>$${fmt(v.total)}</td>
+      <td>${esc(v.cliente)}</td><td>${esc(v.pago)}</td><td>${esc(v.estado)}</td>
+      <td>${url}</td><td>${esc(v.observacion)}</td>
+      <td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta('${vid}')">Eliminar</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="12" class="empty">No hay ventas registradas</td></tr>';
+}
+
+// ===== KARDEX =====
+function renderKardex() {
+  const q = (document.getElementById('kardex-search').value || '').toLowerCase();
+  let list = data.kardex;
+  if (q) list = list.filter(k => k.sku.toLowerCase().includes(q));
+  // Calcular stock actual del SKU filtrado
+  if (q) {
+    const prod = data.productos.find(p => p.sku.toLowerCase().includes(q));
+    document.getElementById('kardex-stock').textContent = prod ? 'Stock actual: ' + prod.stock + ' uds.' : '';
+  } else {
+    document.getElementById('kardex-stock').textContent = '';
+  }
+  document.getElementById('kardex-body').innerHTML = list.map(k => {
+    const cantidadClass = k.cantidad < 0 ? 'style="color:#DC2626"' : 'style="color:var(--verde)"';
+    return `<tr>
+      <td>${esc(k.fecha)}</td><td>${esc(k.sku)}</td><td>${esc(k.nombre)}</td>
+      <td>${esc(k.tipo)}</td><td>${esc(k.concepto)}</td>
+      <td ${cantidadClass}>${k.cantidad}</td>
+      <td>${k.stockAnt}</td><td>${k.stockRes}</td>
+      <td>${esc(k.referencia)}</td><td>${esc(k.proveedor)}</td>
+      <td>${esc(k.observacionCompra)}</td><td>${esc(k.observacionVenta)}</td>
+      <td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarKardex('${k.id}')">Eliminar</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="13" class="empty">No hay movimientos registrados</td></tr>';
+}
+
+function findProductoBySku(sku) {
+  return data.productos.find(p => p.sku === sku);
+}
+
+function abrirModalProducto(titulo, onSelect) {
+  var html = '<p>Buscar producto:</p><input id="modal-buscar-prod" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px" oninput="filtrarProductosModal()">';
+  html += '<div id="modal-resultados" style="margin-top:8px;max-height:300px;overflow-y:auto"></div>';
+  abrirModal(titulo, html, function() { return false; });
+  document.getElementById('modal-buscar-prod').focus();
+  window._seleccionarProd = onSelect;
+  filtrarProductosModal();
+}
+
+function filtrarProductosModal() {
+  var q = (document.getElementById('modal-buscar-prod').value || '').toLowerCase();
+  var div = document.getElementById('modal-resultados');
+  if (!div) return;
+  var results = q ? data.productos.filter(function(p) { return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q); }) : data.productos;
+  if (results.length === 0) { div.innerHTML = '<p style="color:#aaa;font-size:13px">Sin resultados</p>'; return; }
+  div.innerHTML = results.map(function(p) {
+    return '<p><a href="#" onclick="return seleccionarProductoKardex(\'' + p.sku + '\')" style="color:var(--noche);font-weight:600;font-size:14px">' + esc(p.nombre) + '</a> <span style="color:#888;font-size:12px">SKU: ' + esc(p.sku) + ' | Stock: ' + p.stock + '</span></p>';
+  }).join('');
+}
+
+function seleccionarProductoKardex(sku) {
+  var prod = data.productos.find(function(p) { return p.sku === sku; });
+  if (prod && window._seleccionarProd) {
+    window._seleccionarProd(prod);
+  }
+  return false;
+}
+
+async function registrarEntrada() {
+  abrirModalProducto('Registrar Entrada', function(prod) {
+    cerrarModal();
+    abrirModal('Cantidad de entrada',
+      '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + prod.stock + ' uds.</p><p>Cantidad a ingresar:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
+      function() {
+        var cant = parseInt(document.getElementById('modal-cant').value) || 1;
+        if (cant <= 0) { toast('Cantidad debe ser mayor a 0'); return; }
+        var stockAnt = prod.stock;
+        prod.stock += cant;
+        data.kardex.push({
+          id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+          tipo: 'Entrada', concepto: 'Compra', cantidad: cant,
+          stockAnt: stockAnt, stockRes: prod.stock, referencia: '',
+          proveedor: prod.proveedor || '', observacionCompra: prod.observacionCompra || '', observacionVenta: ''
+        });
+        guardarDatos();
+        if (!data.pendientes) data.pendientes = [];
+        data.pendientes.unshift({ id: Date.now()+Math.random(), fecha: hoy(), tipo: 'producto', sku: prod.sku, nombre: prod.nombre, precio: prod.precioVenta, stock: prod.stock, detalle: 'Entrada +'+cant+' (Compra manual) — subir stock en WC', estado: 'pendiente' });
+        guardarDatos();
+        renderKardex();
+        renderPendientes();
+        toast('Entrada registrada. Stock: ' + stockAnt + ' → ' + prod.stock);
+      }
+    );
+  });
+}
+
+async function registrarSalida() {
+  abrirModalProducto('Registrar Salida', function(prod) {
+    if (prod.stock <= 0) { toast('Stock: 0 uds. No se puede retirar'); return; }
+    cerrarModal();
+    abrirModal('Cantidad de salida',
+      '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + prod.stock + ' uds.</p><p>Cantidad a retirar:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
+      function() {
+        var cant = parseInt(document.getElementById('modal-cant').value) || 1;
+        if (cant <= 0) { toast('Cantidad debe ser mayor a 0'); return; }
+        if (cant > prod.stock) { toast('Stock insuficiente. Solo hay ' + prod.stock); return; }
+        var stockAnt = prod.stock;
+        prod.stock -= cant;
+        data.kardex.push({
+          id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+          tipo: 'Salida', concepto: 'Venta', cantidad: -cant,
+          stockAnt: stockAnt, stockRes: prod.stock, referencia: '',
+          proveedor: '', observacionCompra: '', observacionVenta: ''
+        });
+        guardarDatos();
+        if (!data.pendientes) data.pendientes = [];
+        data.pendientes.unshift({ id: Date.now()+Math.random(), fecha: hoy(), tipo: 'producto', sku: prod.sku, nombre: prod.nombre, precio: prod.precioVenta, stock: prod.stock, detalle: 'Salida -'+cant+' (Venta manual) — bajar stock en WC', estado: 'pendiente' });
+        guardarDatos();
+        renderKardex();
+        renderPendientes();
+        toast('Salida registrada. Stock: ' + stockAnt + ' → ' + prod.stock);
+      }
+    );
+  });
+}
+
+async function registrarAjuste() {
+  abrirModalProducto('Registrar Ajuste', function(prod) {
+    cerrarModal();
+    abrirModal('Ajuste de stock',
+      '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + prod.stock + ' uds.</p><p>Concepto:</p><input id="modal-concepto" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px" value="Ajuste fisico"><p style="margin-top:8px">Cantidad (positiva = aumenta, negativa = disminuye):</p><input id="modal-cant" type="number" value="0" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
+      function() {
+        var cant = parseInt(document.getElementById('modal-cant').value) || 0;
+        var concepto = document.getElementById('modal-concepto').value.trim() || 'Ajuste';
+        if (cant === 0) { toast('La cantidad no puede ser 0'); return; }
+        if (prod.stock + cant < 0) { toast('Ajuste dejaria stock negativo'); return; }
+        var stockAnt = prod.stock;
+        prod.stock += cant;
+        data.kardex.push({
+          id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+          tipo: 'Ajuste', concepto: concepto, cantidad: cant,
+          stockAnt: stockAnt, stockRes: prod.stock, referencia: '',
+          proveedor: prod.proveedor || '', observacionCompra: prod.observacionCompra || '', observacionVenta: ''
+        });
+        guardarDatos();
+        if (!data.pendientes) data.pendientes = [];
+        var cambio = (cant>0?'+':'')+cant;
+        data.pendientes.unshift({ id: Date.now()+Math.random(), fecha: hoy(), tipo: 'producto', sku: prod.sku, nombre: prod.nombre, precio: prod.precioVenta, stock: prod.stock, detalle: 'Ajuste '+cambio+' ('+(cant>0?'Compra':'Venta')+' manual) — '+(cant>0?'subir':'bajar')+' stock en WC', estado: 'pendiente' });
+        guardarDatos();
+        renderKardex();
+        renderPendientes();
+        toast('Ajuste registrado. Stock: ' + stockAnt + ' → ' + prod.stock);
+      }
+    );
+  });
+}
+
+// ===== EXPORT/IMPORT EXCEL =====
+function exportarExcelCompleto() {
+  const wb = XLSX.utils.book_new();
+
+  // Productos
+  const prodData = data.productos.map(p => ({
+    SKU: p.sku, 'C&oacute;d. Barra': p.codBarra, Producto: p.nombre,
+    'Precio Costo': p.precioCosto, 'Precio Venta': p.precioVenta,
+    Stock: p.stock, Proveedor: p.proveedor, 'Observaci&oacute;n Compra': p.observacionCompra
+  }));
+  const wsProd = XLSX.utils.json_to_sheet(prodData);
+  XLSX.utils.book_append_sheet(wb, wsProd, 'Productos');
+
+  // Ventas
+  const vtData = data.ventas.map(v => ({
+    Fecha: v.fecha, SKU: v.sku, Producto: v.nombre,
+    Cant: v.cantidad, 'P. Unitario': v.precioUnitario, Total: v.total,
+    Cliente: v.cliente, Pago: v.pago, Estado: v.estado,
+    Referencia: v.referencia, 'Observaci&oacute;n': v.observacion
+  }));
+  const wsVt = XLSX.utils.json_to_sheet(vtData);
+  XLSX.utils.book_append_sheet(wb, wsVt, 'Ventas');
+
+  // Kardex
+  const kxData = data.kardex.map(k => ({
+    Fecha: k.fecha, SKU: k.sku, Producto: k.nombre,
+    Tipo: k.tipo, Concepto: k.concepto, Cantidad: k.cantidad,
+    'Stock Ant.': k.stockAnt, 'Stock Res.': k.stockRes,
+    Referencia: k.referencia, Proveedor: k.proveedor,
+    'Obs. Compra': k.observacionCompra, 'Obs. Venta': k.observacionVenta
+  }));
+  const wsKx = XLSX.utils.json_to_sheet(kxData);
+  XLSX.utils.book_append_sheet(wb, wsKx, 'Kardex');
+
+  // Cotizaci&oacute;n actual
+  const cotItems = data.cotizacion.items || [];
+  const ctData = cotItems.map((item, i) => ({
+    '#': i + 1, SKU: item.sku, Producto: item.nombre,
+    Cant: item.cantidad, 'P. Unitario': item.precioUnitario,
+    Total: (item.cantidad || 0) * (item.precioUnitario || 0),
+    'Observaci&oacute;n': item.observacion
+  }));
+  const wsCt = XLSX.utils.json_to_sheet(ctData);
+  XLSX.utils.sheet_add_aoa(wsCt, [['Cotizaci&oacute;n: ' + data.cotizacion.codigo, '', '', '', '', '', '']], {origin: 'A1'});
+  XLSX.utils.book_append_sheet(wb, wsCt, 'Cotizacion');
+
+  XLSX.writeFile(wb, 'lucidata-' + hoy().replace(/-/g, '') + '.xlsx');
+  toast('Exportado como Excel');
+}
+
+function importarExcel() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.xlsx,.xls';
+  input.onchange = async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(ev) {
+      try {
+        const wb = XLSX.read(ev.target.result, { type: 'array' });
+        let nuevos = { productos: [], ventas: [], kardex: [] };
+
+        if (wb.SheetNames.includes('Productos')) {
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets['Productos']);
+          nuevos.productos = rows.map(r => ({
+            id: Date.now() + Math.random(),
+            sku: String(r['SKU'] || r['sku'] || ''),
+            codBarra: String(r['C&oacute;d. Barra'] || r['codBarra'] || ''),
+            nombre: String(r['Producto'] || r['nombre'] || ''),
+            precioCosto: parseFloat(r['Precio Costo'] || r['precioCosto'] || 0),
+            precioVenta: parseFloat(r['Precio Venta'] || r['precioVenta'] || 0),
+            stock: parseInt(r['Stock'] || r['stock'] || 0),
+            proveedor: String(r['Proveedor'] || r['proveedor'] || ''),
+            observacionCompra: String(r['Observaci&oacute;n Compra'] || r['observacionCompra'] || ''),
+            imagen: ''
+          }));
+        }
+
+        if (wb.SheetNames.includes('Ventas')) {
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets['Ventas']);
+          nuevos.ventas = rows.map(r => ({
+            id: Date.now() + Math.random(),
+            fecha: String(r['Fecha'] || r['fecha'] || ''),
+            sku: String(r['SKU'] || r['sku'] || ''),
+            nombre: String(r['Producto'] || r['nombre'] || ''),
+            cantidad: parseInt(r['Cant'] || r['cantidad'] || 0),
+            precioUnitario: parseFloat(r['P. Unitario'] || r['precioUnitario'] || 0),
+            total: parseFloat(r['Total'] || r['total'] || 0),
+            cliente: String(r['Cliente'] || r['cliente'] || ''),
+            pago: String(r['Pago'] || r['pago'] || ''),
+            estado: String(r['Estado'] || r['estado'] || 'Pagado'),
+            referencia: String(r['Referencia'] || r['referencia'] || ''),
+            observacion: String(r['Observaci&oacute;n'] || r['observacion'] || '')
+          }));
+        }
+
+        if (wb.SheetNames.includes('Kardex')) {
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets['Kardex']);
+          nuevos.kardex = rows.map(r => ({
+            id: Date.now() + Math.random(),
+            fecha: String(r['Fecha'] || r['fecha'] || ''),
+            sku: String(r['SKU'] || r['sku'] || ''),
+            nombre: String(r['Producto'] || r['nombre'] || ''),
+            tipo: String(r['Tipo'] || r['tipo'] || ''),
+            concepto: String(r['Concepto'] || r['concepto'] || ''),
+            cantidad: parseFloat(r['Cantidad'] || r['cantidad'] || 0),
+            stockAnt: parseFloat(r['Stock Ant.'] || r['stockAnt'] || 0),
+            stockRes: parseFloat(r['Stock Res.'] || r['stockRes'] || 0),
+            referencia: String(r['Referencia'] || r['referencia'] || ''),
+            proveedor: String(r['Proveedor'] || r['proveedor'] || ''),
+            observacionCompra: String(r['Obs. Compra'] || r['observacionCompra'] || ''),
+            observacionVenta: String(r['Obs. Venta'] || r['observacionVenta'] || '')
+          }));
+        }
+
+        const totalProd = nuevos.productos.length;
+        const totalVen = nuevos.ventas.length;
+        const totalKx = nuevos.kardex.length;
+        if (totalProd === 0 && totalVen === 0 && totalKx === 0) {
+          toast('El archivo no contiene datos reconocibles');
+          return;
+        }
+        if (!confirm('Agregar ' + totalProd + ' producto(s), ' + totalVen +
+          ' venta(s), ' + totalKx + ' movimiento(s) a los existentes? Actualmente hay ' +
+          data.productos.length + ' producto(s), ' + data.ventas.length + ' venta(s), ' +
+          data.kardex.length + ' movimiento(s).')) return;
+
+        data.productos = data.productos.concat(nuevos.productos);
+        data.ventas = data.ventas.concat(nuevos.ventas);
+        data.kardex = data.kardex.concat(nuevos.kardex);
+        guardarDatos();
+        renderInventario();
+        renderCotizador();
+        renderVentas();
+        renderKardex();
+        toast('Importado desde Excel correctamente');
+      } catch(e) {
+        toast('Error al leer Excel: ' + e.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+  input.click();
+}
+
+// ===== Cotizaciones (historial) =====
+function renderCotizaciones() {
+  const lista = data.cotizaciones || [];
+  document.getElementById('cotiz-cant').textContent = lista.length;
+  const ultima = lista.length > 0 ? lista[0].codigo + ' (' + lista[0].fecha + ')' : '--';
+  document.getElementById('cotiz-ultima').textContent = ultima;
+  const tbody = document.getElementById('cotiz-body');
+  if (lista.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty">No hay cotizaciones guardadas</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(function(c, i) {
+    const totalItems = c.items.reduce(function(s, it) { return s + (it.cantidad || 0); }, 0);
+    const cod = esc(c.codigo);
+    const estado = c.estado === 'Vendida'
+      ? '<span style="background:#059669;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Vendida</span>'
+      : '<span style="background:#D97706;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Enviada</span>';
+    return '<tr><td>' + (i+1) + '</td><td><strong>' + cod + '</strong></td><td>' + esc(c.fecha) + '</td><td>' + esc(c.cliente) + '</td>' +
+      '<td>' + totalItems + ' uds.</td><td>$' + fmt(c.total) + '</td><td>' + estado + '</td>' +
+      '<td><button class="btn btn-outline" style="font-size:11px;padding:3px 8px" onclick="verCotizacion(\'' + cod + '\')">Ver</button> ' +
+      '<button class="btn btn-ambar" style="font-size:11px;padding:3px 6px" onclick="editarCotizacion(\'' + cod + '\')">Editar</button> ' +
+      '<button class="btn btn-outline" style="font-size:11px;padding:3px 8px" onclick="reutilizarCotizacion(\'' + cod + '\')">Reutilizar</button> ' +
+      '<button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarCotizacion(\'' + cod + '\')">Eliminar</button></td></tr>';
+  }).join('');
+}
+
+function verCotizacion(codigo) {
+  const c = (data.cotizaciones || []).find(function(x) { return x.codigo === codigo; });
+  if (!c) { toast('Cotizaci&oacute;n no encontrada'); return; }
+  let rowsHtml = c.items.map(function(it, i) {
+    const sub = (it.cantidad || 0) * (it.precioUnitario || 0);
+    return '<tr><td>' + (i+1) + '</td><td>' + esc(it.sku) + '</td><td>' + esc(it.nombre) + '</td><td>' + it.cantidad + '</td><td>$' + fmt(it.precioUnitario) + '</td><td>$' + fmt(sub) + '</td></tr>';
+  }).join('');
+  const total = c.items.reduce(function(s, it) { return s + (it.cantidad || 0) * (it.precioUnitario || 0); }, 0);
+  const estadoBadge = c.estado === 'Vendida'
+    ? '<span style="background:#059669;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Vendida</span>'
+    : '<span style="background:#D97706;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Enviada</span>';
+  abrirModal('Cotizaci&oacute;n ' + esc(c.codigo),
+    '<p><strong>Cliente:</strong> ' + esc(c.cliente) + ' &nbsp;|&nbsp; <strong>Fecha:</strong> ' + esc(c.fecha) + ' &nbsp;|&nbsp; <strong>Estado:</strong> ' + estadoBadge + '</p>' +
+    '<table style="font-size:12px"><thead><tr><th>#</th><th>SKU</th><th>Producto</th><th>Cant.</th><th>P. Unitario</th><th>Total</th></tr></thead><tbody>' + rowsHtml +
+    '</tbody><tfoot><tr><td colspan="5"><strong>TOTAL</strong></td><td><strong>$' + fmt(total) + '</strong></td></tr></tfoot></table>' +
+    (c.notas ? '<p style="margin-top:8px;font-size:12px;color:#888"><strong>Notas:</strong> ' + esc(c.notas) + '</p>' : '') +
+    (c.items[0] ? '<p style="margin-top:8px;font-size:11px;color:#aaa">Para reutilizar esta cotizaci&oacute;n, haz clic en "Reutilizar" en el listado.</p>' : '')
+  );
+}
+
+function reutilizarCotizacion(codigo) {
+  const c = (data.cotizaciones || []).find(function(x) { return x.codigo === codigo; });
+  if (!c) { toast('Cotizaci&oacute;n no encontrada'); return; }
+  data.cotizacion.items = JSON.parse(JSON.stringify(c.items));
+  data.cotizacion.cliente = c.cliente || '';
+  renderCotizador();
+  cambiarTab('cotizador');
+  toast('Cotizaci&oacute;n cargada: ' + codigo);
+}
+
+function editarCotizacion(codigo) {
+  const c = (data.cotizaciones || []).find(function(x) { return x.codigo === codigo; });
+  if (!c) { toast('Cotizaci&oacute;n no encontrada'); return; }
+  let itemsHtml = c.items.map(function(it, i) {
+    return '<tr><td>' + (i+1) + '</td><td>' + esc(it.sku) + '</td><td>' + esc(it.nombre) + '</td>' +
+      '<td><input id="edit-cant-' + i + '" type="number" min="1" value="' + it.cantidad + '" style="width:60px;padding:4px;border:1px solid #ccc;border-radius:4px;font-size:13px"></td>' +
+      '<td><input id="edit-precio-' + i + '" type="number" step="0.01" min="0" value="' + it.precioUnitario + '" style="width:90px;padding:4px;border:1px solid #ccc;border-radius:4px;font-size:13px"></td>' +
+      '<td id="edit-subtotal-' + i + '">$' + fmt(it.cantidad * it.precioUnitario) + '</td></tr>';
+  }).join('');
+  const total = c.items.reduce(function(s, it) { return s + (it.cantidad || 0) * (it.precioUnitario || 0); }, 0);
+  const selVendida = c.estado === 'Vendida' ? 'selected' : '';
+  const selEnviada = c.estado === 'Vendida' ? '' : 'selected';
+  abrirModal('Editar ' + esc(c.codigo),
+    '<p><strong>Cliente:</strong><br><input id="edit-cliente" value="' + esc(c.cliente) + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+    '<p><strong>Estado:</strong><br><select id="edit-estado" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<option value="Enviada" ' + selEnviada + '>Enviada</option>' +
+    '<option value="Vendida" ' + selVendida + '>Vendida</option></select></p>' +
+    '<p><strong>Notas:</strong><br><textarea id="edit-notas" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:13px;resize:vertical">' + esc(c.notas || '') + '</textarea></p>' +
+    '<table style="font-size:12px"><thead><tr><th>#</th><th>SKU</th><th>Producto</th><th>Cant.</th><th>P. Unitario</th><th>Total</th></tr></thead><tbody>' + itemsHtml +
+    '</tbody><tfoot><tr><td colspan="4"></td><td><strong>TOTAL</strong></td><td><strong>$' + fmt(total) + '</strong></td></tr></tfoot></table>' +
+    '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary" onclick="guardarEdicionCotizacion(\'' + esc(c.codigo) + '\')">Guardar Cambios</button></div>',
+    function() { return false; }
+  );
+}
+
+function guardarEdicionCotizacion(codigo) {
+  const c = (data.cotizaciones || []).find(function(x) { return x.codigo === codigo; });
+  if (!c) { toast('Cotizaci&oacute;n no encontrada'); return; }
+  const estadoAnterior = c.estado;
+  const nuevoEstado = document.getElementById('edit-estado').value;
+  c.cliente = document.getElementById('edit-cliente').value.trim() || '(Sin cliente)';
+  c.notas = document.getElementById('edit-notas').value.trim();
+  c.items.forEach(function(it, i) {
+    const cantInput = document.getElementById('edit-cant-' + i);
+    const precioInput = document.getElementById('edit-precio-' + i);
+    if (cantInput) it.cantidad = parseInt(cantInput.value) || 1;
+    if (precioInput) it.precioUnitario = parseFloat(precioInput.value) || 0;
+  });
+  c.total = c.items.reduce(function(s, it) { return s + (it.cantidad || 0) * (it.precioUnitario || 0); }, 0);
+
+  // Si cambia de Enviada a Vendida, registrar venta
+  if (estadoAnterior !== 'Vendida' && nuevoEstado === 'Vendida') {
+    const pago = prompt('M&eacute;todo de pago (Transferencia/Tarjeta/Efectivo/Otro):', 'Transferencia') || 'Transferencia';
+    let stockIssues = false;
+    c.items.forEach(function(item) {
+      const prod = data.productos.find(function(p) { return p.sku === item.sku; });
+      if (!prod) return;
+      let cant = item.cantidad;
+      if (prod.stock < cant) {
+        toast('Stock insuficiente para ' + prod.nombre + ' (' + prod.stock + ' de ' + cant + ')');
+        cant = prod.stock;
+        stockIssues = true;
+      }
+      if (cant <= 0) return;
+      const stockAnt = prod.stock;
+      prod.stock -= cant;
+      data.kardex.push({
+        id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+        tipo: 'Salida', concepto: 'Venta', cantidad: -cant,
+        stockAnt: stockAnt, stockRes: prod.stock,
+        referencia: 'Cot. ' + codigo,
+        proveedor: '', observacionCompra: '', observacionVenta: item.observacion || ''
+      });
+      data.ventas.push({
+        id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+        cantidad: cant, precioUnitario: item.precioUnitario,
+        total: cant * item.precioUnitario,
+        cliente: c.cliente, pago: pago, estado: 'Pagado',
+        referencia: codigo, observacion: item.observacion || ''
+      });
+    });
+    if (stockIssues) {
+      toast('Venta registrada con ajustes de stock: ' + codigo);
+    }
+  }
+
+  c.estado = nuevoEstado;
+  guardarDatos();
+  renderCotizaciones();
+  renderVentas();
+  renderKardex();
+  cerrarModal();
+  toast('Cotizaci&oacute;n actualizada: ' + codigo);
+}
+
+// ===== Eliminar registros =====
+function eliminarProductoDirecto(sku) {
+  if (!confirm('Eliminar producto ' + sku + ' y todo su historial kardex?')) return;
+  data.productos = data.productos.filter(function(p) { return p.sku !== sku; });
+  data.kardex = data.kardex.filter(function(k) { return k.sku !== sku; });
+  guardarDatos();
+  renderInventario();
+  renderKardex();
+  toast('Producto eliminado: ' + sku);
+}
+
+function eliminarVenta(idStr) {
+  if (!confirm('Eliminar esta venta? El stock NO se revertir&aacute; autom&aacute;ticamente.')) return;
+  const id = parseFloat(idStr);
+  data.ventas = data.ventas.filter(function(v) { return v.id !== id; });
+  guardarDatos();
+  renderVentas();
+  toast('Venta eliminada');
+}
+
+function eliminarCotizacion(codigo) {
+  if (!confirm('Eliminar cotizaci&oacute;n ' + codigo + '?')) return;
+  data.cotizaciones = data.cotizaciones.filter(function(c) { return c.codigo !== codigo; });
+  guardarDatos();
+  renderCotizaciones();
+  toast('Cotizaci&oacute;n eliminada: ' + codigo);
+}
+
+function eliminarKardex(idStr) {
+  if (!confirm('Eliminar este movimiento? El stock se revertir&aacute; autom&aacute;ticamente.')) return;
+  const id = parseFloat(idStr);
+  const k = data.kardex.find(function(x) { return x.id === id; });
+  if (!k) { toast('Movimiento no encontrado'); return; }
+  const prod = data.productos.find(function(p) { return p.sku === k.sku; });
+  if (prod) {
+    prod.stock = (prod.stock || 0) - (k.cantidad || 0);
+  }
+  data.kardex = data.kardex.filter(function(x) { return x.id !== id; });
+  guardarDatos();
+  renderKardex();
+  renderInventario();
+  toast('Movimiento eliminado, stock revertido');
+}
+
+// ===== AUTH =====
+const AUTH_USER = 'Osvaldo';
+const AUTH_PASS = 'Cuncunita2025!';
+
+function iniciarSesion() {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (user === AUTH_USER && pass === AUTH_PASS) {
+    sessionStorage.setItem('luciauth', '1');
+    document.getElementById('login-overlay').style.display = 'none';
+    toast('Bienvenido, ' + user);
+    iniciarApp();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function cerrarSesion() {
+  if (!confirm('¿Cerrar sesión?')) return;
+  sessionStorage.removeItem('luciauth');
+  location.reload();
+}
+
+function iniciarApp() {
+  renderCotizador();
+  renderVentas();
+  renderInventario();
+  renderPendientes();
+  document.getElementById('contenido-formulario').style.display = '';
+}
+
+// ===== Pendientes WooCommerce =====
+function renderPendientes() {
+  const lista = data.pendientes || [];
+  document.getElementById('pend-cant').textContent = lista.length;
+  const tbody = document.getElementById('pend-body');
+  if (lista.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">No hay pendientes</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(function(p, i) {
+    const badge = p.estado === 'ingresado'
+      ? '<span style="background:#059669;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Ingresado</span>'
+      : '<span style="background:#D97706;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Pendiente</span>';
+    var acciones = '<button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarPendiente('+i+')">Editar</button>' +
+      '<button class="btn btn-outline" style="font-size:11px;padding:2px 6px" onclick="eliminarPendiente('+i+')">Eliminar</button>';
+    if (p.estado === 'pendiente') {
+      acciones = '<button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="marcarIngresado('+i+')">Ya ingresado</button>' + acciones;
+    }
+    if (p.tipo === 'producto') {
+      var detalle = p.detalle || ('$'+fmt(p.precio)+' | Stock: '+p.stock);
+      return '<tr><td>' + esc(p.fecha) + '</td><td>Producto</td><td>' + esc(p.sku) + '</td><td>' + esc(p.nombre) + '</td><td>' + esc(detalle) + '</td><td>' + badge + '</td><td>' + acciones + '</td></tr>';
+    }
+    return '<tr><td>' + esc(p.fecha) + '</td><td>Venta</td><td>' + esc(p.codigo) + '</td><td>' + esc(p.cliente) + '</td><td>' + p.items + ' producto(s) | $' + fmt(p.total) + '</td><td>' + badge + '</td><td>' + acciones + '</td></tr>';
+  }).join('');
+}
+
+function marcarIngresado(idx) {
+  if (!data.pendientes || !data.pendientes[idx]) return;
+  data.pendientes[idx].estado = 'ingresado';
+  guardarDatos();
+  toast('Marcado como ingresado');
+  renderPendientes();
+}
+
+function editarPendiente(idx) {
+  var p = data.pendientes[idx];
+  if (!p) return;
+  var fields = '';
+  for (var k in p) {
+    if (k === 'id') continue;
+    var val = p[k];
+    if (typeof val === 'object') continue;
+    fields += '<p style="margin:6px 0"><label style="font-size:12px;color:#666">' + k + '</label><br><input id="edt-' + k + '" value="' + esc(String(val)) + '" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>';
+  }
+  abrirModal('Editar pendiente',
+    '<p style="font-size:13px;color:#555;margin-bottom:8px">Editando registro #' + (idx + 1) + '</p>' + fields,
+    function() {
+      for (var k in p) {
+        if (k === 'id') continue;
+        if (typeof p[k] === 'object') continue;
+        var el = document.getElementById('edt-' + k);
+        if (el) {
+          var v = el.value.trim();
+          p[k] = isNaN(v) || v === '' ? v : Number(v);
+        }
+      }
+      guardarDatos();
+      renderPendientes();
+      toast('Pendiente actualizado');
+    }
+  );
+}
+
+function eliminarPendiente(idx) {
+  if (!data.pendientes || !data.pendientes[idx]) return;
+  if (!confirm('Eliminar este registro de pendientes?')) return;
+  data.pendientes.splice(idx, 1);
+  guardarDatos();
+  renderPendientes();
+  toast('Registro eliminado');
+}
+
+// ===== INIT =====
+(function() {
+  if (sessionStorage.getItem('luciauth')) {
+    document.getElementById('login-overlay').style.display = 'none';
+    iniciarApp();
+  }
+  document.getElementById('login-pass').addEventListener('keydown', function(e) { if (e.key === 'Enter') iniciarSesion(); });
+})();
+</script>
+</body>
+</html>
