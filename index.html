@@ -1644,7 +1644,7 @@ function eliminarKardex(idStr) {
   if (prod) {
     prod.stock = (prod.stock || 0) - (k.cantidad || 0);
   }
-  data.kardex = data.kardex.filter(function(x) { return x.id !== id; });
+  data.kardex = data.kardex.filter(function(x) { return String(x.id) !== String(idStr); });
   guardarDatos();
   renderKardex();
   renderInventario();
