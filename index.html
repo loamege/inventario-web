@@ -9,6 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.13.0/firebase-auth-compat.js"></script>
 <style>
 :root{--noche:#2D2A3B;--ambar:#F5C542;--crema:#FFF8EF;--verde:#7A9A6B;--blanco:#FFFFFF;--gris:#E8E8F0;--texto:#222}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -116,8 +117,8 @@ tbody tr:hover{background:#F5F0FF}
     <div class="sub">Sistema de Inventario</div>
 
     <div id="login-form">
-      <label>Usuario</label>
-      <input id="login-user" type="text" placeholder="Ingresa tu usuario" autocomplete="username">
+      <label>Correo</label>
+      <input id="login-user" type="email" placeholder="Ingresa tu correo" autocomplete="email">
       <label>Contrase&ntilde;a</label>
       <input id="login-pass" type="password" placeholder="Ingresa tu contrase&ntilde;a" autocomplete="current-password">
       <button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
@@ -1653,24 +1654,47 @@ function eliminarKardex(idStr) {
 }
 
 // ===== AUTH =====
-const AUTH_USER = 'Osvaldo';
-const AUTH_PASS = 'Cuncunita2025!';
-
 function iniciarSesion() {
-  const user = document.getElementById('login-user').value.trim();
+  const email = document.getElementById('login-user').value.trim();
   const pass = document.getElementById('login-pass').value;
-  if (user === AUTH_USER && pass === AUTH_PASS) {
-    sessionStorage.setItem('luciauth', '1');
-    document.getElementById('login-overlay').style.display = 'none';
-    toast('Bienvenido, ' + user);
-    iniciarApp();
-  } else {
+  document.getElementById('login-error').style.display = 'none';
+  if (!email || !pass) {
+    document.getElementById('login-error').textContent = 'Ingresa correo y contraseña';
     document.getElementById('login-error').style.display = 'block';
+    return;
+  }
+  const btn = document.querySelector('#login-card .btn');
+  btn.disabled = true;
+  btn.textContent = 'Ingresando...';
+  if (typeof firebase !== 'undefined' && firebase.auth) {
+    firebase.auth().signInWithEmailAndPassword(email, pass)
+      .catch(function(e) {
+        btn.disabled = false;
+        btn.textContent = 'INGRESAR';
+        document.getElementById('login-error').textContent = (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential')
+          ? 'Credenciales incorrectas' : 'Error: ' + e.message;
+        document.getElementById('login-error').style.display = 'block';
+      });
+  } else {
+    if (email === 'Osvaldo' && pass === 'Cuncunita2025!') {
+      sessionStorage.setItem('luciauth', '1');
+      document.getElementById('login-overlay').style.display = 'none';
+      toast('Bienvenido, Osvaldo');
+      iniciarApp();
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'INGRESAR';
+      document.getElementById('login-error').textContent = 'Credenciales incorrectas';
+      document.getElementById('login-error').style.display = 'block';
+    }
   }
 }
 
 function cerrarSesion() {
   if (!confirm('¿Cerrar sesión?')) return;
+  if (typeof firebase !== 'undefined' && firebase.auth) {
+    firebase.auth().signOut().catch(function(){});
+  }
   sessionStorage.removeItem('luciauth');
   location.reload();
 }
@@ -1757,7 +1781,18 @@ function eliminarPendiente(idx) {
 
 // ===== INIT =====
 (function() {
-  if (sessionStorage.getItem('luciauth')) {
+  if (typeof firebase !== 'undefined' && firebase.auth && location.protocol === 'https:') {
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        document.getElementById('login-overlay').style.display = 'none';
+        iniciarApp();
+      } else {
+        document.getElementById('login-user').value = '';
+        document.getElementById('login-pass').value = '';
+        document.getElementById('login-overlay').style.display = '';
+      }
+    });
+  } else if (sessionStorage.getItem('luciauth')) {
     document.getElementById('login-overlay').style.display = 'none';
     iniciarApp();
   }
