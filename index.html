@@ -218,7 +218,7 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="inv-body"></tbody></table>
   </div>
 </div>
@@ -737,10 +737,11 @@ function renderInventario() {
     var largo = p.largo ? p.largo+' cm' : '--';
     var alto = p.alto ? p.alto+' cm' : '--';
     var peso = p.peso ? p.peso+' kg' : '--';
+    var pvol = (p.ancho && p.largo && p.alto) ? ((p.ancho * p.largo * p.alto) / 4000).toFixed(2)+' kg' : '--';
     return `<tr>
       <td>${skuEnc}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
       <td>$${fmt(p.precioCosto)}</td><td>$${fmt(p.precioVenta)}</td>
-      <td>${p.stock}</td><td>${ancho}</td><td>${largo}</td><td>${alto}</td><td>${peso}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
+      <td>${p.stock}</td><td>${ancho}</td><td>${largo}</td><td>${alto}</td><td>${peso}</td><td>${pvol}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
       <td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido('${skuEnc}')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${skuEnc}')">Eliminar</button></td>
     </tr>`;
   }).join('');
@@ -1324,7 +1325,7 @@ function exportarExcelCompleto() {
   const prodData = data.productos.map(p => ({
     SKU: p.sku, 'C&oacute;d. Barra': p.codBarra, Producto: p.nombre,
     'Precio Costo': p.precioCosto, 'Precio Venta': p.precioVenta,
-    Stock: p.stock, 'Ancho (cm)': p.ancho || 0, 'Largo (cm)': p.largo || 0, 'Alto (cm)': p.alto || 0, 'Peso (kg)': p.peso || 0,
+    Stock: p.stock, 'Ancho (cm)': p.ancho || 0, 'Largo (cm)': p.largo || 0, 'Alto (cm)': p.alto || 0, 'Peso (kg)': p.peso || 0, 'Peso Vol. (kg)': (p.ancho && p.largo && p.alto) ? parseFloat(((p.ancho * p.largo * p.alto) / 4000).toFixed(2)) : 0,
     Proveedor: p.proveedor, 'Observaci&oacute;n Compra': p.observacionCompra
   }));
   const wsProd = XLSX.utils.json_to_sheet(prodData);
