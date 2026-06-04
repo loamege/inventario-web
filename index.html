@@ -740,8 +740,8 @@ function renderInventario() {
     var pvolVal = (p.ancho && p.largo && p.alto) ? (p.ancho * p.largo * p.alto) / 4000 : 0;
     var peso = pesoVal ? pesoVal+' kg' : '--';
     var pvol = pvolVal ? pvolVal.toFixed(2)+' kg' : '--';
-    var pesoCls = (pesoVal && pvolVal && pesoVal > pvolVal) ? ' style="color:var(--verde);font-weight:700"' : '';
-    var pvolCls = (pvolVal && pesoVal && pvolVal > pesoVal) ? ' style="color:var(--verde);font-weight:700"' : '';
+    var pesoCls = (pesoVal && pvolVal && pesoVal > pvolVal) ? ' style="background:#d4edda;font-weight:700"' : '';
+    var pvolCls = (pvolVal && pesoVal && pvolVal > pesoVal) ? ' style="background:#d4edda;font-weight:700"' : '';
     return `<tr>
       <td>${skuEnc}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
       <td>$${fmt(p.precioCosto)}</td><td>$${fmt(p.precioVenta)}</td>
