@@ -794,52 +794,31 @@ function exportarInventarioPDF() {
   doc.setTextColor(136);
   doc.text('Generado: ' + hoy() + ' - ' + list.length + ' producto(s)', 14, 27);
   var rows = list.map(function(p) {
-    return [p.sku||'', p.nombre||'', p.stock||0, p.caja||''];
-
+    return [p.sku||'', p.nombre||'', p.stock||0, p.caja||'', p.imagen ? ' ' : ''];
   });
   doc.autoTable({
-    head: [['SKU', 'Producto', 'Stock', 'Caja']],
+    head: [['SKU', 'Producto', 'Stock', 'Caja', 'Imagen']],
     body: rows,
     startY: 33,
     theme: 'grid',
     headStyles: { fillColor: [45, 42, 59], textColor: 255, fontSize: 8 },
     bodyStyles: { fontSize: 7 },
-    columnStyles: { 0: { cellWidth: 28 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 16, halign: 'center' }, 3: { cellWidth: 25 } },
+    columnStyles: { 0: { cellWidth: 26 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 14, halign: 'center' }, 3: { cellWidth: 22 }, 4: { cellWidth: 22 } },
     didParseCell: function(data) {
       if (data.section === 'body') {
         var p = list[data.row.index];
-        if (p && p.imagen) data.row.height = 24;
+        if (p && p.imagen) data.row.height = 22;
       }
     },
     didDrawCell: function(data) {
-      if (data.section === 'body' && data.column.index === 3) {
+      if (data.section === 'body' && data.column.index === 4) {
         var p = list[data.row.index];
         if (p && p.imagen) {
-          try { doc.addImage(p.imagen, 'JPEG', data.cell.x + data.cell.width + 2, data.cell.y + 2, 20, 20); } catch(e) {}
+          try { doc.addImage(p.imagen, 'JPEG', data.cell.x + 1, data.cell.y + 1, 20, 20); } catch(e) {}
         }
       }
     }
   });
-  var finalY = doc.lastAutoTable.finalY || 40;
-  if (list.some(function(p){return p.imagen})) {
-    doc.setFontSize(9);
-    doc.setTextColor(45, 42, 59);
-    doc.text('Imagenes de productos:', 14, finalY + 14);
-    var imgY = finalY + 20;
-    var count = 0;
-    list.forEach(function(p, i) {
-      if (!p.imagen) return;
-      var col = count % 3;
-      var row = Math.floor(count / 3);
-      var ix = 14 + col * 55;
-      var iy = imgY + row * 32;
-      try { doc.addImage(p.imagen, 'JPEG', ix, iy, 28, 28); } catch(e) {}
-      doc.setFontSize(6);
-      doc.setTextColor(100);
-      doc.text((i+1)+' '+esc(p.sku), ix, iy + 31);
-      count++;
-    });
-  }
   doc.save('inventario-' + hoy().replace(/-/g, '') + '.pdf');
   toast('PDF exportado');
 }
