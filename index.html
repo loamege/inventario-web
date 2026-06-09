@@ -1226,11 +1226,20 @@ async function registrarVenta() {
   data.cotizacion.cliente = '';
   data.cotizacion.notas = '';
   if (!data.pendientes) data.pendientes = [];
-  data.pendientes.unshift({ id: Date.now(), fecha: hoy(), tipo: 'venta', cliente: cliente, codigo: codigo, items: items.length, total: cotTotal, estado: 'pendiente' });
+  items.forEach(function(item) {
+    const prod = data.productos.find(function(p) { return p.sku === item.sku; });
+    data.pendientes.unshift({
+      tipo: 'producto', fecha: hoy(), sku: item.sku, nombre: item.nombre,
+      precio: item.precioUnitario || 0, stock: (prod ? prod.stock : 0),
+      detalle: 'Venta Cot. ' + codigo + ' (cant: ' + (item.cantidad || 0) + ')',
+      estado: 'pendiente'
+    });
+  });
   guardarDatos();
   renderCotizador();
   renderVentas();
   renderKardex();
+  renderPendientes();
   toast(stockIssues ? 'Venta registrada con ajustes de stock' : 'Venta registrada: ' + items.length + ' producto(s)');
 }
 
