@@ -758,8 +758,33 @@ function renderInventario() {
 }
 
 function exportarInventarioPDF() {
+  var q = (document.getElementById('inv-search').value || '').toLowerCase();
   var list = data.productos;
-  if (list.length === 0) { toast('No hay productos'); return; }
+  if (q) list = list.filter(function(p){return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q)});
+  var prov = document.getElementById('inv-filtro-prov').value;
+  if (prov) list = list.filter(function(p){return (p.proveedor||'')===prov});
+  var costMin = parseFloat(document.getElementById('inv-filtro-costo-min').value);
+  if (!isNaN(costMin)) list = list.filter(function(p){return (p.precioCosto||0)>=costMin});
+  var costMax = parseFloat(document.getElementById('inv-filtro-costo-max').value);
+  if (!isNaN(costMax)) list = list.filter(function(p){return (p.precioCosto||0)<=costMax});
+  var vtMin = parseFloat(document.getElementById('inv-filtro-venta-min').value);
+  if (!isNaN(vtMin)) list = list.filter(function(p){return (p.precioVenta||0)>=vtMin});
+  var vtMax = parseFloat(document.getElementById('inv-filtro-venta-max').value);
+  if (!isNaN(vtMax)) list = list.filter(function(p){return (p.precioVenta||0)<=vtMax});
+  var sort = document.getElementById('inv-sort').value;
+  if (sort) {
+    list = list.slice().sort(function(a,b) {
+      var cmp;
+      if (sort === 'sku-asc') cmp = a.sku.localeCompare(b.sku);
+      else if (sort === 'sku-desc') cmp = b.sku.localeCompare(a.sku);
+      else if (sort === 'nombre-asc') cmp = a.nombre.localeCompare(b.nombre);
+      else if (sort === 'nombre-desc') cmp = b.nombre.localeCompare(a.nombre);
+      else if (sort === 'stock-asc') cmp = (a.stock||0) - (b.stock||0);
+      else if (sort === 'stock-desc') cmp = (b.stock||0) - (a.stock||0);
+      return cmp;
+    });
+  }
+  if (list.length === 0) { toast('No hay productos con esos filtros'); return; }
   var { jsPDF } = window.jspdf;
   var doc = new jsPDF({ unit: 'mm', format: 'a4' });
   doc.setFontSize(16);
