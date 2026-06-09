@@ -1654,9 +1654,54 @@ function editarCotizacion(codigo) {
     '<p><strong>Notas:</strong><br><textarea id="edit-notas" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:13px;resize:vertical">' + esc(c.notas || '') + '</textarea></p>' +
     '<table style="font-size:12px"><thead><tr><th>#</th><th>SKU</th><th>Producto</th><th>Cant.</th><th>P. Unitario</th><th>Total</th></tr></thead><tbody>' + itemsHtml +
     '</tbody><tfoot><tr><td colspan="4"></td><td><strong>TOTAL</strong></td><td><strong>$' + fmt(total) + '</strong></td></tr></tfoot></table>' +
+    '<div style="margin-top:8px"><button class="btn btn-outline" onclick="agregarProductoAEdicion(\'' + esc(c.codigo) + '\')" style="font-size:12px;padding:4px 10px">+ Agregar Producto</button></div>' +
     '<div style="margin-top:12px;text-align:right"><button class="btn btn-primary" onclick="guardarEdicionCotizacion(\'' + esc(c.codigo) + '\')">Guardar Cambios</button></div>',
     function() { return false; }
   );
+}
+
+function agregarProductoAEdicion(codigo) {
+  abrirModal('Agregar producto a ' + codigo,
+    '<p>Ingresa SKU o nombre:</p><input id="modal-buscar" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
+    function() {
+      const q = document.getElementById('modal-buscar').value.trim();
+      if (!q) return;
+      const results = data.productos.filter(function(p){return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q)});
+      if (results.length === 0) { toast('Sin resultados'); return; }
+      let html = results.map(function(p, i) {
+        return '<p><a href="#" onclick="return seleccionarProductoEdicion(\'' + codigo + '\',' + i + ')" style="color:var(--noche);font-weight:600">' + esc(p.nombre) + '</a> | SKU: ' + esc(p.sku) + ' | $' + fmt(p.precioVenta) + ' | Stock: ' + p.stock + '</p>';
+      }).join('');
+      html += '<p style="margin-top:8px;font-size:12px;color:#888">Haz clic en un producto</p>';
+      document.getElementById('modal-body').innerHTML = html;
+      window._busquedaResults = results;
+      return false;
+    }
+  );
+  setTimeout(function(){ document.getElementById('modal-buscar').focus(); }, 100);
+}
+
+function seleccionarProductoEdicion(codigo, i) {
+  const p = window._busquedaResults[i];
+  if (!p) return false;
+  const c = (data.cotizaciones || []).find(function(x){return x.codigo===codigo});
+  if (!c) { toast('Error: cotizacion no encontrada'); return false; }
+  abrirModal('Cantidad - ' + esc(p.nombre),
+    '<p><strong>' + esc(p.nombre) + '</strong></p><p>Stock: ' + p.stock + ' uds. Precio: $' + fmt(p.precioVenta) + '</p>' +
+    '<p>Observacion:</p><input id="modal-obs" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<p style="margin-top:8px">Cantidad:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
+    function() {
+      const cant = parseInt(document.getElementById('modal-cant').value) || 1;
+      const obs = document.getElementById('modal-obs').value.trim();
+      c.items.push({
+        sku: p.sku, nombre: p.nombre, cantidad: cant,
+        precioUnitario: p.precioVenta, observacion: obs
+      });
+      cerrarModal();
+      editarCotizacion(codigo);
+      toast('Agregado: ' + p.nombre);
+    }
+  );
+  return false;
 }
 
 function guardarEdicionCotizacion(codigo) {
