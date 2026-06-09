@@ -149,6 +149,7 @@ tbody tr:hover{background:#F5F0FF}
   <button class="tab" data-tab="cotizaciones">Cotizaciones</button>
   <button class="tab" data-tab="kardex">Kardex</button>
   <button class="tab" data-tab="pendientes">Pendientes WC</button>
+  <button class="tab" data-tab="dashboard">Dashboard</button>
 </div>
 
 <div id="contenido-formulario" class="content active">
@@ -304,6 +305,11 @@ tbody tr:hover{background:#F5F0FF}
       <th>Fecha</th><th>Tipo</th><th>SKU</th><th>Nombre / Cliente</th><th>Detalle</th><th>Estado</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="pend-body"></tbody></table>
   </div>
+</div>
+
+<div id="contenido-dashboard" class="content">
+  <h2>Dashboard</h2>
+  <div id="dash-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px"></div>
 </div>
 
 <div class="modal" id="modal">
@@ -472,6 +478,7 @@ document.querySelectorAll('.tab').forEach(t => {
     if (id === 'kardex') renderKardex();
     if (id === 'cotizaciones') renderCotizaciones();
     if (id === 'pendientes') renderPendientes();
+    if (id === 'dashboard') renderDashboard();
   });
 });
 function cambiarTab(id) {
@@ -1858,7 +1865,35 @@ function iniciarApp() {
   renderVentas();
   renderInventario();
   renderPendientes();
+  renderDashboard();
   document.getElementById('contenido-formulario').style.display = '';
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  const prods = data.productos || [];
+  const ventas = data.ventas || [];
+  const cotis = data.cotizaciones || [];
+  var totalProd = prods.length;
+  var valVenta = prods.reduce(function(s, p) { return s + (p.stock || 0) * (p.precioVenta || 0); }, 0);
+  var valCosto = prods.reduce(function(s, p) { return s + (p.stock || 0) * (p.precioCosto || 0); }, 0);
+  var ganancia = valVenta - valCosto;
+  var stockBajo = prods.filter(function(p) { return (p.stock || 0) <= 3; }).length;
+  var ventasTotal = ventas.reduce(function(s, v) { return s + (v.total || 0); }, 0);
+  var cotisPend = cotis.filter(function(c) { return c.estado === 'Enviada'; }).length;
+  var cards = [
+    { label: 'Total Productos', value: String(totalProd), color: '#4F46E5' },
+    { label: 'Valor Inventario (Venta)', value: '$' + fmt(valVenta), color: '#059669' },
+    { label: 'Ganancia Potencial', value: '$' + fmt(ganancia), color: '#D97706' },
+    { label: 'Stock Bajo (<=3)', value: String(stockBajo), color: '#DC2626' },
+    { label: 'Ventas Totales', value: '$' + fmt(ventasTotal), color: '#7C3AED' },
+    { label: 'Cotizaciones Pendientes', value: String(cotisPend), color: '#0891B2' }
+  ];
+  document.getElementById('dash-grid').innerHTML = cards.map(function(c) {
+    return '<div class="resumen-item" style="border-top:4px solid ' + c.color + '">' +
+      '<div class="label">' + c.label + '</div>' +
+      '<div class="value" style="color:' + c.color + '">' + c.value + '</div></div>';
+  }).join('');
 }
 
 // ===== Pendientes WooCommerce =====
