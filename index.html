@@ -1771,6 +1771,13 @@ function guardarEdicionCotizacion(codigo) {
         cliente: c.cliente, pago: pago, estado: 'Pagado',
         referencia: codigo, observacion: item.observacion || ''
       });
+      if (!data.pendientes) data.pendientes = [];
+      data.pendientes.push({
+        tipo: 'producto', fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+        precio: prod.precioVenta || 0, stock: prod.stock,
+        detalle: 'Venta Cot. ' + codigo + ' (cant: ' + cant + ', stock restante: ' + prod.stock + ')',
+        estado: 'pendiente'
+      });
     });
     if (stockIssues) {
       toast('Venta registrada con ajustes de stock: ' + codigo);
@@ -1782,6 +1789,8 @@ function guardarEdicionCotizacion(codigo) {
   renderCotizaciones();
   renderVentas();
   renderKardex();
+  renderPendientes();
+  renderInventario();
   cerrarModal();
   toast('Cotizaci&oacute;n actualizada: ' + codigo);
 }
