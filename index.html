@@ -207,6 +207,7 @@ tbody tr:hover{background:#F5F0FF}
       <option value="stock-desc">Stock ↓</option>
     </select>
     <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="editarSKU()">EDITAR SKU</button>
+    <button class="btn btn-ambar" style="font-size:12px;padding:5px 12px" onclick="exportarInventarioPDF()">EXPORTAR PDF</button>
   </div>
   <div class="search-bar" style="margin-top:6px;gap:6px;flex-wrap:wrap">
     <select id="inv-filtro-prov" onchange="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;flex:1;min-width:120px">
@@ -754,6 +755,68 @@ function renderInventario() {
       <td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido('${skuEnc}')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${skuEnc}')">Eliminar</button></td>
     </tr>`;
   }).join('');
+}
+
+function exportarInventarioPDF() {
+  var list = data.productos;
+  if (list.length === 0) { toast('No hay productos'); return; }
+  var { jsPDF } = window.jspdf;
+  var doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  doc.setFontSize(16);
+  doc.setTextColor(45, 42, 59);
+  doc.text('Inventario - Luz de Luciernaga', 14, 20);
+  doc.setFontSize(9);
+  doc.setTextColor(136);
+  doc.text('Generado: ' + hoy() + ' - ' + list.length + ' producto(s)', 14, 27);
+  var rows = list.map(function(p) {
+    return [p.sku||'', p.nombre||'', p.stock||0, p.caja||''];
+
+  });
+  doc.autoTable({
+    head: [['SKU', 'Producto', 'Stock', 'Caja']],
+    body: rows,
+    startY: 33,
+    theme: 'grid',
+    headStyles: { fillColor: [45, 42, 59], textColor: 255, fontSize: 8 },
+    bodyStyles: { fontSize: 7 },
+    columnStyles: { 0: { cellWidth: 28 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 16, halign: 'center' }, 3: { cellWidth: 25 } },
+    didParseCell: function(data) {
+      if (data.section === 'body') {
+        var p = list[data.row.index];
+        if (p && p.imagen) data.row.height = 24;
+      }
+    },
+    didDrawCell: function(data) {
+      if (data.section === 'body' && data.column.index === 3) {
+        var p = list[data.row.index];
+        if (p && p.imagen) {
+          try { doc.addImage(p.imagen, 'JPEG', data.cell.x + data.cell.width + 2, data.cell.y + 2, 20, 20); } catch(e) {}
+        }
+      }
+    }
+  });
+  var finalY = doc.lastAutoTable.finalY || 40;
+  if (list.some(function(p){return p.imagen})) {
+    doc.setFontSize(9);
+    doc.setTextColor(45, 42, 59);
+    doc.text('Imagenes de productos:', 14, finalY + 14);
+    var imgY = finalY + 20;
+    var count = 0;
+    list.forEach(function(p, i) {
+      if (!p.imagen) return;
+      var col = count % 3;
+      var row = Math.floor(count / 3);
+      var ix = 14 + col * 55;
+      var iy = imgY + row * 32;
+      try { doc.addImage(p.imagen, 'JPEG', ix, iy, 28, 28); } catch(e) {}
+      doc.setFontSize(6);
+      doc.setTextColor(100);
+      doc.text((i+1)+' '+esc(p.sku), ix, iy + 31);
+      count++;
+    });
+  }
+  doc.save('inventario-' + hoy().replace(/-/g, '') + '.pdf');
+  toast('PDF exportado');
 }
 
 function editarProductoRapido(sku) {
