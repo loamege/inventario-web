@@ -272,7 +272,16 @@ tbody tr:hover{background:#F5F0FF}
     <button class="btn btn-ambar" onclick="registrarAjuste()">REGISTRAR AJUSTE</button>
   </div>
   <div class="search-bar">
-    <input id="kardex-search" placeholder="Buscar por SKU..." oninput="renderKardex()">
+    <input id="kardex-search" placeholder="Buscar por SKU, tipo, concepto..." oninput="renderKardex()" style="flex:1;max-width:300px">
+    <select id="kardex-sort" onchange="renderKardex()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="">Sin orden</option>
+      <option value="fecha-asc">Fecha ↑</option>
+      <option value="fecha-desc">Fecha ↓</option>
+      <option value="sku-asc">SKU A→Z</option>
+      <option value="sku-desc">SKU Z→A</option>
+      <option value="tipo-asc">Tipo A→Z</option>
+      <option value="tipo-desc">Tipo Z→A</option>
+    </select>
     <span id="kardex-stock" style="font-size:14px;font-weight:600;color:var(--noche);align-self:center"></span>
   </div>
   <div class="movil">
@@ -299,6 +308,18 @@ tbody tr:hover{background:#F5F0FF}
   <h2>Pendientes para WooCommerce</h2>
   <div class="resumen">
     <div class="resumen-item"><div class="label">Pendientes</div><div class="value" id="pend-cant">0</div></div>
+  </div>
+  <div class="search-bar">
+    <input id="pend-search" placeholder="Buscar por SKU, nombre, tipo..." oninput="renderPendientes()" style="flex:1;max-width:300px">
+    <select id="pend-sort" onchange="renderPendientes()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="">Sin orden</option>
+      <option value="fecha-asc">Fecha ↑</option>
+      <option value="fecha-desc">Fecha ↓</option>
+      <option value="sku-asc">SKU A→Z</option>
+      <option value="sku-desc">SKU Z→A</option>
+      <option value="tipo-asc">Tipo A→Z</option>
+      <option value="tipo-desc">Tipo Z→A</option>
+    </select>
   </div>
   <div class="movil">
     <table><thead><tr>
@@ -1268,7 +1289,21 @@ function renderVentas() {
 function renderKardex() {
   const q = (document.getElementById('kardex-search').value || '').toLowerCase();
   let list = data.kardex;
-  if (q) list = list.filter(k => k.sku.toLowerCase().includes(q));
+  if (q) list = list.filter(function(k) {
+    return k.sku.toLowerCase().includes(q) || (k.tipo||'').toLowerCase().includes(q) || (k.concepto||'').toLowerCase().includes(q);
+  });
+  var sort = document.getElementById('kardex-sort').value;
+  if (sort) {
+    list = list.slice().sort(function(a,b) {
+      if (sort === 'fecha-asc') return a.fecha.localeCompare(b.fecha);
+      if (sort === 'fecha-desc') return b.fecha.localeCompare(a.fecha);
+      if (sort === 'sku-asc') return (a.sku||'').localeCompare(b.sku||'');
+      if (sort === 'sku-desc') return (b.sku||'').localeCompare(a.sku||'');
+      if (sort === 'tipo-asc') return (a.tipo||'').localeCompare(b.tipo||'');
+      if (sort === 'tipo-desc') return (b.tipo||'').localeCompare(a.tipo||'');
+      return 0;
+    });
+  }
   // Calcular stock actual del SKU filtrado
   if (q) {
     const prod = data.productos.find(p => p.sku.toLowerCase().includes(q));
@@ -1933,7 +1968,23 @@ function renderDashboard() {
 
 // ===== Pendientes WooCommerce =====
 function renderPendientes() {
-  const lista = data.pendientes || [];
+  const q = (document.getElementById('pend-search').value || '').toLowerCase();
+  let lista = data.pendientes || [];
+  if (q) lista = lista.filter(function(p) {
+    return (p.sku||'').toLowerCase().includes(q) || (p.nombre||'').toLowerCase().includes(q) || (p.tipo||'').toLowerCase().includes(q) || (p.cliente||'').toLowerCase().includes(q);
+  });
+  var sort = document.getElementById('pend-sort').value;
+  if (sort) {
+    lista = lista.slice().sort(function(a,b) {
+      if (sort === 'fecha-asc') return a.fecha.localeCompare(b.fecha);
+      if (sort === 'fecha-desc') return b.fecha.localeCompare(a.fecha);
+      if (sort === 'sku-asc') return (a.sku||'').localeCompare(b.sku||'');
+      if (sort === 'sku-desc') return (b.sku||'').localeCompare(a.sku||'');
+      if (sort === 'tipo-asc') return (a.tipo||'').localeCompare(b.tipo||'');
+      if (sort === 'tipo-desc') return (b.tipo||'').localeCompare(a.tipo||'');
+      return 0;
+    });
+  }
   document.getElementById('pend-cant').textContent = lista.length;
   const tbody = document.getElementById('pend-body');
   if (lista.length === 0) {
@@ -1941,13 +1992,14 @@ function renderPendientes() {
     return;
   }
   tbody.innerHTML = lista.map(function(p, i) {
+    const origIdx = data.pendientes.indexOf(p);
     const badge = p.estado === 'ingresado'
       ? '<span style="background:#059669;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Ingresado</span>'
       : '<span style="background:#D97706;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Pendiente</span>';
-    var acciones = '<button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarPendiente('+i+')">Editar</button>' +
-      '<button class="btn btn-outline" style="font-size:11px;padding:2px 6px" onclick="eliminarPendiente('+i+')">Eliminar</button>';
+    var acciones = '<button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarPendiente('+origIdx+')">Editar</button>' +
+      '<button class="btn btn-outline" style="font-size:11px;padding:2px 6px" onclick="eliminarPendiente('+origIdx+')">Eliminar</button>';
     if (p.estado === 'pendiente') {
-      acciones = '<button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="marcarIngresado('+i+')">Ya ingresado</button>' + acciones;
+      acciones = '<button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="marcarIngresado('+origIdx+')">Ya ingresado</button>' + acciones;
     }
     if (p.tipo === 'producto') {
       var detalle = p.detalle || ('$'+fmt(p.precio)+' | Stock: '+p.stock);
