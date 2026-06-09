@@ -1741,6 +1741,7 @@ function cerrarSesion() {
 }
 
 function iniciarApp() {
+  if (fbDoc) sincronizarFirebase();
   renderCotizador();
   renderVentas();
   renderInventario();
