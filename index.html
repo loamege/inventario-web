@@ -1101,10 +1101,10 @@ function buscarProdCot() {
   abrirModal('Buscar en inventario',
     `<p>Ingresa SKU o nombre:</p><input id="modal-buscar" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">`,
     function() {
-      const q = document.getElementById('modal-buscar').value.trim();
+      const q = document.getElementById('modal-buscar').value.trim().toLowerCase();
       if (!q) return;
       const results = data.productos.filter(p => p.sku.toLowerCase().includes(q) ||
-        p.nombre.toLowerCase().includes(q.toLowerCase()));
+        p.nombre.toLowerCase().includes(q));
       if (results.length === 0) { toast('Sin resultados'); return; }
       let html = results.map((p, i) =>
         `<p><a href="#" onclick="return agregarDesdeBusqueda(${i})" style="color:var(--noche);font-weight:600">${esc(p.nombre)}</a> | SKU: ${esc(p.sku)} | $${fmt(p.precioVenta)} | Stock: ${p.stock}</p>`
@@ -1673,7 +1673,7 @@ function agregarProductoAEdicion(codigo) {
     '<p>Ingresa SKU o nombre:</p><input id="modal-buscar" placeholder="GEN-0001 o nombre..." style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:16px">' +
     '<p style="margin-top:6px;font-size:12px;color:#888">Presiona Aceptar para buscar</p>',
     function() {
-      const q = document.getElementById('modal-buscar').value.trim();
+      const q = document.getElementById('modal-buscar').value.trim().toLowerCase();
       if (!q) return;
       const results = data.productos.filter(function(p){return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q)});
       if (results.length === 0) { toast('Sin resultados'); return; }
