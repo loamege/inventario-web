@@ -1616,7 +1616,7 @@ function verCotizacion(codigo) {
   if (!c) { toast('Cotizaci&oacute;n no encontrada'); return; }
   let rowsHtml = c.items.map(function(it, i) {
     const sub = (it.cantidad || 0) * (it.precioUnitario || 0);
-    const prod = data.productos.find(function(p){return p.sku===it.sku});
+    const prod = data.productos.find(function(p){return p.sku.toLowerCase()===it.sku.toLowerCase()});
     const img = prod && prod.imagen ? '<img src="' + prod.imagen + '" style="width:36px;height:36px;object-fit:cover;border-radius:4px">' : '--';
     return '<tr><td>' + (i+1) + '</td><td>' + esc(it.sku) + '</td><td>' + esc(it.nombre) + '</td><td>' + img + '</td><td>' + it.cantidad + '</td><td>$' + fmt(it.precioUnitario) + '</td><td>$' + fmt(sub) + '</td></tr>';
   }).join('');
@@ -1647,7 +1647,7 @@ function editarCotizacion(codigo) {
   const c = (data.cotizaciones || []).find(function(x) { return x.codigo === codigo; });
   if (!c) { toast('Cotizaci&oacute;n no encontrada'); return; }
   let itemsHtml = c.items.map(function(it, i) {
-    const prod = data.productos.find(function(p){return p.sku===it.sku});
+    const prod = data.productos.find(function(p){return p.sku.toLowerCase()===it.sku.toLowerCase()});
     const img = prod && prod.imagen ? '<img src="' + prod.imagen + '" style="width:30px;height:30px;object-fit:cover;border-radius:4px;vertical-align:middle">' : '--';
     return '<tr><td>' + (i+1) + '</td><td>' + esc(it.sku) + '</td><td>' + esc(it.nombre) + '</td><td>' + img + '</td>' +
       '<td><input id="edit-cant-' + i + '" type="number" min="1" value="' + it.cantidad + '" style="width:50px;padding:4px;border:1px solid #ccc;border-radius:4px;font-size:13px"></td>' +
