@@ -1616,7 +1616,9 @@ function verCotizacion(codigo) {
   if (!c) { toast('Cotizaci&oacute;n no encontrada'); return; }
   let rowsHtml = c.items.map(function(it, i) {
     const sub = (it.cantidad || 0) * (it.precioUnitario || 0);
-    return '<tr><td>' + (i+1) + '</td><td>' + esc(it.sku) + '</td><td>' + esc(it.nombre) + '</td><td>' + it.cantidad + '</td><td>$' + fmt(it.precioUnitario) + '</td><td>$' + fmt(sub) + '</td></tr>';
+    const prod = data.productos.find(function(p){return p.sku===it.sku});
+    const img = prod && prod.imagen ? '<img src="' + prod.imagen + '" style="width:36px;height:36px;object-fit:cover;border-radius:4px">' : '--';
+    return '<tr><td>' + (i+1) + '</td><td>' + esc(it.sku) + '</td><td>' + esc(it.nombre) + '</td><td>' + img + '</td><td>' + it.cantidad + '</td><td>$' + fmt(it.precioUnitario) + '</td><td>$' + fmt(sub) + '</td></tr>';
   }).join('');
   const total = c.items.reduce(function(s, it) { return s + (it.cantidad || 0) * (it.precioUnitario || 0); }, 0);
   const estadoBadge = c.estado === 'Vendida'
@@ -1624,8 +1626,8 @@ function verCotizacion(codigo) {
     : '<span style="background:#D97706;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Enviada</span>';
   abrirModal('Cotizaci&oacute;n ' + esc(c.codigo),
     '<p><strong>Cliente:</strong> ' + esc(c.cliente) + ' &nbsp;|&nbsp; <strong>Fecha:</strong> ' + esc(c.fecha) + ' &nbsp;|&nbsp; <strong>Estado:</strong> ' + estadoBadge + '</p>' +
-    '<table style="font-size:12px"><thead><tr><th>#</th><th>SKU</th><th>Producto</th><th>Cant.</th><th>P. Unitario</th><th>Total</th></tr></thead><tbody>' + rowsHtml +
-    '</tbody><tfoot><tr><td colspan="5"><strong>TOTAL</strong></td><td><strong>$' + fmt(total) + '</strong></td></tr></tfoot></table>' +
+    '<div style="overflow-x:auto"><table style="font-size:12px;min-width:550px"><thead><tr><th>#</th><th>SKU</th><th>Producto</th><th>Imagen</th><th>Cant.</th><th>P. Unitario</th><th>Total</th></tr></thead><tbody>' + rowsHtml +
+    '</tbody><tfoot><tr><td colspan="6"><strong>TOTAL</strong></td><td><strong>$' + fmt(total) + '</strong></td></tr></tfoot></table></div>' +
     (c.notas ? '<p style="margin-top:8px;font-size:12px;color:#888"><strong>Notas:</strong> ' + esc(c.notas) + '</p>' : '') +
     (c.items[0] ? '<p style="margin-top:8px;font-size:11px;color:#aaa">Para reutilizar esta cotizaci&oacute;n, haz clic en "Reutilizar" en el listado.</p>' : '')
   );
