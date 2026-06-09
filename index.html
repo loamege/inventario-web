@@ -174,6 +174,7 @@ tbody tr:hover{background:#F5F0FF}
       <label>Largo (cm)</label><input id="f-largo" type="number" step="0.1">
       <label>Alto (cm)</label><input id="f-alto" type="number" step="0.1">
       <label>Peso (kg)</label><input id="f-peso" type="number" step="0.01">
+      <label>Caja / Ubicaci&oacute;n</label><input id="f-caja">
       <label>Proveedor</label><input id="f-proveedor">
       <label>Observaci&oacute;n Compra</label><textarea id="f-obscompra"></textarea>
     </div>
@@ -218,7 +219,7 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="inv-body"></tbody></table>
   </div>
 </div>
@@ -545,6 +546,7 @@ function getFormData() {
     largo: parseFloat(document.getElementById('f-largo').value) || 0,
     alto: parseFloat(document.getElementById('f-alto').value) || 0,
     peso: parseFloat(document.getElementById('f-peso').value) || 0,
+    caja: document.getElementById('f-caja').value.trim(),
     proveedor: document.getElementById('f-proveedor').value.trim(),
     observacionCompra: document.getElementById('f-obscompra').value.trim(),
     imagen: getPreviewDataUrl()
@@ -562,6 +564,7 @@ function setFormData(p) {
   document.getElementById('f-largo').value = p.largo || '';
   document.getElementById('f-alto').value = p.alto || '';
   document.getElementById('f-peso').value = p.peso || '';
+  document.getElementById('f-caja').value = p.caja || '';
   document.getElementById('f-proveedor').value = p.proveedor || '';
   document.getElementById('f-obscompra').value = p.observacionCompra || '';
   if (p.imagen) {
@@ -620,6 +623,7 @@ async function actualizarProducto() {
     codBarra: f.codBarra, nombre: f.nombre,
     precioCosto: f.precioCosto, precioVenta: f.precioVenta,
     ancho: f.ancho, largo: f.largo, alto: f.alto, peso: f.peso,
+    caja: f.caja,
     proveedor: f.proveedor, observacionCompra: f.observacionCompra,
     imagen: f.imagen || data.productos[idx].imagen
   };
@@ -742,10 +746,11 @@ function renderInventario() {
     var pvol = pvolVal ? pvolVal.toFixed(2)+' kg' : '--';
     var pesoCls = (pesoVal && pvolVal && pesoVal > pvolVal) ? ' style="background:#d4edda;font-weight:700"' : '';
     var pvolCls = (pvolVal && pesoVal && pvolVal > pesoVal) ? ' style="background:#d4edda;font-weight:700"' : '';
+    var caja = p.caja || '--';
     return `<tr>
       <td>${skuEnc}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
       <td>$${fmt(p.precioCosto)}</td><td>$${fmt(p.precioVenta)}</td>
-      <td>${p.stock}</td><td>${ancho}</td><td>${largo}</td><td>${alto}</td><td${pesoCls}>${peso}</td><td${pvolCls}>${pvol}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
+      <td>${p.stock}</td><td>${ancho}</td><td>${largo}</td><td>${alto}</td><td${pesoCls}>${peso}</td><td${pvolCls}>${pvol}</td><td>${esc(caja)}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
       <td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido('${skuEnc}')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${skuEnc}')">Eliminar</button></td>
     </tr>`;
   }).join('');
@@ -763,8 +768,9 @@ function editarProductoRapido(sku) {
       '<p><label style="font-size:11px;color:#666">Largo (cm)</label><br><input id="edt-largo" type="number" step="0.1" value="'+(prod.largo||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Alto (cm)</label><br><input id="edt-alto" type="number" step="0.1" value="'+(prod.alto||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Peso (kg)</label><br><input id="edt-peso" type="number" step="0.01" value="'+(prod.peso||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
-      '<p><label style="font-size:11px;color:#666">Proveedor</label><br><input id="edt-proveedor" value="'+esc(prod.proveedor||'')+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+      '<p><label style="font-size:11px;color:#666">Caja / Ubicaci&oacute;n</label><br><input id="edt-caja" value="'+esc(prod.caja||'')+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
     '</div>' +
+    '<p><label style="font-size:11px;color:#666">Proveedor</label><br><input id="edt-proveedor" value="'+esc(prod.proveedor||'')+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
     '<p><label style="font-size:11px;color:#666">Obs. Compra</label><br><textarea id="edt-obs" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px">'+esc(prod.observacionCompra||'')+'</textarea></p>' +
     '<div style="margin-top:8px;padding:12px;border:2px dashed #ccc;border-radius:8px;text-align:center">' +
       (prod.imagen ? '<div style="margin-bottom:8px"><img src="'+prod.imagen+'" style="max-width:120px;max-height:120px;border-radius:4px"></div>' : '') +
@@ -780,6 +786,7 @@ function editarProductoRapido(sku) {
       prod.largo = parseFloat(document.getElementById('edt-largo').value) || 0;
       prod.alto = parseFloat(document.getElementById('edt-alto').value) || 0;
       prod.peso = parseFloat(document.getElementById('edt-peso').value) || 0;
+      prod.caja = document.getElementById('edt-caja').value.trim();
       prod.proveedor = document.getElementById('edt-proveedor').value.trim();
       prod.observacionCompra = document.getElementById('edt-obs').value.trim();
       guardarDatos();
@@ -1329,7 +1336,7 @@ function exportarExcelCompleto() {
   const prodData = data.productos.map(p => ({
     SKU: p.sku, 'C&oacute;d. Barra': p.codBarra, Producto: p.nombre,
     'Precio Costo': p.precioCosto, 'Precio Venta': p.precioVenta,
-    Stock: p.stock, 'Ancho (cm)': p.ancho || 0, 'Largo (cm)': p.largo || 0, 'Alto (cm)': p.alto || 0, 'Peso (kg)': p.peso || 0, 'Peso Vol. (kg)': (p.ancho && p.largo && p.alto) ? parseFloat(((p.ancho * p.largo * p.alto) / 4000).toFixed(2)) : 0,
+    Stock: p.stock, 'Ancho (cm)': p.ancho || 0, 'Largo (cm)': p.largo || 0, 'Alto (cm)': p.alto || 0, 'Peso (kg)': p.peso || 0, 'Peso Vol. (kg)': (p.ancho && p.largo && p.alto) ? parseFloat(((p.ancho * p.largo * p.alto) / 4000).toFixed(2)) : 0, 'Caja': p.caja || '',
     Proveedor: p.proveedor, 'Observaci&oacute;n Compra': p.observacionCompra
   }));
   const wsProd = XLSX.utils.json_to_sheet(prodData);
@@ -1430,6 +1437,7 @@ function importarExcel() {
             largo: parseFloat(r['Largo (cm)'] || r['largo'] || 0),
             alto: parseFloat(r['Alto (cm)'] || r['alto'] || 0),
             peso: parseFloat(r['Peso (kg)'] || r['peso'] || 0),
+            caja: String(r['Caja'] || r['caja'] || ''),
             proveedor: String(r['Proveedor'] || r['proveedor'] || ''),
             observacionCompra: String(r['Observaci&oacute;n Compra'] || r['observacionCompra'] || ''),
             imagen: ''
