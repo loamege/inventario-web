@@ -331,6 +331,7 @@ tbody tr:hover{background:#F5F0FF}
 <div id="contenido-dashboard" class="content">
   <h2>Dashboard</h2>
   <div id="dash-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px"></div>
+  <div id="dash-ventas-mensuales" style="margin-top:24px"></div>
 </div>
 
 <div class="modal" id="modal">
@@ -1964,6 +1965,29 @@ function renderDashboard() {
       '<div class="label">' + c.label + '</div>' +
       '<div class="value" style="color:' + c.color + '">' + c.value + '</div></div>';
   }).join('');
+
+  var meses = {};
+  ventas.forEach(function(v) {
+    if (!v.fecha) return;
+    var m = v.fecha.substring(0, 7);
+    if (!meses[m]) meses[m] = 0;
+    meses[m] += v.total || 0;
+  });
+  var nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var sorted = Object.keys(meses).sort().reverse();
+  var html = '<h3 style="margin-top:20px;margin-bottom:10px;font-size:16px">Ventas por Mes</h3>';
+  if (sorted.length === 0) {
+    html += '<p style="color:#888">Sin ventas registradas</p>';
+  } else {
+    html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">Total</th></tr></thead><tbody>';
+    sorted.forEach(function(m) {
+      var parts = m.split('-');
+      var label = nombresMes[parseInt(parts[1],10)-1] + ' ' + parts[0];
+      html += '<tr><td>' + label + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+  document.getElementById('dash-ventas-mensuales').innerHTML = html;
 }
 
 // ===== Pendientes WooCommerce =====
