@@ -170,7 +170,9 @@ tbody tr:hover{background:#F5F0FF}
       <label>Nombre del Producto</label><input id="f-nombre">
       <label>Precio Costo</label><input id="f-costo" type="number" step="0.01">
       <label>Precio Venta</label><input id="f-venta" type="number" step="0.01">
-      <label>Stock</label><input id="f-stock" type="number">
+      <label>Stock WooCommerce</label><input id="f-stock-woo" type="number">
+      <label>Stock Falabella</label><input id="f-stock-falabella" type="number">
+      <label>Stock Walmart</label><input id="f-stock-walmart" type="number">
       <label>Ancho (cm)</label><input id="f-ancho" type="number" step="0.1">
       <label>Largo (cm)</label><input id="f-largo" type="number" step="0.1">
       <label>Alto (cm)</label><input id="f-alto" type="number" step="0.1">
@@ -221,7 +223,7 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock Woo</th><th>Stock Falabella</th><th>Stock Walmart</th><th>Total</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="inv-body"></tbody></table>
   </div>
 </div>
@@ -259,7 +261,7 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>Fecha</th><th>SKU</th><th>Producto</th><th>Cant.</th><th>P. Unitario</th><th>Total</th><th>Cliente</th><th>Pago</th><th>Estado</th><th>Referencia</th><th>Observaci&oacute;n</th><th>Acci&oacute;n</th>
+      <th>Fecha</th><th>Canal</th><th>SKU</th><th>Producto</th><th>Cant.</th><th>P. Unitario</th><th>Total</th><th>Cliente</th><th>Pago</th><th>Estado</th><th>Referencia</th><th>Observaci&oacute;n</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="ventas-body"></tbody></table>
   </div>
 </div>
@@ -273,6 +275,12 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="search-bar">
     <input id="kardex-search" placeholder="Buscar por SKU, tipo, concepto..." oninput="renderKardex()" style="flex:1;max-width:300px">
+    <select id="kardex-canal" onchange="renderKardex()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="">Todos los canales</option>
+      <option value="woo">WooCommerce</option>
+      <option value="falabella">Falabella</option>
+      <option value="walmart">Walmart</option>
+    </select>
     <select id="kardex-sort" onchange="renderKardex()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
       <option value="">Sin orden</option>
       <option value="fecha-asc">Fecha ↑</option>
@@ -286,7 +294,7 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>Fecha</th><th>SKU</th><th>Producto</th><th>Tipo</th><th>Concepto</th><th>Cantidad</th><th>Stock Ant.</th><th>Stock Res.</th><th>Referencia</th><th>Proveedor</th><th>Obs. Compra</th><th>Obs. Venta</th><th>Acci&oacute;n</th>
+      <th>Fecha</th><th>Canal</th><th>SKU</th><th>Producto</th><th>Tipo</th><th>Concepto</th><th>Cantidad</th><th>Stock Ant.</th><th>Stock Res.</th><th>Referencia</th><th>Proveedor</th><th>Obs. Compra</th><th>Obs. Venta</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="kardex-body"></tbody></table>
   </div>
 </div>
@@ -372,6 +380,37 @@ function datosDefault() {
   return { productos: [], cotizacion: { codigo: 'COT-0001', cliente: '', items: [], notas: '' }, ventas: [], kardex: [], cotizaciones: [], proxCot: 1, pendientes: [] };
 }
 
+function totalStock(p) {
+  return (p.stockWoo||0) + (p.stockFalabella||0) + (p.stockWalmart||0);
+}
+function stockKey(canal) {
+  if (canal === 'woo' || canal === 'WooCommerce' || canal === 'Woo') return 'stockWoo';
+  if (canal === 'falabella' || canal === 'Falabella') return 'stockFalabella';
+  return 'stockWalmart';
+}
+function canales() { return ['woo','falabella','walmart']; }
+function canalLabel(c) {
+  return {woo:'WooCommerce',falabella:'Falabella',walmart:'Walmart'}[c]||c;
+}
+function canalSelectHtml(name, sel) {
+  return '<select id="'+name+'" style="font-size:13px;padding:6px;border:1px solid #ccc;border-radius:4px">' +
+    '<option value="woo"'+(sel==='woo'?' selected':'')+'>WooCommerce</option>' +
+    '<option value="falabella"'+(sel==='falabella'?' selected':'')+'>Falabella</option>' +
+    '<option value="walmart"'+(sel==='walmart'?' selected':'')+'>Walmart</option></select>';
+}
+
+function migrarProductos(lista) {
+  (lista||[]).forEach(function(p) {
+    if (p.stock !== undefined && p.stockWoo === undefined) {
+      p.stockWoo = p.stock;
+      delete p.stock;
+    }
+    if (p.stockWoo === undefined) p.stockWoo = 0;
+    if (p.stockFalabella === undefined) p.stockFalabella = 0;
+    if (p.stockWalmart === undefined) p.stockWalmart = 0;
+  });
+}
+
 function cargarDatos() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
@@ -384,6 +423,7 @@ function cargarDatos() {
       if (!d.kardex) d.kardex = [];
       if (!d.productos) d.productos = [];
       if (!d.pendientes) d.pendientes = [];
+      migrarProductos(d.productos);
       return d;
     }
   } catch(e) {}
@@ -423,6 +463,7 @@ let data = (function() {
         var localCount = (d.productos || []).length;
         var fbCount = (fbData.productos || []).length;
         if (fbVer > localVer || fbCount > localCount) {
+          migrarProductos(fbData.productos);
           localStorage.setItem(STORE_KEY, JSON.stringify(fbData));
           Object.assign(d, fbData);
           renderCotizador();
@@ -444,6 +485,7 @@ function sincronizarFirebase() {
   fbDoc.get().then(function(snap) {
     if (snap.exists) {
       var fbData = snap.data();
+      migrarProductos(fbData.productos);
       localStorage.setItem(STORE_KEY, JSON.stringify(fbData));
       Object.assign(data, fbData);
       renderCotizador();
@@ -555,7 +597,7 @@ function getPreviewDataUrl() {
 }
 
 function limpiarFormulario() {
-  ['f-sku','f-cod','f-nombre','f-costo','f-venta','f-stock','f-proveedor','f-obscompra','f-ruta'].forEach(id => {
+  ['f-sku','f-cod','f-nombre','f-costo','f-venta','f-stock-woo','f-stock-falabella','f-stock-walmart','f-proveedor','f-obscompra','f-ruta'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('preview-text').style.display = 'block';
@@ -571,7 +613,9 @@ function getFormData() {
     nombre: document.getElementById('f-nombre').value.trim(),
     precioCosto: parseFloat(document.getElementById('f-costo').value) || 0,
     precioVenta: parseFloat(document.getElementById('f-venta').value) || 0,
-    stock: parseInt(document.getElementById('f-stock').value) || 0,
+    stockWoo: parseInt(document.getElementById('f-stock-woo').value) || 0,
+    stockFalabella: parseInt(document.getElementById('f-stock-falabella').value) || 0,
+    stockWalmart: parseInt(document.getElementById('f-stock-walmart').value) || 0,
     ancho: parseFloat(document.getElementById('f-ancho').value) || 0,
     largo: parseFloat(document.getElementById('f-largo').value) || 0,
     alto: parseFloat(document.getElementById('f-alto').value) || 0,
@@ -589,7 +633,9 @@ function setFormData(p) {
   document.getElementById('f-nombre').value = p.nombre || '';
   document.getElementById('f-costo').value = p.precioCosto || '';
   document.getElementById('f-venta').value = p.precioVenta || '';
-  document.getElementById('f-stock').value = p.stock || '';
+  document.getElementById('f-stock-woo').value = (p.stockWoo||0);
+  document.getElementById('f-stock-falabella').value = (p.stockFalabella||0);
+  document.getElementById('f-stock-walmart').value = (p.stockWalmart||0);
   document.getElementById('f-ancho').value = p.ancho || '';
   document.getElementById('f-largo').value = p.largo || '';
   document.getElementById('f-alto').value = p.alto || '';
@@ -608,20 +654,20 @@ async function agregarProducto() {
   if (!f.sku || !f.nombre) { toast('SKU y Nombre son obligatorios'); return; }
   if (data.productos.find(p => p.sku === f.sku)) { toast('Ya existe un producto con ese SKU'); return; }
   data.productos.push({ ...f, id: Date.now() });
-  if (f.stock > 0) {
+  if (f.stockWoo > 0) {
     data.kardex.push({
       id: Date.now() + 1, fecha: hoy(), sku: f.sku, nombre: f.nombre,
-      tipo: 'Entrada', concepto: 'Compra', cantidad: f.stock,
-      stockAnt: 0, stockRes: f.stock, referencia: '',
-      proveedor: f.proveedor, observacionCompra: f.observacionCompra, observacionVenta: ''
+      tipo: 'Entrada', concepto: 'Compra', cantidad: f.stockWoo,
+      stockAnt: 0, stockRes: f.stockWoo, referencia: '',
+      proveedor: f.proveedor, observacionCompra: f.observacionCompra, observacionVenta: '', canal: 'woo'
     });
   }
   guardarDatos();
   if (!data.pendientes) data.pendientes = [];
-  data.pendientes.unshift({ id: Date.now(), fecha: hoy(), tipo: 'producto', sku: f.sku, nombre: f.nombre, precio: f.precioVenta, stock: f.stock, estado: 'pendiente' });
+  data.pendientes.unshift({ id: Date.now(), fecha: hoy(), tipo: 'producto', sku: f.sku, nombre: f.nombre, precio: f.precioVenta, stock: f.stockWoo, detalle: 'Stock WooCommerce: '+f.stockWoo+' | Falabella: '+f.stockFalabella+' | Walmart: '+f.stockWalmart, estado: 'pendiente' });
   guardarDatos();
   limpiarFormulario();
-  toast('Producto agregado. Stock: ' + f.stock + ' uds.');
+  toast('Producto agregado. Stock total: ' + totalStock(f) + ' uds.');
 }
 
 function buscarProducto() {
@@ -631,7 +677,7 @@ function buscarProducto() {
     p.nombre.toLowerCase().includes(q.toLowerCase()));
   if (results.length === 0) { toast('No se encontraron productos'); return; }
   let html = results.map((p, i) =>
-    `<p><a href="#" onclick="return seleccionarProductoBusqueda('${esc(p.sku)}')" style="color:var(--noche);font-weight:600">${esc(p.nombre)}</a> &mdash; SKU: ${esc(p.sku)} | Stock: ${p.stock} | $${fmt(p.precioVenta)}</p>`
+    `<p><a href="#" onclick="return seleccionarProductoBusqueda('${esc(p.sku)}')" style="color:var(--noche);font-weight:600">${esc(p.nombre)}</a> &mdash; SKU: ${esc(p.sku)} | Stock Total: ${totalStock(p)} | $${fmt(p.precioVenta)}</p>`
   ).join('');
   html += '<p style="margin-top:8px;font-size:12px;color:#888">Haz clic en un producto para cargarlo</p>';
   abrirModal('Productos encontrados (' + results.length + ')', html, function() {});
@@ -652,6 +698,7 @@ async function actualizarProducto() {
     ...data.productos[idx],
     codBarra: f.codBarra, nombre: f.nombre,
     precioCosto: f.precioCosto, precioVenta: f.precioVenta,
+    stockWoo: f.stockWoo, stockFalabella: f.stockFalabella, stockWalmart: f.stockWalmart,
     ancho: f.ancho, largo: f.largo, alto: f.alto, peso: f.peso,
     caja: f.caja,
     proveedor: f.proveedor, observacionCompra: f.observacionCompra,
@@ -703,25 +750,30 @@ function anadirNuevoStock() {
       if (!q) return;
       const prod = data.productos.find(p => p.sku === q);
       if (!prod) { toast('SKU no encontrado en inventario'); return; }
+      var stockW = prod.stockWoo||0, stockF = prod.stockFalabella||0, stockM = prod.stockWalmart||0;
       abrirModal('Cantidad de compra',
-        `<p><strong>${esc(prod.nombre)}</strong></p><p>Stock actual: ${prod.stock} uds.</p>
+        `<p><strong>${esc(prod.nombre)}</strong></p>
+         <p>Stock actual: Woo ${stockW} | Falabella ${stockF} | Walmart ${stockM} | Total ${totalStock(prod)}</p>
+         <p>Canal: ${canalSelectHtml('modal-canal','woo')}</p>
          <p>Proveedor:</p><input id="modal-prov" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px" value="${esc(prod.proveedor)}">
          <p style="margin-top:8px">Cantidad a agregar:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">`,
         function() {
           const cant = parseInt(document.getElementById('modal-cant').value) || 1;
           if (cant <= 0) { toast('Cantidad debe ser mayor a 0'); return; }
+          const canal = document.getElementById('modal-canal').value;
           const prov = document.getElementById('modal-prov').value.trim() || prod.proveedor;
-          const stockAnt = prod.stock;
-          prod.stock += cant;
+          const key = stockKey(canal);
+          const stockAnt = prod[key] || 0;
+          prod[key] = stockAnt + cant;
           prod.proveedor = prov;
           data.kardex.push({
             id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
             tipo: 'Entrada', concepto: 'Compra', cantidad: cant,
-            stockAnt, stockRes: prod.stock, referencia: '',
-            proveedor: prov, observacionCompra: prod.observacionCompra || '', observacionVenta: ''
+            stockAnt, stockRes: prod[key], referencia: '',
+            proveedor: prov, observacionCompra: prod.observacionCompra || '', observacionVenta: '', canal: canal
           });
           guardarDatos();
-          toast('Stock a&ntilde;adido: ' + stockAnt + ' → ' + prod.stock);
+          toast('Stock a&ntilde;adido (' + canalLabel(canal) + '): ' + stockAnt + ' → ' + prod[key]);
         }
       );
       return false;
@@ -758,8 +810,8 @@ function renderInventario() {
       else if (sort === 'sku-desc') cmp = b.sku.localeCompare(a.sku);
       else if (sort === 'nombre-asc') cmp = a.nombre.localeCompare(b.nombre);
       else if (sort === 'nombre-desc') cmp = b.nombre.localeCompare(a.nombre);
-      else if (sort === 'stock-asc') cmp = (a.stock||0) - (b.stock||0);
-      else if (sort === 'stock-desc') cmp = (b.stock||0) - (a.stock||0);
+      else if (sort === 'stock-asc') cmp = totalStock(a) - totalStock(b);
+      else if (sort === 'stock-desc') cmp = totalStock(b) - totalStock(a);
       return cmp;
     });
   }
@@ -777,10 +829,12 @@ function renderInventario() {
     var pesoCls = (pesoVal && pvolVal && pesoVal > pvolVal) ? ' style="background:#d4edda;font-weight:700"' : '';
     var pvolCls = (pvolVal && pesoVal && pvolVal > pesoVal) ? ' style="background:#d4edda;font-weight:700"' : '';
     var caja = p.caja || '--';
+    var stockW = p.stockWoo||0, stockF = p.stockFalabella||0, stockM = p.stockWalmart||0, stockT = totalStock(p);
     return `<tr>
       <td>${skuEnc}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
       <td>$${fmt(p.precioCosto)}</td><td>$${fmt(p.precioVenta)}</td>
-      <td>${p.stock}</td><td>${ancho}</td><td>${largo}</td><td>${alto}</td><td${pesoCls}>${peso}</td><td${pvolCls}>${pvol}</td><td>${esc(caja)}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
+      <td>${stockW}</td><td>${stockF}</td><td>${stockM}</td><td style="font-weight:700">${stockT}</td>
+      <td>${ancho}</td><td>${largo}</td><td>${alto}</td><td${pesoCls}>${peso}</td><td${pvolCls}>${pvol}</td><td>${esc(caja)}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
       <td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido('${skuEnc}')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${skuEnc}')">Eliminar</button></td>
     </tr>`;
   }).join('');
@@ -808,8 +862,8 @@ function exportarInventarioPDF() {
       else if (sort === 'sku-desc') cmp = b.sku.localeCompare(a.sku);
       else if (sort === 'nombre-asc') cmp = a.nombre.localeCompare(b.nombre);
       else if (sort === 'nombre-desc') cmp = b.nombre.localeCompare(a.nombre);
-      else if (sort === 'stock-asc') cmp = (a.stock||0) - (b.stock||0);
-      else if (sort === 'stock-desc') cmp = (b.stock||0) - (a.stock||0);
+      else if (sort === 'stock-asc') cmp = totalStock(a) - totalStock(b);
+      else if (sort === 'stock-desc') cmp = totalStock(b) - totalStock(a);
       return cmp;
     });
   }
@@ -823,16 +877,16 @@ function exportarInventarioPDF() {
   doc.setTextColor(136);
   doc.text('Generado: ' + hoy() + ' - ' + list.length + ' producto(s)', 14, 27);
   var rows = list.map(function(p) {
-    return [p.sku||'', p.nombre||'', p.stock||0, p.caja||'', p.imagen ? ' ' : ''];
+    return [p.sku||'', p.nombre||'', p.stockWoo||0, p.stockFalabella||0, p.stockWalmart||0, totalStock(p), p.caja||'', p.imagen ? ' ' : ''];
   });
   doc.autoTable({
-    head: [['SKU', 'Producto', 'Stock', 'Caja', 'Imagen']],
+    head: [['SKU', 'Producto', 'Stock Woo', 'Stock Falabella', 'Stock Walmart', 'Total', 'Caja', 'Imagen']],
     body: rows,
     startY: 33,
     theme: 'grid',
     headStyles: { fillColor: [45, 42, 59], textColor: 255, fontSize: 8 },
     bodyStyles: { fontSize: 7 },
-    columnStyles: { 0: { cellWidth: 26 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 14, halign: 'center' }, 3: { cellWidth: 22 }, 4: { cellWidth: 22 } },
+    columnStyles: { 0: { cellWidth: 26 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 14, halign: 'center' }, 3: { cellWidth: 14, halign: 'center' }, 4: { cellWidth: 14, halign: 'center' }, 5: { cellWidth: 14, halign: 'center' }, 6: { cellWidth: 22 }, 7: { cellWidth: 22 } },
     didParseCell: function(data) {
       if (data.section === 'body') {
         var p = list[data.row.index];
@@ -840,7 +894,7 @@ function exportarInventarioPDF() {
       }
     },
     didDrawCell: function(data) {
-      if (data.section === 'body' && data.column.index === 4) {
+      if (data.section === 'body' && data.column.index === 7) {
         var p = list[data.row.index];
         if (p && p.imagen) {
           try { doc.addImage(p.imagen, 'JPEG', data.cell.x + 1, data.cell.y + 1, 20, 20); } catch(e) {}
@@ -859,7 +913,9 @@ function editarProductoRapido(sku) {
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
       '<p><label style="font-size:11px;color:#666">Precio Costo</label><br><input id="edt-costo" type="number" step="0.01" value="'+(prod.precioCosto||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Precio Venta</label><br><input id="edt-venta" type="number" step="0.01" value="'+(prod.precioVenta||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
-      '<p><label style="font-size:11px;color:#666">Stock</label><br><input id="edt-stock" type="number" value="'+(prod.stock||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+      '<p><label style="font-size:11px;color:#666">Stock WooCommerce</label><br><input id="edt-stock-woo" type="number" value="'+(prod.stockWoo||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+      '<p><label style="font-size:11px;color:#666">Stock Falabella</label><br><input id="edt-stock-falabella" type="number" value="'+(prod.stockFalabella||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+      '<p><label style="font-size:11px;color:#666">Stock Walmart</label><br><input id="edt-stock-walmart" type="number" value="'+(prod.stockWalmart||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Ancho (cm)</label><br><input id="edt-ancho" type="number" step="0.1" value="'+(prod.ancho||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Largo (cm)</label><br><input id="edt-largo" type="number" step="0.1" value="'+(prod.largo||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Alto (cm)</label><br><input id="edt-alto" type="number" step="0.1" value="'+(prod.alto||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
@@ -877,7 +933,9 @@ function editarProductoRapido(sku) {
     function() {
       prod.precioCosto = parseFloat(document.getElementById('edt-costo').value) || 0;
       prod.precioVenta = parseFloat(document.getElementById('edt-venta').value) || 0;
-      prod.stock = parseInt(document.getElementById('edt-stock').value) || 0;
+      prod.stockWoo = parseInt(document.getElementById('edt-stock-woo').value) || 0;
+      prod.stockFalabella = parseInt(document.getElementById('edt-stock-falabella').value) || 0;
+      prod.stockWalmart = parseInt(document.getElementById('edt-stock-walmart').value) || 0;
       prod.ancho = parseFloat(document.getElementById('edt-ancho').value) || 0;
       prod.largo = parseFloat(document.getElementById('edt-largo').value) || 0;
       prod.alto = parseFloat(document.getElementById('edt-alto').value) || 0;
@@ -1099,7 +1157,7 @@ function agregarProdCot() {
       if (!prod) { toast('Producto no encontrado'); return; }
       if (data.cotizacion.items.length >= 10) { toast('M&aacute;ximo 10 productos'); return; }
       abrirModal('Cantidad',
-        `<p><strong>${esc(prod.nombre)}</strong></p><p>Stock: ${prod.stock} uds. Precio: $${fmt(prod.precioVenta)}</p>
+         `<p><strong>${esc(prod.nombre)}</strong></p><p>Stock Total: ${totalStock(prod)} uds. | Precio: $${fmt(prod.precioVenta)}</p>
          <p>Observaci&oacute;n:</p><input id="modal-obs" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">
          <p style="margin-top:8px">Cantidad:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">`,
         function() {
@@ -1129,7 +1187,7 @@ function buscarProdCot() {
         p.nombre.toLowerCase().includes(q));
       if (results.length === 0) { toast('Sin resultados'); return; }
       let html = results.map((p, i) =>
-        `<p><a href="#" onclick="return agregarDesdeBusqueda(${i})" style="color:var(--noche);font-weight:600">${esc(p.nombre)}</a> | SKU: ${esc(p.sku)} | $${fmt(p.precioVenta)} | Stock: ${p.stock}</p>`
+        `<p><a href="#" onclick="return agregarDesdeBusqueda(${i})" style="color:var(--noche);font-weight:600">${esc(p.nombre)}</a> | SKU: ${esc(p.sku)} | $${fmt(p.precioVenta)} | Stock Total: ${totalStock(p)}</p>`
       ).join('');
       html += `<p style="margin-top:8px;font-size:12px;color:#888">Haz clic en un producto para agregarlo</p>`;
       document.getElementById('modal-body').innerHTML = html;
@@ -1145,7 +1203,7 @@ function agregarDesdeBusqueda(i) {
   if (!p) return false;
   if (data.cotizacion.items.length >= 10) { toast('M&aacute;ximo 10 productos'); return false; }
   abrirModal('Cantidad',
-    `<p><strong>${esc(p.nombre)}</strong></p><p>Stock: ${p.stock} uds. Precio: $${fmt(p.precioVenta)}</p>
+    `<p><strong>${esc(p.nombre)}</strong></p><p>Stock Total: ${totalStock(p)} uds. Precio: $${fmt(p.precioVenta)}</p>
      <p>Observaci&oacute;n:</p><input id="modal-obs" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">
      <p style="margin-top:8px">Cantidad:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">`,
     function() {
@@ -1200,34 +1258,38 @@ async function registrarVenta() {
   if (!confirm('Registrar venta de ' + items.length + ' producto(s)?')) return;
   let cliente = data.cotizacion.cliente || prompt('Nombre del cliente:', 'Cliente final') || 'Cliente final';
   let pago = prompt('M&eacute;todo de pago (Transferencia/Tarjeta/Efectivo/Otro):', 'Transferencia') || 'Transferencia';
+  let canal = prompt('Canal de venta (woo / falabella / walmart):', 'woo') || 'woo';
+  canal = canal.toLowerCase();
+  if (!['woo','falabella','walmart'].includes(canal)) canal = 'woo';
   let stockIssues = false;
   const codigo = data.cotizacion.codigo;
+  const key = stockKey(canal);
   items.forEach(item => {
     const prod = data.productos.find(p => p.sku === item.sku);
     if (!prod) return;
     let cant = item.cantidad;
-    if (prod.stock < cant) {
-      toast('Stock insuficiente para ' + prod.nombre + ' (' + prod.stock + ' de ' + cant + ')');
-      cant = prod.stock;
+    if ((prod[key]||0) < cant) {
+      toast('Stock insuficiente en '+canalLabel(canal)+' para ' + prod.nombre + ' (' + (prod[key]||0) + ' de ' + cant + ')');
+      cant = prod[key]||0;
       stockIssues = true;
     }
     if (cant <= 0) return;
-    const stockAnt = prod.stock;
-    prod.stock -= cant;
+    const stockAnt = prod[key]||0;
+    prod[key] = stockAnt - cant;
     const obsVenta = item.observacion || '';
     data.kardex.push({
       id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
       tipo: 'Salida', concepto: 'Venta', cantidad: -cant,
-      stockAnt: stockAnt, stockRes: prod.stock,
+      stockAnt: stockAnt, stockRes: prod[key],
       referencia: 'Cot. ' + codigo,
-      proveedor: '', observacionCompra: '', observacionVenta: obsVenta
+      proveedor: '', observacionCompra: '', observacionVenta: obsVenta, canal: canal
     });
     data.ventas.push({
       id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
       cantidad: cant, precioUnitario: item.precioUnitario,
       total: cant * item.precioUnitario,
       cliente: cliente, pago: pago, estado: 'Pagado',
-      referencia: codigo, observacion: obsVenta
+      referencia: codigo, observacion: obsVenta, canal: canal
     });
   });
   if (!data.cotizaciones) data.cotizaciones = [];
@@ -1252,7 +1314,7 @@ async function registrarVenta() {
     const prod = data.productos.find(function(p) { return p.sku === item.sku; });
     data.pendientes.unshift({
       tipo: 'producto', fecha: hoy(), sku: item.sku, nombre: item.nombre,
-      precio: item.precioUnitario || 0, stock: (prod ? prod.stock : 0),
+      precio: item.precioUnitario || 0, stock: (prod ? (prod[key]||0) : 0),
       detalle: 'Venta Cot. ' + codigo + ' (cant: ' + (item.cantidad || 0) + ')',
       estado: 'pendiente'
     });
@@ -1277,13 +1339,13 @@ function renderVentas() {
     const url = v.referencia ? `Cot. ${esc(v.referencia)}` : '--';
     const vid = v.id;
     return `<tr>
-      <td>${esc(v.fecha)}</td><td>${esc(v.sku)}</td><td>${esc(v.nombre)}</td>
+      <td>${esc(v.fecha)}</td><td>${canalLabel(v.canal||'')}</td><td>${esc(v.sku)}</td><td>${esc(v.nombre)}</td>
       <td>${v.cantidad}</td><td>$${fmt(v.precioUnitario)}</td><td>$${fmt(v.total)}</td>
       <td>${esc(v.cliente)}</td><td>${esc(v.pago)}</td><td>${esc(v.estado)}</td>
       <td>${url}</td><td>${esc(v.observacion)}</td>
       <td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta('${vid}')">Eliminar</button></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="12" class="empty">No hay ventas registradas</td></tr>';
+  }).join('') || '<tr><td colspan="13" class="empty">No hay ventas registradas</td></tr>';
 }
 
 // ===== KARDEX =====
@@ -1293,6 +1355,8 @@ function renderKardex() {
   if (q) list = list.filter(function(k) {
     return k.sku.toLowerCase().includes(q) || (k.tipo||'').toLowerCase().includes(q) || (k.concepto||'').toLowerCase().includes(q);
   });
+  var canalFiltro = document.getElementById('kardex-canal').value;
+  if (canalFiltro) list = list.filter(function(k) { return (k.canal||'') === canalFiltro; });
   var sort = document.getElementById('kardex-sort').value;
   if (sort) {
     list = list.slice().sort(function(a,b) {
@@ -1308,14 +1372,18 @@ function renderKardex() {
   // Calcular stock actual del SKU filtrado
   if (q) {
     const prod = data.productos.find(p => p.sku.toLowerCase().includes(q));
-    document.getElementById('kardex-stock').textContent = prod ? 'Stock actual: ' + prod.stock + ' uds.' : '';
+    if (prod) {
+      document.getElementById('kardex-stock').textContent = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | Total: '+totalStock(prod);
+    } else {
+      document.getElementById('kardex-stock').textContent = '';
+    }
   } else {
     document.getElementById('kardex-stock').textContent = '';
   }
   document.getElementById('kardex-body').innerHTML = list.map(k => {
     const cantidadClass = k.cantidad < 0 ? 'style="color:#DC2626"' : 'style="color:var(--verde)"';
     return `<tr>
-      <td>${esc(k.fecha)}</td><td>${esc(k.sku)}</td><td>${esc(k.nombre)}</td>
+      <td>${esc(k.fecha)}</td><td>${canalLabel(k.canal||'')}</td><td>${esc(k.sku)}</td><td>${esc(k.nombre)}</td>
       <td>${esc(k.tipo)}</td><td>${esc(k.concepto)}</td>
       <td ${cantidadClass}>${k.cantidad}</td>
       <td>${k.stockAnt}</td><td>${k.stockRes}</td>
@@ -1323,7 +1391,7 @@ function renderKardex() {
       <td>${esc(k.observacionCompra)}</td><td>${esc(k.observacionVenta)}</td>
       <td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarKardex('${k.id}')">Eliminar</button></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="13" class="empty">No hay movimientos registrados</td></tr>';
+  }).join('') || '<tr><td colspan="14" class="empty">No hay movimientos registrados</td></tr>';
 }
 
 function findProductoBySku(sku) {
@@ -1346,7 +1414,7 @@ function filtrarProductosModal() {
   var results = q ? data.productos.filter(function(p) { return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q); }) : data.productos;
   if (results.length === 0) { div.innerHTML = '<p style="color:#aaa;font-size:13px">Sin resultados</p>'; return; }
   div.innerHTML = results.map(function(p) {
-    return '<p><a href="#" onclick="return seleccionarProductoKardex(\'' + p.sku + '\')" style="color:var(--noche);font-weight:600;font-size:14px">' + esc(p.nombre) + '</a> <span style="color:#888;font-size:12px">SKU: ' + esc(p.sku) + ' | Stock: ' + p.stock + '</span></p>';
+    return '<p><a href="#" onclick="return seleccionarProductoKardex(\'' + p.sku + '\')" style="color:var(--noche);font-weight:600;font-size:14px">' + esc(p.nombre) + '</a> <span style="color:#888;font-size:12px">SKU: ' + esc(p.sku) + ' | Stock Total: ' + totalStock(p) + '</span></p>';
   }).join('');
 }
 
@@ -1361,26 +1429,29 @@ function seleccionarProductoKardex(sku) {
 async function registrarEntrada() {
   abrirModalProducto('Registrar Entrada', function(prod) {
     cerrarModal();
+    var totalStr = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | Total: '+totalStock(prod);
     abrirModal('Cantidad de entrada',
-      '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + prod.stock + ' uds.</p><p>Cantidad a ingresar:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
+      '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + totalStr + '</p><p>Canal: ' + canalSelectHtml('modal-canal','woo') + '</p><p>Cantidad a ingresar:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
       function() {
         var cant = parseInt(document.getElementById('modal-cant').value) || 1;
         if (cant <= 0) { toast('Cantidad debe ser mayor a 0'); return; }
-        var stockAnt = prod.stock;
-        prod.stock += cant;
+        var canal = document.getElementById('modal-canal').value;
+        var key = stockKey(canal);
+        var stockAnt = prod[key] || 0;
+        prod[key] = stockAnt + cant;
         data.kardex.push({
           id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
           tipo: 'Entrada', concepto: 'Compra', cantidad: cant,
-          stockAnt: stockAnt, stockRes: prod.stock, referencia: '',
-          proveedor: prod.proveedor || '', observacionCompra: prod.observacionCompra || '', observacionVenta: ''
+          stockAnt: stockAnt, stockRes: prod[key], referencia: '',
+          proveedor: prod.proveedor || '', observacionCompra: prod.observacionCompra || '', observacionVenta: '', canal: canal
         });
         guardarDatos();
         if (!data.pendientes) data.pendientes = [];
-        data.pendientes.unshift({ id: Date.now()+Math.random(), fecha: hoy(), tipo: 'producto', sku: prod.sku, nombre: prod.nombre, precio: prod.precioVenta, stock: prod.stock, detalle: 'Entrada +'+cant+' (Compra manual) — subir stock en WC', estado: 'pendiente' });
+        data.pendientes.unshift({ id: Date.now()+Math.random(), fecha: hoy(), tipo: 'producto', sku: prod.sku, nombre: prod.nombre, precio: prod.precioVenta, stock: prod[key], detalle: 'Entrada +'+cant+' ('+canalLabel(canal)+')', estado: 'pendiente' });
         guardarDatos();
         renderKardex();
         renderPendientes();
-        toast('Entrada registrada. Stock: ' + stockAnt + ' → ' + prod.stock);
+        toast('Entrada registrada ('+canalLabel(canal)+'): ' + stockAnt + ' → ' + prod[key]);
       }
     );
   });
@@ -1388,29 +1459,32 @@ async function registrarEntrada() {
 
 async function registrarSalida() {
   abrirModalProducto('Registrar Salida', function(prod) {
-    if (prod.stock <= 0) { toast('Stock: 0 uds. No se puede retirar'); return; }
+    var totalStr = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | Total: '+totalStock(prod);
+    if (totalStock(prod) <= 0) { toast('Stock total: 0 uds. No se puede retirar'); return; }
     cerrarModal();
     abrirModal('Cantidad de salida',
-      '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + prod.stock + ' uds.</p><p>Cantidad a retirar:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
+      '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + totalStr + '</p><p>Canal: ' + canalSelectHtml('modal-canal','woo') + '</p><p>Cantidad a retirar:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
       function() {
         var cant = parseInt(document.getElementById('modal-cant').value) || 1;
         if (cant <= 0) { toast('Cantidad debe ser mayor a 0'); return; }
-        if (cant > prod.stock) { toast('Stock insuficiente. Solo hay ' + prod.stock); return; }
-        var stockAnt = prod.stock;
-        prod.stock -= cant;
+        var canal = document.getElementById('modal-canal').value;
+        var key = stockKey(canal);
+        if (cant > (prod[key]||0)) { toast('Stock insuficiente en ' + canalLabel(canal) + '. Solo hay ' + (prod[key]||0)); return; }
+        var stockAnt = prod[key] || 0;
+        prod[key] = stockAnt - cant;
         data.kardex.push({
           id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
           tipo: 'Salida', concepto: 'Venta', cantidad: -cant,
-          stockAnt: stockAnt, stockRes: prod.stock, referencia: '',
-          proveedor: '', observacionCompra: '', observacionVenta: ''
+          stockAnt: stockAnt, stockRes: prod[key], referencia: '',
+          proveedor: '', observacionCompra: '', observacionVenta: '', canal: canal
         });
         guardarDatos();
         if (!data.pendientes) data.pendientes = [];
-        data.pendientes.unshift({ id: Date.now()+Math.random(), fecha: hoy(), tipo: 'producto', sku: prod.sku, nombre: prod.nombre, precio: prod.precioVenta, stock: prod.stock, detalle: 'Salida -'+cant+' (Venta manual) — bajar stock en WC', estado: 'pendiente' });
+        data.pendientes.unshift({ id: Date.now()+Math.random(), fecha: hoy(), tipo: 'producto', sku: prod.sku, nombre: prod.nombre, precio: prod.precioVenta, stock: prod[key], detalle: 'Salida -'+cant+' ('+canalLabel(canal)+')', estado: 'pendiente' });
         guardarDatos();
         renderKardex();
         renderPendientes();
-        toast('Salida registrada. Stock: ' + stockAnt + ' → ' + prod.stock);
+        toast('Salida registrada ('+canalLabel(canal)+'): ' + stockAnt + ' → ' + prod[key]);
       }
     );
   });
@@ -1419,29 +1493,32 @@ async function registrarSalida() {
 async function registrarAjuste() {
   abrirModalProducto('Registrar Ajuste', function(prod) {
     cerrarModal();
+    var totalStr = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | Total: '+totalStock(prod);
     abrirModal('Ajuste de stock',
-      '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + prod.stock + ' uds.</p><p>Concepto:</p><input id="modal-concepto" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px" value="Ajuste fisico"><p style="margin-top:8px">Cantidad (positiva = aumenta, negativa = disminuye):</p><input id="modal-cant" type="number" value="0" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
+      '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + totalStr + '</p><p>Canal: ' + canalSelectHtml('modal-canal','woo') + '</p><p>Concepto:</p><input id="modal-concepto" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px" value="Ajuste fisico"><p style="margin-top:8px">Cantidad (positiva = aumenta, negativa = disminuye):</p><input id="modal-cant" type="number" value="0" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
       function() {
         var cant = parseInt(document.getElementById('modal-cant').value) || 0;
         var concepto = document.getElementById('modal-concepto').value.trim() || 'Ajuste';
         if (cant === 0) { toast('La cantidad no puede ser 0'); return; }
-        if (prod.stock + cant < 0) { toast('Ajuste dejaria stock negativo'); return; }
-        var stockAnt = prod.stock;
-        prod.stock += cant;
+        var canal = document.getElementById('modal-canal').value;
+        var key = stockKey(canal);
+        if ((prod[key]||0) + cant < 0) { toast('Ajuste dejaria stock negativo en '+canalLabel(canal)); return; }
+        var stockAnt = prod[key] || 0;
+        prod[key] = stockAnt + cant;
         data.kardex.push({
           id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
           tipo: 'Ajuste', concepto: concepto, cantidad: cant,
-          stockAnt: stockAnt, stockRes: prod.stock, referencia: '',
-          proveedor: prod.proveedor || '', observacionCompra: prod.observacionCompra || '', observacionVenta: ''
+          stockAnt: stockAnt, stockRes: prod[key], referencia: '',
+          proveedor: prod.proveedor || '', observacionCompra: prod.observacionCompra || '', observacionVenta: '', canal: canal
         });
         guardarDatos();
         if (!data.pendientes) data.pendientes = [];
         var cambio = (cant>0?'+':'')+cant;
-        data.pendientes.unshift({ id: Date.now()+Math.random(), fecha: hoy(), tipo: 'producto', sku: prod.sku, nombre: prod.nombre, precio: prod.precioVenta, stock: prod.stock, detalle: 'Ajuste '+cambio+' ('+(cant>0?'Compra':'Venta')+' manual) — '+(cant>0?'subir':'bajar')+' stock en WC', estado: 'pendiente' });
+        data.pendientes.unshift({ id: Date.now()+Math.random(), fecha: hoy(), tipo: 'producto', sku: prod.sku, nombre: prod.nombre, precio: prod.precioVenta, stock: prod[key], detalle: 'Ajuste '+cambio+' ('+canalLabel(canal)+')', estado: 'pendiente' });
         guardarDatos();
         renderKardex();
         renderPendientes();
-        toast('Ajuste registrado. Stock: ' + stockAnt + ' → ' + prod.stock);
+        toast('Ajuste registrado ('+canalLabel(canal)+'): ' + stockAnt + ' → ' + prod[key]);
       }
     );
   });
@@ -1455,7 +1532,8 @@ function exportarExcelCompleto() {
   const prodData = data.productos.map(p => ({
     SKU: p.sku, 'C&oacute;d. Barra': p.codBarra, Producto: p.nombre,
     'Precio Costo': p.precioCosto, 'Precio Venta': p.precioVenta,
-    Stock: p.stock, 'Ancho (cm)': p.ancho || 0, 'Largo (cm)': p.largo || 0, 'Alto (cm)': p.alto || 0, 'Peso (kg)': p.peso || 0, 'Peso Vol. (kg)': (p.ancho && p.largo && p.alto) ? parseFloat(((p.ancho * p.largo * p.alto) / 4000).toFixed(2)) : 0, 'Caja': p.caja || '',
+    'Stock WooCommerce': p.stockWoo||0, 'Stock Falabella': p.stockFalabella||0, 'Stock Walmart': p.stockWalmart||0, 'Stock Total': totalStock(p),
+    'Ancho (cm)': p.ancho || 0, 'Largo (cm)': p.largo || 0, 'Alto (cm)': p.alto || 0, 'Peso (kg)': p.peso || 0, 'Peso Vol. (kg)': (p.ancho && p.largo && p.alto) ? parseFloat(((p.ancho * p.largo * p.alto) / 4000).toFixed(2)) : 0, 'Caja': p.caja || '',
     Proveedor: p.proveedor, 'Observaci&oacute;n Compra': p.observacionCompra
   }));
   const wsProd = XLSX.utils.json_to_sheet(prodData);
@@ -1463,7 +1541,7 @@ function exportarExcelCompleto() {
 
   // Ventas
   const vtData = data.ventas.map(v => ({
-    Fecha: v.fecha, SKU: v.sku, Producto: v.nombre,
+    Fecha: v.fecha, Canal: canalLabel(v.canal||''), SKU: v.sku, Producto: v.nombre,
     Cant: v.cantidad, 'P. Unitario': v.precioUnitario, Total: v.total,
     Cliente: v.cliente, Pago: v.pago, Estado: v.estado,
     Referencia: v.referencia, 'Observaci&oacute;n': v.observacion
@@ -1473,7 +1551,7 @@ function exportarExcelCompleto() {
 
   // Kardex
   const kxData = data.kardex.map(k => ({
-    Fecha: k.fecha, SKU: k.sku, Producto: k.nombre,
+    Fecha: k.fecha, Canal: canalLabel(k.canal||''), SKU: k.sku, Producto: k.nombre,
     Tipo: k.tipo, Concepto: k.concepto, Cantidad: k.cantidad,
     'Stock Ant.': k.stockAnt, 'Stock Res.': k.stockRes,
     Referencia: k.referencia, Proveedor: k.proveedor,
@@ -1551,7 +1629,9 @@ function importarExcel() {
             nombre: String(r['Producto'] || r['nombre'] || ''),
             precioCosto: parseFloat(r['Precio Costo'] || r['precioCosto'] || 0),
             precioVenta: parseFloat(r['Precio Venta'] || r['precioVenta'] || 0),
-            stock: parseInt(r['Stock'] || r['stock'] || 0),
+            stockWoo: parseInt(r['Stock WooCommerce'] || r['stockWoo'] || r['Stock'] || r['stock'] || 0),
+            stockFalabella: parseInt(r['Stock Falabella'] || r['stockFalabella'] || 0),
+            stockWalmart: parseInt(r['Stock Walmart'] || r['stockWalmart'] || 0),
             ancho: parseFloat(r['Ancho (cm)'] || r['ancho'] || 0),
             largo: parseFloat(r['Largo (cm)'] || r['largo'] || 0),
             alto: parseFloat(r['Alto (cm)'] || r['alto'] || 0),
@@ -1729,7 +1809,7 @@ function agregarProductoAEdicion(codigo) {
       let html = '<div style="max-height:300px;overflow-y:auto">' + results.map(function(p, i) {
         return '<div style="padding:10px 8px;border-bottom:1px solid #eee;cursor:pointer" onclick="seleccionarProductoEdicion(\'' + codigo + '\',' + i + ')">' +
           '<strong>' + esc(p.nombre) + '</strong><br>' +
-          '<span style="font-size:12px;color:#666">SKU: ' + esc(p.sku) + ' | $' + fmt(p.precioVenta) + ' | Stock: ' + p.stock + '</span></div>';
+          '<span style="font-size:12px;color:#666">SKU: ' + esc(p.sku) + ' | $' + fmt(p.precioVenta) + ' | Stock Total: ' + totalStock(p) + '</span></div>';
       }).join('') + '</div>';
       document.getElementById('modal-body').innerHTML = html;
       window._busquedaResults = results;
@@ -1745,7 +1825,7 @@ function seleccionarProductoEdicion(codigo, i) {
   const c = (data.cotizaciones || []).find(function(x){return x.codigo===codigo});
   if (!c) { toast('Error: cotizacion no encontrada'); return false; }
   abrirModal('Cantidad - ' + esc(p.nombre),
-    '<p><strong>' + esc(p.nombre) + '</strong></p><p>Stock: ' + p.stock + ' uds. Precio: $' + fmt(p.precioVenta) + '</p>' +
+    '<p><strong>' + esc(p.nombre) + '</strong></p><p>Stock Total: ' + totalStock(p) + ' uds. Precio: $' + fmt(p.precioVenta) + '</p>' +
     '<p>Observacion:</p><input id="modal-obs" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<p style="margin-top:8px">Cantidad:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
     function() {
@@ -1791,38 +1871,42 @@ function guardarEdicionCotizacion(codigo) {
   // Si cambia de Enviada a Vendida, registrar venta
   if (estadoAnterior !== 'Vendida' && nuevoEstado === 'Vendida') {
     const pago = prompt('M&eacute;todo de pago (Transferencia/Tarjeta/Efectivo/Otro):', 'Transferencia') || 'Transferencia';
+    let canal = prompt('Canal de venta (woo / falabella / walmart):', 'woo') || 'woo';
+    canal = canal.toLowerCase();
+    if (!['woo','falabella','walmart'].includes(canal)) canal = 'woo';
+    const key = stockKey(canal);
     let stockIssues = false;
     c.items.forEach(function(item) {
       const prod = data.productos.find(function(p) { return p.sku === item.sku; });
       if (!prod) return;
       let cant = item.cantidad;
-      if (prod.stock < cant) {
-        toast('Stock insuficiente para ' + prod.nombre + ' (' + prod.stock + ' de ' + cant + ')');
-        cant = prod.stock;
+      if ((prod[key]||0) < cant) {
+        toast('Stock insuficiente en '+canalLabel(canal)+' para ' + prod.nombre + ' (' + (prod[key]||0) + ' de ' + cant + ')');
+        cant = prod[key]||0;
         stockIssues = true;
       }
       if (cant <= 0) return;
-      const stockAnt = prod.stock;
-      prod.stock -= cant;
+      const stockAnt = prod[key]||0;
+      prod[key] = stockAnt - cant;
       data.kardex.push({
         id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
         tipo: 'Salida', concepto: 'Venta', cantidad: -cant,
-        stockAnt: stockAnt, stockRes: prod.stock,
+        stockAnt: stockAnt, stockRes: prod[key],
         referencia: 'Cot. ' + codigo,
-        proveedor: '', observacionCompra: '', observacionVenta: item.observacion || ''
+        proveedor: '', observacionCompra: '', observacionVenta: item.observacion || '', canal: canal
       });
       data.ventas.push({
         id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
         cantidad: cant, precioUnitario: item.precioUnitario,
         total: cant * item.precioUnitario,
         cliente: c.cliente, pago: pago, estado: 'Pagado',
-        referencia: codigo, observacion: item.observacion || ''
+        referencia: codigo, observacion: item.observacion || '', canal: canal
       });
       if (!data.pendientes) data.pendientes = [];
       data.pendientes.push({
         tipo: 'producto', fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
-        precio: prod.precioVenta || 0, stock: prod.stock,
-        detalle: 'Venta Cot. ' + codigo + ' (cant: ' + cant + ', stock restante: ' + prod.stock + ')',
+        precio: prod.precioVenta || 0, stock: prod[key]||0,
+        detalle: 'Venta Cot. ' + codigo + ' (cant: ' + cant + ', stock restante: ' + (prod[key]||0) + ')',
         estado: 'pendiente'
       });
     });
@@ -1875,7 +1959,8 @@ function eliminarKardex(idStr) {
   if (!k) { toast('Movimiento no encontrado'); return; }
   const prod = data.productos.find(function(p) { return p.sku === k.sku; });
   if (prod) {
-    prod.stock = (prod.stock || 0) - (k.cantidad || 0);
+    var revKey = stockKey(k.canal||'woo');
+    prod[revKey] = (prod[revKey] || 0) - (k.cantidad || 0);
   }
   data.kardex = data.kardex.filter(function(x) { return String(x.id) !== String(idStr); });
   guardarDatos();
@@ -1946,10 +2031,10 @@ function renderDashboard() {
   const ventas = data.ventas || [];
   const cotis = data.cotizaciones || [];
   var totalProd = prods.length;
-  var valVenta = prods.reduce(function(s, p) { return s + (p.stock || 0) * (p.precioVenta || 0); }, 0);
-  var valCosto = prods.reduce(function(s, p) { return s + (p.stock || 0) * (p.precioCosto || 0); }, 0);
+  var valVenta = prods.reduce(function(s, p) { return s + totalStock(p) * (p.precioVenta || 0); }, 0);
+  var valCosto = prods.reduce(function(s, p) { return s + totalStock(p) * (p.precioCosto || 0); }, 0);
   var ganancia = valVenta - valCosto;
-  var stockBajo = prods.filter(function(p) { return (p.stock || 0) <= 3; }).length;
+  var stockBajo = prods.filter(function(p) { return totalStock(p) <= 3; }).length;
   var ventasTotal = ventas.reduce(function(s, v) { return s + (v.total || 0); }, 0);
   var cotisPend = cotis.filter(function(c) { return c.estado === 'Enviada'; }).length;
   var cards = [
@@ -1966,12 +2051,20 @@ function renderDashboard() {
       '<div class="value" style="color:' + c.color + '">' + c.value + '</div></div>';
   }).join('');
 
+  var ventasConCanal = ventas.some(function(v){return v.canal});
   var meses = {};
+  var mesesCanal = {};
   ventas.forEach(function(v) {
     if (!v.fecha) return;
     var m = v.fecha.substring(0, 7);
     if (!meses[m]) meses[m] = 0;
     meses[m] += v.total || 0;
+    if (ventasConCanal) {
+      var c = v.canal || 'woo';
+      var key = m + '|' + c;
+      if (!mesesCanal[key]) mesesCanal[key] = 0;
+      mesesCanal[key] += v.total || 0;
+    }
   });
   var nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   var sorted = Object.keys(meses).sort().reverse();
@@ -1979,13 +2072,24 @@ function renderDashboard() {
   if (sorted.length === 0) {
     html += '<p style="color:#888">Sin ventas registradas</p>';
   } else {
-    html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">Total</th></tr></thead><tbody>';
-    sorted.forEach(function(m) {
-      var parts = m.split('-');
-      var label = nombresMes[parseInt(parts[1],10)-1] + ' ' + parts[0];
-      html += '<tr><td>' + label + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td></tr>';
-    });
-    html += '</tbody></table></div>';
+    if (ventasConCanal) {
+      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">WooCommerce</th><th style="text-align:right">Falabella</th><th style="text-align:right">Walmart</th><th style="text-align:right">Total</th></tr></thead><tbody>';
+      sorted.forEach(function(m) {
+        var parts = m.split('-');
+        var label = nombresMes[parseInt(parts[1],10)-1] + ' ' + parts[0];
+        var vWoo = mesesCanal[m+'|woo']||0, vFal = mesesCanal[m+'|falabella']||0, vWal = mesesCanal[m+'|walmart']||0;
+        html += '<tr><td>' + label + '</td><td style="text-align:right">$' + fmt(vWoo) + '</td><td style="text-align:right">$' + fmt(vFal) + '</td><td style="text-align:right">$' + fmt(vWal) + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td></tr>';
+      });
+      html += '</tbody></table></div>';
+    } else {
+      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">Total</th></tr></thead><tbody>';
+      sorted.forEach(function(m) {
+        var parts = m.split('-');
+        var label = nombresMes[parseInt(parts[1],10)-1] + ' ' + parts[0];
+        html += '<tr><td>' + label + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td></tr>';
+      });
+      html += '</tbody></table></div>';
+    }
   }
   document.getElementById('dash-ventas-mensuales').innerHTML = html;
 }
