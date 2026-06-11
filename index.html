@@ -137,6 +137,7 @@ tbody tr:hover{background:#F5F0FF}
     <button class="btn" style="background:#DC2626;color:#fff;font-size:12px;padding:5px 12px" onclick="restaurarStockYkardex()">RESTAURAR STOCK+KARDEX</button>
     <button class="btn" style="background:#7C3AED;color:#fff;font-size:12px;padding:5px 12px" onclick="exportarBackup()">📦 BACKUP</button>
     <button class="btn" style="background:#7C3AED;color:#fff;font-size:12px;padding:5px 12px" onclick="importarBackup()">📂 RESTAURAR</button>
+    <button class="btn" style="background:#1E40AF;color:#fff;font-size:12px;padding:5px 12px" onclick="verBackups()">💾 AUTO-BACKUP</button>
     <button class="btn" style="background:#2563EB;color:#fff;font-size:12px;padding:5px 12px" onclick="sincronizarFirebase()">SYNC FIREBASE</button>
     <button class="btn btn-outline" style="font-size:12px;padding:5px 12px;margin-left:8px" onclick="cerrarSesion()">SALIR</button>
   </div>
@@ -498,6 +499,7 @@ function guardarDatos() {
       }, 3000);
     });
   }
+  autoBackup();
 }
 
 let data = (function() {
@@ -555,6 +557,112 @@ function toast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
+
+// ===== AUTO-BACKUP =====
+const BACKUP_COL = 'inventario_backups';
+var _backupEnProgreso = false;
+
+function autoBackup() {
+  if (_backupEnProgreso || !fbDoc) return;
+  var lastBackup = localStorage.getItem('backup_last');
+  var lastVer = parseInt(localStorage.getItem('backup_lastVer') || '0');
+  var now = Date.now();
+  var interval = 30 * 60 * 1000; // 30 min
+  if (lastBackup && (now - parseInt(lastBackup) < interval) && (data._syncVersion - lastVer < 5)) return;
+  _backupEnProgreso = true;
+  crearBackup(true);
+}
+
+function crearBackup(automatico) {
+  if (!fbDoc) { _backupEnProgreso = false; return; }
+  var ts = new Date();
+  var id = ts.getFullYear() + '-' + pad(ts.getMonth()+1) + '-' + pad(ts.getDate()) + '_' + pad(ts.getHours()) + pad(ts.getMinutes()) + pad(ts.getSeconds());
+  var backupData = JSON.parse(JSON.stringify(data));
+  delete backupData._backupIndex;
+  var meta = { id: id, fecha: hoy(), hora: ts.toTimeString().substring(0,8), _syncVersion: data._syncVersion||0, automatico: !!automatico, countProductos: (data.productos||[]).length, countKardex: (data.kardex||[]).length, countVentas: (data.ventas||[]).length };
+  firebase.firestore().collection(BACKUP_COL).doc(id).set(backupData).then(function() {
+    if (!data._backupIndex) data._backupIndex = [];
+    data._backupIndex.unshift(meta);
+    if (data._backupIndex.length > 50) data._backupIndex.length = 50;
+    localStorage.setItem('backup_last', String(Date.now()));
+    localStorage.setItem('backup_lastVer', String(data._syncVersion));
+    _backupEnProgreso = false;
+    if (!automatico) toast('Backup creado: ' + id);
+  }).catch(function(e) {
+    // Fallback: backup sin imágenes si excede tamaño
+    if (e.message && e.message.indexOf('maximum size') >= 0) {
+      var sinImgs = JSON.parse(JSON.stringify(backupData));
+      if (sinImgs.productos) sinImgs.productos.forEach(function(p) { delete p.imagen; });
+      firebase.firestore().collection(BACKUP_COL).doc(id).set(sinImgs).then(function() {
+        if (!data._backupIndex) data._backupIndex = [];
+        meta.sinImagenes = true;
+        data._backupIndex.unshift(meta);
+        if (data._backupIndex.length > 50) data._backupIndex.length = 50;
+        localStorage.setItem('backup_last', String(Date.now()));
+        localStorage.setItem('backup_lastVer', String(data._syncVersion));
+        _backupEnProgreso = false;
+        if (!automatico) toast('Backup creado (sin im&aacute;genes por tama&ntilde;o)');
+      }).catch(function(e2) {
+        _backupEnProgreso = false;
+        if (!automatico) toast('Error al crear backup: ' + e2.message);
+      });
+    } else {
+      _backupEnProgreso = false;
+      if (!automatico) toast('Error al crear backup: ' + e.message);
+    }
+  });
+}
+
+function verBackups() {
+  if (!fbDoc) { toast('Firebase no disponible'); return; }
+  var html = '<div style="margin-bottom:12px"><button class="btn btn-primary" onclick="crearBackup(false);cerrarModal();">+ Crear Backup Manual</button></div>';
+  html += '<p style="color:#888;font-size:12px">Cargando historial...</p>';
+  abrirModal('Auto-Backups', html, function(){});
+  firebase.firestore().collection(BACKUP_COL).orderBy('fecha', 'desc').limit(50).get().then(function(snap) {
+    if (snap.empty) {
+      document.querySelector('#modal-body').innerHTML = html.replace('Cargando historial...', 'No hay backups disponibles');
+      return;
+    }
+    var listHtml = snap.docs.map(function(d) {
+      var m = d.data();
+      var label = (m.automatico ? '<span style="color:#888;font-size:11px">auto</span>' : '<span style="color:#2563EB;font-size:11px">manual</span>');
+      var noImg = m.sinImagenes ? ' <span style="color:#DC2626;font-size:11px">(sin fotos)</span>' : '';
+      return '<p style="padding:6px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center">' +
+        '<span><strong>' + (m.fecha||'') + ' ' + (m.hora||'') + '</strong> ' + label + noImg + '<br>' +
+        '<span style="font-size:11px;color:#888">v' + (m._syncVersion||'?') + ' &middot; ' + (m.countProductos||'?') + ' prod &middot; ' + (m.countKardex||'?') + ' kx &middot; ' + (m.countVentas||'?') + ' vt</span></span>' +
+        '<button class="btn btn-outline" style="font-size:11px;padding:3px 8px" onclick="restaurarBackup(\'' + d.id + '\')">Restaurar</button></p>';
+    }).join('');
+    document.querySelector('#modal-body').innerHTML = html.replace('Cargando historial...', '') + listHtml;
+  }).catch(function(e) {
+    document.querySelector('#modal-body').innerHTML = html.replace('Cargando historial...', 'Error: ' + e.message);
+  });
+}
+
+function restaurarBackup(id) {
+  if (!confirm('Restaurar backup ' + id + '? Se reemplazar&aacute;n todos los datos actuales.')) return;
+  firebase.firestore().collection(BACKUP_COL).doc(id).get().then(function(snap) {
+    if (!snap.exists) { toast('Backup no encontrado'); return; }
+    var bk = snap.data();
+    if (bk.productos && data.productos) {
+      bk.productos.forEach(function(bp) {
+        if (!bp.imagen) {
+          var cur = data.productos.find(function(p) { return p.sku === bp.sku; });
+          if (cur && cur.imagen) bp.imagen = cur.imagen;
+        }
+      });
+    }
+    Object.assign(data, bk);
+    guardarDatos();
+    renderInventario();
+    renderVentas();
+    renderKardex();
+    renderPendientes();
+    renderCotizaciones();
+    toast('Backup restaurado: ' + id.substring(0,19));
+  }).catch(function(e) { toast('Error: ' + e.message); });
+}
+
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
 // ===== MODAL =====
 function abrirModal(titulo, html, onConfirm) {
