@@ -820,6 +820,9 @@ function anadirNuevoStock() {
             proveedor: prov, observacionCompra: prod.observacionCompra || '', observacionVenta: '', canal: canal
           });
           guardarDatos();
+          if (!data.pendientes) data.pendientes = [];
+          data.pendientes.unshift({ id: Date.now()+Math.random(), fecha: hoy(), tipo: 'producto', sku: prod.sku, nombre: prod.nombre, precio: prod.precioVenta, stock: prod[key], detalle: 'Entrada +'+cant+' ('+canalLabel(canal)+')', estado: 'pendiente' });
+          guardarDatos();
           toast('Stock a&ntilde;adido (' + canalLabel(canal) + '): ' + stockAnt + ' → ' + prod[key]);
         }
       );
