@@ -254,6 +254,9 @@ tbody tr:hover{background:#F5F0FF}
 
 <div id="contenido-ventas" class="content">
   <h2>Registro de Ventas</h2>
+  <div class="btn-group">
+    <button class="btn btn-primary" onclick="agregarVenta()">AGREGAR VENTA</button>
+  </div>
   <div class="resumen">
     <div class="resumen-item"><div class="label">Total Ventas</div><div class="value verde" id="v-total">$0</div></div>
     <div class="resumen-item"><div class="label">Productos Vendidos</div><div class="value" id="v-cant">0</div></div>
@@ -1411,7 +1414,7 @@ function renderVentas() {
       <td>${v.cantidad}</td><td>$${fmt(v.precioUnitario)}</td><td>$${fmt(v.total)}</td>
       <td>${esc(v.cliente)}</td><td>${esc(v.pago)}</td><td>${esc(v.estado)}</td>
       <td>${url}</td><td>${esc(v.observacion)}</td>
-      <td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta('${vid}')">Eliminar</button></td>
+      <td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarVenta('${vid}')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta('${vid}')">Eliminar</button></td>
     </tr>`;
   }).join('') || '<tr><td colspan="13" class="empty">No hay ventas registradas</td></tr>';
 }
@@ -2027,6 +2030,67 @@ function eliminarVenta(idStr) {
   guardarDatos();
   renderVentas();
   toast('Venta eliminada');
+}
+
+function abrirModalVenta(titulo, venta) {
+  var f = venta || {};
+  var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">';
+  html += '<div><label style="font-weight:600">Fecha</label><input id="vf-fecha" type="date" class="modal-input" value="' + (f.fecha||'') + '"></div>';
+  html += '<div><label style="font-weight:600">Canal</label><select id="vf-canal" class="modal-input">' + canalSelectHtml('vf-canal', f.canal||'woo') + '</select></div>';
+  html += '<div><label style="font-weight:600">SKU</label><input id="vf-sku" class="modal-input" value="' + esc(f.sku||'') + '"></div>';
+  html += '<div><label style="font-weight:600">Producto</label><input id="vf-nombre" class="modal-input" value="' + esc(f.nombre||'') + '"></div>';
+  html += '<div><label style="font-weight:600">Cantidad</label><input id="vf-cant" type="number" class="modal-input" value="' + (f.cantidad||0) + '" oninput="calcTotalVenta()"></div>';
+  html += '<div><label style="font-weight:600">P. Unitario</label><input id="vf-pu" type="number" class="modal-input" value="' + (f.precioUnitario||0) + '" oninput="calcTotalVenta()"></div>';
+  html += '</div>';
+  html += '<div style="margin-top:8px"><label style="font-weight:600">Total</label><input id="vf-total" type="number" class="modal-input" value="' + (f.total||0) + '"></div>';
+  html += '<div style="margin-top:8px"><label style="font-weight:600">Cliente</label><input id="vf-cliente" class="modal-input" value="' + esc(f.cliente||'') + '"></div>';
+  html += '<div style="margin-top:8px"><label style="font-weight:600">Método Pago</label><input id="vf-pago" class="modal-input" value="' + esc(f.pago||'') + '"></div>';
+  html += '<div style="margin-top:8px"><label style="font-weight:600">Estado</label><select id="vf-estado" class="modal-input"><option value="Pagado"' + ((f.estado||'')==='Pagado'?' selected':'') + '>Pagado</option><option value="Pendiente"' + ((f.estado||'')==='Pendiente'?' selected':'') + '>Pendiente</option><option value="Anulada"' + ((f.estado||'')==='Anulada'?' selected':'') + '>Anulada</option></select></div>';
+  html += '<div style="margin-top:8px"><label style="font-weight:600">Referencia</label><input id="vf-referencia" class="modal-input" value="' + esc(f.referencia||'') + '"></div>';
+  html += '<div style="margin-top:8px"><label style="font-weight:600">Observación</label><textarea id="vf-observacion" class="modal-input" rows="2">' + esc(f.observacion||'') + '</textarea></div>';
+  html += '<style>.modal-input{width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px;box-sizing:border-box}</style>';
+  abrirModal(titulo, html, function() {
+    var fecha = document.getElementById('vf-fecha').value;
+    if (!fecha) { toast('La fecha es obligatoria'); return false; }
+    var obj = {
+      id: f.id || Date.now() + Math.random(),
+      fecha: fecha,
+      canal: document.getElementById('vf-canal').value,
+      sku: document.getElementById('vf-sku').value.trim(),
+      nombre: document.getElementById('vf-nombre').value.trim(),
+      cantidad: parseFloat(document.getElementById('vf-cant').value) || 0,
+      precioUnitario: parseFloat(document.getElementById('vf-pu').value) || 0,
+      total: parseFloat(document.getElementById('vf-total').value) || 0,
+      cliente: document.getElementById('vf-cliente').value.trim(),
+      pago: document.getElementById('vf-pago').value.trim(),
+      estado: document.getElementById('vf-estado').value,
+      referencia: document.getElementById('vf-referencia').value.trim(),
+      observacion: document.getElementById('vf-observacion').value.trim()
+    };
+    if (f.id) {
+      var idx = data.ventas.findIndex(function(v) { return String(v.id) === String(f.id); });
+      if (idx >= 0) data.ventas[idx] = obj;
+    } else {
+      data.ventas.push(obj);
+    }
+    guardarDatos();
+    renderVentas();
+    toast(f.id ? 'Venta actualizada' : 'Venta agregada');
+  });
+}
+
+function calcTotalVenta() {
+  var cant = parseFloat(document.getElementById('vf-cant').value) || 0;
+  var pu = parseFloat(document.getElementById('vf-pu').value) || 0;
+  document.getElementById('vf-total').value = cant * pu;
+}
+
+function agregarVenta() { abrirModalVenta('Agregar Venta', null); }
+
+function editarVenta(idStr) {
+  var v = data.ventas.find(function(x) { return String(x.id) === String(idStr); });
+  if (!v) { toast('Venta no encontrada'); return; }
+  abrirModalVenta('Editar Venta', v);
 }
 
 function eliminarCotizacion(codigo) {
