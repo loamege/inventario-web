@@ -134,6 +134,7 @@ tbody tr:hover{background:#F5F0FF}
   <div>
     <button class="btn" style="background:var(--ambar);color:var(--noche);font-size:12px;padding:5px 12px" onclick="exportarExcelCompleto()">EXPORTAR EXCEL</button>
     <button class="btn" style="background:var(--ambar);color:var(--noche);font-size:12px;padding:5px 12px" onclick="importarExcel()">IMPORTAR EXCEL</button>
+    <button class="btn" style="background:#DC2626;color:#fff;font-size:12px;padding:5px 12px" onclick="restaurarStockYkardex()">RESTAURAR STOCK+KARDEX</button>
     <button class="btn" style="background:#7C3AED;color:#fff;font-size:12px;padding:5px 12px" onclick="exportarBackup()">📦 BACKUP</button>
     <button class="btn" style="background:#7C3AED;color:#fff;font-size:12px;padding:5px 12px" onclick="importarBackup()">📂 RESTAURAR</button>
     <button class="btn" style="background:#2563EB;color:#fff;font-size:12px;padding:5px 12px" onclick="sincronizarFirebase()">SYNC FIREBASE</button>
@@ -1781,6 +1782,100 @@ function importarExcel() {
         renderVentas();
         renderKardex();
         toast('Importado desde Excel correctamente');
+      } catch(e) {
+        toast('Error al leer Excel: ' + e.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+  input.click();
+}
+
+function restaurarStockYkardex() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.xlsx,.xls';
+  input.onchange = async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(ev) {
+      try {
+        const wb = XLSX.read(ev.target.result, { type: 'array' });
+        var prodImportados = 0, kxImportados = 0, vtImportados = 0;
+
+        if (wb.SheetNames.includes('Productos')) {
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets['Productos']);
+          rows.forEach(function(r) {
+            var sku = String(r['SKU'] || r['sku'] || '');
+            if (!sku) return;
+            var existente = data.productos.find(function(p) { return p.sku === sku; });
+            if (existente) {
+              existente.stockWoo = parseInt(r['Stock WooCommerce'] || r['stockWoo'] || r['Stock'] || r['stock'] || 0);
+              existente.stockFalabella = parseInt(r['Stock Falabella'] || r['stockFalabella'] || 0);
+              existente.stockWalmart = parseInt(r['Stock Walmart'] || r['stockWalmart'] || 0);
+              existente.precioCosto = parseFloat(r['Precio Costo'] || r['precioCosto'] || 0);
+              existente.precioVenta = parseFloat(r['Precio Venta'] || r['precioVenta'] || 0);
+              existente.proveedor = String(r['Proveedor'] || r['proveedor'] || '');
+              existente.observacionCompra = String(r['Observaci&oacute;n Compra'] || r['observacionCompra'] || '');
+              existente.caja = String(r['Caja'] || r['caja'] || '');
+              existente.ancho = parseFloat(r['Ancho (cm)'] || r['ancho'] || 0);
+              existente.largo = parseFloat(r['Largo (cm)'] || r['largo'] || 0);
+              existente.alto = parseFloat(r['Alto (cm)'] || r['alto'] || 0);
+              existente.peso = parseFloat(r['Peso (kg)'] || r['peso'] || 0);
+              // NO toca imagen — se conserva la que ya tiene
+              prodImportados++;
+            }
+          });
+        }
+
+        if (wb.SheetNames.includes('Kardex')) {
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets['Kardex']);
+          data.kardex = rows.map(function(r) { return {
+            id: Date.now() + Math.random(),
+            fecha: String(r['Fecha'] || r['fecha'] || ''),
+            sku: String(r['SKU'] || r['sku'] || ''),
+            nombre: String(r['Producto'] || r['nombre'] || ''),
+            tipo: String(r['Tipo'] || r['tipo'] || ''),
+            concepto: String(r['Concepto'] || r['concepto'] || ''),
+            cantidad: parseFloat(r['Cantidad'] || r['cantidad'] || 0),
+            stockAnt: parseFloat(r['Stock Ant.'] || r['stockAnt'] || 0),
+            stockRes: parseFloat(r['Stock Res.'] || r['stockRes'] || 0),
+            referencia: String(r['Referencia'] || r['referencia'] || ''),
+            proveedor: String(r['Proveedor'] || r['proveedor'] || ''),
+            observacionCompra: String(r['Obs. Compra'] || r['observacionCompra'] || ''),
+            observacionVenta: String(r['Obs. Venta'] || r['observacionVenta'] || ''),
+            canal: (r['Canal'] || '').toLowerCase().includes('falabella') ? 'falabella' : (r['Canal'] || '').toLowerCase().includes('walmart') ? 'walmart' : 'woo'
+          }; });
+          kxImportados = data.kardex.length;
+        }
+
+        if (wb.SheetNames.includes('Ventas')) {
+          const rows = XLSX.utils.sheet_to_json(wb.Sheets['Ventas']);
+          data.ventas = rows.map(function(r) { return {
+            id: Date.now() + Math.random(),
+            fecha: String(r['Fecha'] || r['fecha'] || ''),
+            sku: String(r['SKU'] || r['sku'] || ''),
+            nombre: String(r['Producto'] || r['nombre'] || ''),
+            cantidad: parseInt(r['Cant'] || r['cantidad'] || 0),
+            precioUnitario: parseFloat(r['P. Unitario'] || r['precioUnitario'] || 0),
+            total: parseFloat(r['Total'] || r['total'] || 0),
+            cliente: String(r['Cliente'] || r['cliente'] || ''),
+            pago: String(r['Pago'] || r['pago'] || ''),
+            estado: String(r['Estado'] || r['estado'] || 'Pagado'),
+            referencia: String(r['Referencia'] || r['referencia'] || ''),
+            observacion: String(r['Observaci&oacute;n'] || r['observacion'] || ''),
+            canal: (r['Canal'] || '').toLowerCase().includes('falabella') ? 'falabella' : (r['Canal'] || '').toLowerCase().includes('walmart') ? 'walmart' : 'woo'
+          }; });
+          vtImportados = data.ventas.length;
+        }
+
+        guardarDatos();
+        renderInventario();
+        renderVentas();
+        renderKardex();
+        renderPendientes();
+        toast('Restaurado: ' + prodImportados + ' stocks, ' + kxImportados + ' kardex, ' + vtImportados + ' ventas');
       } catch(e) {
         toast('Error al leer Excel: ' + e.message);
       }
