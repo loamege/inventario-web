@@ -222,6 +222,13 @@ tbody tr:hover{background:#F5F0FF}
     <input id="inv-filtro-costo-max" type="number" placeholder="Costo hasta" oninput="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;width:100px">
     <input id="inv-filtro-venta-min" type="number" placeholder="Venta desde" oninput="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;width:100px">
     <input id="inv-filtro-venta-max" type="number" placeholder="Venta hasta" oninput="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;width:100px">
+    <select id="inv-filtro-canal" onchange="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="">Todos los canales</option>
+      <option value="woo">WooCommerce</option>
+      <option value="falabella">Falabella</option>
+      <option value="walmart">Walmart</option>
+      <option value="sinstock">Sin stock</option>
+    </select>
   </div>
   <div class="movil">
     <table><thead><tr>
@@ -961,6 +968,11 @@ function renderInventario() {
   if (!isNaN(vtMin)) list = list.filter(function(p){return (p.precioVenta||0)>=vtMin});
   var vtMax = parseFloat(document.getElementById('inv-filtro-venta-max').value);
   if (!isNaN(vtMax)) list = list.filter(function(p){return (p.precioVenta||0)<=vtMax});
+  var canalFiltro = document.getElementById('inv-filtro-canal').value;
+  if (canalFiltro === 'woo') list = list.filter(function(p){return (p.stockWoo||0) > 0});
+  else if (canalFiltro === 'falabella') list = list.filter(function(p){return (p.stockFalabella||0) > 0});
+  else if (canalFiltro === 'walmart') list = list.filter(function(p){return (p.stockWalmart||0) > 0});
+  else if (canalFiltro === 'sinstock') list = list.filter(function(p){return totalStock(p) === 0});
   var sort = document.getElementById('inv-sort').value;
   if (sort) {
     list = list.slice().sort(function(a,b) {
