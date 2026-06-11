@@ -259,6 +259,18 @@ tbody tr:hover{background:#F5F0FF}
     <div class="resumen-item"><div class="label">Productos Vendidos</div><div class="value" id="v-cant">0</div></div>
     <div class="resumen-item"><div class="label">&Uacute;ltima Venta</div><div class="value" id="v-ultima" style="font-size:16px">--</div></div>
   </div>
+  <div class="search-bar">
+    <input id="ventas-search" placeholder="Buscar por SKU, producto, cliente..." oninput="renderVentas()" style="flex:1;max-width:300px">
+    <select id="ventas-mes" onchange="renderVentas()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="">Todos los meses</option>
+      <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+      <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+      <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+      <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+    </select>
+    <input id="ventas-fdesde" type="date" onchange="renderVentas()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Desde">
+    <input id="ventas-fhasta" type="date" onchange="renderVentas()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Hasta">
+  </div>
   <div class="movil">
     <table><thead><tr>
       <th>Fecha</th><th>Canal</th><th>SKU</th><th>Producto</th><th>Cant.</th><th>P. Unitario</th><th>Total</th><th>Cliente</th><th>Pago</th><th>Estado</th><th>Referencia</th><th>Observaci&oacute;n</th><th>Acci&oacute;n</th>
@@ -275,6 +287,15 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="search-bar">
     <input id="kardex-search" placeholder="Buscar por SKU, tipo, concepto..." oninput="renderKardex()" style="flex:1;max-width:300px">
+    <select id="kardex-mes" onchange="renderKardex()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="">Todos los meses</option>
+      <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+      <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+      <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+      <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+    </select>
+    <input id="kardex-fdesde" type="date" onchange="renderKardex()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Desde">
+    <input id="kardex-fhasta" type="date" onchange="renderKardex()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Hasta">
     <select id="kardex-canal" onchange="renderKardex()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
       <option value="">Todos los canales</option>
       <option value="woo">WooCommerce</option>
@@ -304,6 +325,18 @@ tbody tr:hover{background:#F5F0FF}
   <div class="resumen">
     <div class="resumen-item"><div class="label">Cotizaciones</div><div class="value" id="cotiz-cant">0</div></div>
     <div class="resumen-item"><div class="label">&Uacute;ltima Cot.</div><div class="value" id="cotiz-ultima" style="font-size:16px">--</div></div>
+  </div>
+  <div class="search-bar">
+    <input id="cotiz-search" placeholder="Buscar por c&oacute;digo, cliente..." oninput="renderCotizaciones()" style="flex:1;max-width:300px">
+    <select id="cotiz-mes" onchange="renderCotizaciones()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="">Todos los meses</option>
+      <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+      <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+      <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+      <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+    </select>
+    <input id="cotiz-fdesde" type="date" onchange="renderCotizaciones()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Desde">
+    <input id="cotiz-fhasta" type="date" onchange="renderCotizaciones()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Hasta">
   </div>
   <div class="movil">
     <table><thead><tr>
@@ -1329,7 +1362,17 @@ async function registrarVenta() {
 
 // ===== VENTAS =====
 function renderVentas() {
-  const list = data.ventas;
+  let list = data.ventas;
+  const q = (document.getElementById('ventas-search').value || '').toLowerCase();
+  if (q) list = list.filter(function(v) {
+    return (v.sku||'').toLowerCase().includes(q) || (v.nombre||'').toLowerCase().includes(q) || (v.cliente||'').toLowerCase().includes(q);
+  });
+  var mes = document.getElementById('ventas-mes').value;
+  if (mes) list = list.filter(function(v) { return v.fecha && v.fecha.substring(5,7) === mes; });
+  var fdesde = document.getElementById('ventas-fdesde').value;
+  if (fdesde) list = list.filter(function(v) { return v.fecha && v.fecha >= fdesde; });
+  var fhasta = document.getElementById('ventas-fhasta').value;
+  if (fhasta) list = list.filter(function(v) { return v.fecha && v.fecha <= fhasta; });
   let totalVtas = 0, totalCant = 0;
   list.forEach(v => { totalVtas += v.total || 0; totalCant += v.cantidad || 0; });
   document.getElementById('v-total').textContent = '$' + fmt(totalVtas);
@@ -1357,6 +1400,12 @@ function renderKardex() {
   });
   var canalFiltro = document.getElementById('kardex-canal').value;
   if (canalFiltro) list = list.filter(function(k) { return (k.canal||'') === canalFiltro; });
+  var mes = document.getElementById('kardex-mes').value;
+  if (mes) list = list.filter(function(k) { return k.fecha && k.fecha.substring(5,7) === mes; });
+  var fdesde = document.getElementById('kardex-fdesde').value;
+  if (fdesde) list = list.filter(function(k) { return k.fecha && k.fecha >= fdesde; });
+  var fhasta = document.getElementById('kardex-fhasta').value;
+  if (fhasta) list = list.filter(function(k) { return k.fecha && k.fecha <= fhasta; });
   var sort = document.getElementById('kardex-sort').value;
   if (sort) {
     list = list.slice().sort(function(a,b) {
@@ -1712,7 +1761,17 @@ function importarExcel() {
 
 // ===== Cotizaciones (historial) =====
 function renderCotizaciones() {
-  const lista = data.cotizaciones || [];
+  let lista = data.cotizaciones || [];
+  const q = (document.getElementById('cotiz-search').value || '').toLowerCase();
+  if (q) lista = lista.filter(function(c) {
+    return (c.codigo||'').toLowerCase().includes(q) || (c.cliente||'').toLowerCase().includes(q);
+  });
+  var mes = document.getElementById('cotiz-mes').value;
+  if (mes) lista = lista.filter(function(c) { return c.fecha && c.fecha.substring(5,7) === mes; });
+  var fdesde = document.getElementById('cotiz-fdesde').value;
+  if (fdesde) lista = lista.filter(function(c) { return c.fecha && c.fecha >= fdesde; });
+  var fhasta = document.getElementById('cotiz-fhasta').value;
+  if (fhasta) lista = lista.filter(function(c) { return c.fecha && c.fecha <= fhasta; });
   document.getElementById('cotiz-cant').textContent = lista.length;
   const ultima = lista.length > 0 ? lista[0].codigo + ' (' + lista[0].fecha + ')' : '--';
   document.getElementById('cotiz-ultima').textContent = ultima;
