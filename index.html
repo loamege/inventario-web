@@ -270,6 +270,17 @@ tbody tr:hover{background:#F5F0FF}
     </select>
     <input id="ventas-fdesde" type="date" onchange="renderVentas()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Desde">
     <input id="ventas-fhasta" type="date" onchange="renderVentas()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Hasta">
+    <select id="ventas-sort" onchange="renderVentas()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="">Sin orden</option>
+      <option value="fecha-desc">M&aacute;s reciente ↑</option>
+      <option value="fecha-asc">M&aacute;s antiguo ↓</option>
+      <option value="sku-asc">SKU A→Z</option>
+      <option value="sku-desc">SKU Z→A</option>
+      <option value="nombre-asc">Nombre A→Z</option>
+      <option value="nombre-desc">Nombre Z→A</option>
+      <option value="cant-desc">Cantidad ↑</option>
+      <option value="cant-asc">Cantidad ↓</option>
+    </select>
   </div>
   <div class="movil">
     <table><thead><tr>
@@ -1373,6 +1384,20 @@ function renderVentas() {
   if (fdesde) list = list.filter(function(v) { return v.fecha && v.fecha >= fdesde; });
   var fhasta = document.getElementById('ventas-fhasta').value;
   if (fhasta) list = list.filter(function(v) { return v.fecha && v.fecha <= fhasta; });
+  var sort = document.getElementById('ventas-sort').value;
+  if (sort) {
+    list = list.slice().sort(function(a,b) {
+      if (sort === 'fecha-asc') return a.fecha.localeCompare(b.fecha);
+      if (sort === 'fecha-desc') return b.fecha.localeCompare(a.fecha);
+      if (sort === 'sku-asc') return (a.sku||'').localeCompare(b.sku||'');
+      if (sort === 'sku-desc') return (b.sku||'').localeCompare(a.sku||'');
+      if (sort === 'nombre-asc') return (a.nombre||'').localeCompare(b.nombre||'');
+      if (sort === 'nombre-desc') return (b.nombre||'').localeCompare(a.nombre||'');
+      if (sort === 'cant-desc') return (b.cantidad||0) - (a.cantidad||0);
+      if (sort === 'cant-asc') return (a.cantidad||0) - (b.cantidad||0);
+      return 0;
+    });
+  }
   let totalVtas = 0, totalCant = 0;
   list.forEach(v => { totalVtas += v.total || 0; totalCant += v.cantidad || 0; });
   document.getElementById('v-total').textContent = '$' + fmt(totalVtas);
