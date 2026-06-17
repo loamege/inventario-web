@@ -2268,7 +2268,7 @@ function abrirModalVenta(titulo, venta) {
   var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">';
   html += '<div><label style="font-weight:600">Fecha</label><input id="vf-fecha" type="date" class="modal-input" value="' + (f.fecha||'') + '"></div>';
   html += '<div><label style="font-weight:600">Canal</label><select id="vf-canal" class="modal-input">' + canalSelectHtml('vf-canal', f.canal||'woo') + '</select></div>';
-  html += '<div><label style="font-weight:600">SKU</label><input id="vf-sku" class="modal-input" value="' + esc(f.sku||'') + '"></div>';
+  html += '<div><label style="font-weight:600">SKU</label><div style="display:flex;gap:4px"><input id="vf-sku" class="modal-input" style="flex:1" value="' + esc(f.sku||'') + '"><button class="btn btn-outline" style="font-size:11px;padding:4px 8px;white-space:nowrap" onclick="buscarProductoVenta()" type="button">SKU</button></div></div>';
   html += '<div><label style="font-weight:600">Producto</label><input id="vf-nombre" class="modal-input" value="' + esc(f.nombre||'') + '"></div>';
   html += '<div><label style="font-weight:600">Cantidad</label><input id="vf-cant" type="number" class="modal-input" value="' + (f.cantidad||0) + '" oninput="calcTotalVenta()"></div>';
   html += '<div><label style="font-weight:600">P. Unitario</label><input id="vf-pu" type="number" class="modal-input" value="' + (f.precioUnitario||0) + '" oninput="calcTotalVenta()"></div>';
@@ -2314,6 +2314,43 @@ function calcTotalVenta() {
   var cant = parseFloat(document.getElementById('vf-cant').value) || 0;
   var pu = parseFloat(document.getElementById('vf-pu').value) || 0;
   document.getElementById('vf-total').value = cant * pu;
+}
+
+function buscarProductoVenta() {
+  var html = '<p style="font-size:13px;color:#666">Buscar producto para agregar a la venta:</p>';
+  html += '<input id="buscar-prod-venta" placeholder="SKU o nombre..." style="width:100%;padding:10px;border:2px solid var(--noche);border-radius:4px;font-size:15px;margin-bottom:8px" oninput="filtrarProdVenta()">';
+  html += '<div id="resultados-prod-venta" style="max-height:320px;overflow-y:auto"></div>';
+  abrirModal('Buscar Producto', html, function() { return false; });
+  setTimeout(function(){ document.getElementById('buscar-prod-venta').focus(); }, 100);
+  window._prodVentaBusqueda = [];
+  filtrarProdVenta();
+}
+
+function filtrarProdVenta() {
+  var q = (document.getElementById('buscar-prod-venta').value || '').toLowerCase();
+  var div = document.getElementById('resultados-prod-venta');
+  if (!div) return;
+  var list = data.productos;
+  if (q) list = list.filter(function(p) { return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q); });
+  if (list.length === 0) { div.innerHTML = '<p style="color:#aaa;font-size:13px">Sin resultados</p>'; return; }
+  window._prodVentaBusqueda = list.slice(0, 50);
+  div.innerHTML = window._prodVentaBusqueda.map(function(p, i) {
+    return '<div style="padding:10px 8px;border-bottom:1px solid #eee;cursor:pointer" onclick="seleccionarProdVenta(' + i + ')">' +
+      '<strong>' + esc(p.nombre) + '</strong><br>' +
+      '<span style="font-size:12px;color:#666">SKU: ' + esc(p.sku) + ' | $' + fmt(p.precioVenta) + ' | Stock Total: ' + totalStock(p) + '</span></div>';
+  }).join('');
+}
+
+function seleccionarProdVenta(idx) {
+  var p = window._prodVentaBusqueda[idx];
+  if (!p) return;
+  document.getElementById('vf-sku').value = p.sku;
+  document.getElementById('vf-nombre').value = p.nombre;
+  if (!document.getElementById('vf-pu').value || parseFloat(document.getElementById('vf-pu').value) === 0) {
+    document.getElementById('vf-pu').value = p.precioVenta || 0;
+  }
+  calcTotalVenta();
+  cerrarModal();
 }
 
 function agregarVenta() {
