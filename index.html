@@ -2040,7 +2040,9 @@ function renderCotizaciones() {
     const cod = esc(c.codigo);
     const estado = c.estado === 'Vendida'
       ? '<span style="background:#059669;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Vendida</span>'
-      : '<span style="background:#D97706;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Enviada</span>';
+      : c.estado === 'Descontada Woo'
+        ? '<span style="background:#888;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Descontada Woo</span>'
+        : '<span style="background:#D97706;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Enviada</span>';
     return '<tr><td>' + (i+1) + '</td><td><strong>' + cod + '</strong></td><td>' + esc(c.fecha) + '</td><td>' + esc(c.cliente) + '</td>' +
       '<td>' + totalItems + ' uds.</td><td>$' + fmt(c.total) + '</td><td>' + estado + '</td>' +
       '<td><button class="btn btn-outline" style="font-size:11px;padding:3px 8px" onclick="verCotizacion(\'' + cod + '\')">Ver</button> ' +
@@ -2062,7 +2064,9 @@ function verCotizacion(codigo) {
   const total = c.items.reduce(function(s, it) { return s + (it.cantidad || 0) * (it.precioUnitario || 0); }, 0);
   const estadoBadge = c.estado === 'Vendida'
     ? '<span style="background:#059669;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Vendida</span>'
-    : '<span style="background:#D97706;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Enviada</span>';
+    : c.estado === 'Descontada Woo'
+      ? '<span style="background:#888;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Descontada Woo</span>'
+      : '<span style="background:#D97706;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px">Enviada</span>';
   abrirModal('Cotizaci&oacute;n ' + esc(c.codigo),
     '<p><strong>Cliente:</strong> ' + esc(c.cliente) + ' &nbsp;|&nbsp; <strong>Fecha:</strong> ' + esc(c.fecha) + ' &nbsp;|&nbsp; <strong>Estado:</strong> ' + estadoBadge + '</p>' +
     '<div style="overflow-x:auto"><table style="font-size:12px;min-width:550px"><thead><tr><th>#</th><th>SKU</th><th>Producto</th><th>Imagen</th><th>Cant.</th><th>P. Unitario</th><th>Total</th></tr></thead><tbody>' + rowsHtml +
@@ -2096,12 +2100,14 @@ function editarCotizacion(codigo) {
   }).join('');
   const total = c.items.reduce(function(s, it) { return s + (it.cantidad || 0) * (it.precioUnitario || 0); }, 0);
   const selVendida = c.estado === 'Vendida' ? 'selected' : '';
-  const selEnviada = c.estado === 'Vendida' ? '' : 'selected';
+  const selEnviada = c.estado === 'Enviada' ? 'selected' : '';
+  const selDescontada = c.estado === 'Descontada Woo' ? 'selected' : '';
   abrirModal('Editar ' + esc(c.codigo),
     '<p><strong>Cliente:</strong><br><input id="edit-cliente" value="' + esc(c.cliente) + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
     '<p><strong>Estado:</strong><br><select id="edit-estado" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<option value="Enviada" ' + selEnviada + '>Enviada</option>' +
-    '<option value="Vendida" ' + selVendida + '>Vendida</option></select></p>' +
+    '<option value="Vendida" ' + selVendida + '>Vendida</option>' +
+    '<option value="Descontada Woo" ' + selDescontada + '>Descontada Woo</option></select></p>' +
     '<p><strong>Notas:</strong><br><textarea id="edit-notas" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:13px;resize:vertical">' + esc(c.notas || '') + '</textarea></p>' +
     '<div style="overflow-x:auto"><table style="font-size:12px;min-width:600px"><thead><tr><th>#</th><th>SKU</th><th>Producto</th><th>Imagen</th><th>Cant.</th><th>P. Unitario</th><th>Total</th><th></th></tr></thead><tbody>' + itemsHtml +
     '</tbody><tfoot><tr><td colspan="6"></td><td><strong>TOTAL</strong></td><td><strong>$' + fmt(total) + '</strong></td></tr></tfoot></table></div>' +
