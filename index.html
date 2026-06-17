@@ -2317,10 +2317,23 @@ function calcTotalVenta() {
 }
 
 function buscarProductoVenta() {
+  window._ventaModalHtml = document.getElementById('modal-body').innerHTML;
+  window._ventaModalTitle = document.getElementById('modal-title').textContent;
+  document.getElementById('modal-confirm').style.display = 'none';
+  var cancelBtn = document.querySelector('#modal .btn-outline');
+  window._ventaCancelClick = cancelBtn.onclick;
+  cancelBtn.onclick = function() {
+    window._ventaModalHtml = null;
+    window._ventaModalTitle = null;
+    document.getElementById('modal-confirm').style.display = '';
+    cancelBtn.onclick = window._ventaCancelClick;
+    cerrarModal();
+  };
   var html = '<p style="font-size:13px;color:#666">Buscar producto para agregar a la venta:</p>';
   html += '<input id="buscar-prod-venta" placeholder="SKU o nombre..." style="width:100%;padding:10px;border:2px solid var(--noche);border-radius:4px;font-size:15px;margin-bottom:8px" oninput="filtrarProdVenta()">';
   html += '<div id="resultados-prod-venta" style="max-height:320px;overflow-y:auto"></div>';
-  abrirModal('Buscar Producto', html, function() { return false; });
+  document.getElementById('modal-title').textContent = 'Buscar Producto';
+  document.getElementById('modal-body').innerHTML = html;
   setTimeout(function(){ document.getElementById('buscar-prod-venta').focus(); }, 100);
   window._prodVentaBusqueda = [];
   filtrarProdVenta();
@@ -2344,13 +2357,25 @@ function filtrarProdVenta() {
 function seleccionarProdVenta(idx) {
   var p = window._prodVentaBusqueda[idx];
   if (!p) return;
+  var savedHtml = window._ventaModalHtml;
+  var savedTitle = window._ventaModalTitle;
+  window._ventaModalHtml = null;
+  window._ventaModalTitle = null;
+  if (savedHtml) {
+    var cancelBtn = document.querySelector('#modal .btn-outline');
+    if (cancelBtn && window._ventaCancelClick) cancelBtn.onclick = window._ventaCancelClick;
+    document.getElementById('modal-confirm').style.display = '';
+    document.getElementById('modal-title').textContent = savedTitle;
+    document.getElementById('modal-body').innerHTML = savedHtml;
+  } else {
+    cerrarModal();
+  }
   document.getElementById('vf-sku').value = p.sku;
   document.getElementById('vf-nombre').value = p.nombre;
   if (!document.getElementById('vf-pu').value || parseFloat(document.getElementById('vf-pu').value) === 0) {
     document.getElementById('vf-pu').value = p.precioVenta || 0;
   }
   calcTotalVenta();
-  cerrarModal();
 }
 
 function agregarVenta() {
