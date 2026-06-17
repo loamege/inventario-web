@@ -2312,7 +2312,46 @@ function calcTotalVenta() {
   document.getElementById('vf-total').value = cant * pu;
 }
 
-function agregarVenta() { abrirModalVenta('Agregar Venta', null); }
+function agregarVenta() {
+  var html = '<p style="font-size:13px;color:#666">Busca un cliente o cotización para pre-completar los campos, o agrega una venta nueva en blanco.</p>';
+  html += '<input id="buscar-venta-cliente" placeholder="Buscar cliente o cotización..." style="width:100%;padding:10px;border:2px solid var(--noche);border-radius:4px;font-size:15px;margin-bottom:8px" oninput="filtrarClientesVenta()">';
+  html += '<div id="resultados-venta-cliente" style="max-height:360px;overflow-y:auto"></div>';
+  html += '<div style="margin-top:12px;text-align:right"><button class="btn btn-outline" onclick="abrirModalVenta(\'Agregar Venta\', null);cerrarModal()" style="font-size:12px">Venta en blanco</button></div>';
+  abrirModal('Agregar Venta', html, function() { return false; });
+  setTimeout(function(){ document.getElementById('buscar-venta-cliente').focus(); }, 100);
+  window._ventaBusqueda = [];
+  filtrarClientesVenta();
+}
+function filtrarClientesVenta() {
+  var q = (document.getElementById('buscar-venta-cliente').value || '').toLowerCase();
+  var div = document.getElementById('resultados-venta-cliente');
+  if (!div) return;
+  var list = data.ventas;
+  if (q) {
+    list = list.filter(function(v) { return (v.cliente||'').toLowerCase().includes(q) || (v.referencia||'').toLowerCase().includes(q); });
+  }
+  var seen = {}, uniq = [];
+  list.slice().reverse().forEach(function(v) {
+    var key = v.cliente + '|' + v.referencia;
+    if (!seen[key]) { seen[key] = true; uniq.push(v); }
+  });
+  if (uniq.length === 0) { div.innerHTML = '<p style="color:#aaa;font-size:13px">Sin resultados</p>'; return; }
+  window._ventaBusqueda = uniq.slice(0, 30);
+  div.innerHTML = window._ventaBusqueda.map(function(v, i) {
+    var label = v.referencia ? ('Cot. ' + esc(v.referencia) + ' — ' + esc(v.cliente)) : esc(v.cliente);
+    return '<div style="padding:10px 8px;border-bottom:1px solid #eee;cursor:pointer" onclick="seleccionarClienteVentaIdx(' + i + ')">' +
+      '<strong>' + label + '</strong><br><span style="font-size:12px;color:#666">Última: ' + esc(v.fecha) + ' | $' + fmt(v.total) + '</span></div>';
+  }).join('');
+}
+function seleccionarClienteVentaIdx(idx) {
+  var v = window._ventaBusqueda[idx];
+  if (!v) return;
+  cerrarModal();
+  var ultimas = data.ventas.filter(function(x){return x.cliente===v.cliente && x.referencia===(v.referencia||'')});
+  ultimas.sort(function(a,b){return a.fecha.localeCompare(b.fecha)});
+  var ult = ultimas[ultimas.length-1];
+  abrirModalVenta('Agregar Venta', { cliente: v.cliente, referencia: v.referencia || '', fecha: ult ? ult.fecha : '', canal: ult ? ult.canal : 'woo' });
+}
 
 function editarVenta(idStr) {
   var v = data.ventas.find(function(x) { return String(x.id) === String(idStr); });
