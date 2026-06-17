@@ -2320,7 +2320,7 @@ function agregarVenta() {
   var html = '<p style="font-size:13px;color:#666">Busca un cliente o cotización para pre-completar los campos, o agrega una venta nueva en blanco.</p>';
   html += '<input id="buscar-venta-cliente" placeholder="Buscar cliente o cotización..." style="width:100%;padding:10px;border:2px solid var(--noche);border-radius:4px;font-size:15px;margin-bottom:8px" oninput="filtrarClientesVenta()">';
   html += '<div id="resultados-venta-cliente" style="max-height:360px;overflow-y:auto"></div>';
-  html += '<div style="margin-top:12px;text-align:right"><button class="btn btn-outline" onclick="abrirModalVenta(\'Agregar Venta\', null);cerrarModal()" style="font-size:12px">Venta en blanco</button></div>';
+  html += '<div style="margin-top:12px;text-align:right"><button class="btn btn-outline" onclick="cerrarModal();abrirModalVenta(\'Agregar Venta\', null)" style="font-size:12px">Venta en blanco</button></div>';
   abrirModal('Agregar Venta', html, function() { return false; });
   setTimeout(function(){ document.getElementById('buscar-venta-cliente').focus(); }, 100);
   window._ventaBusqueda = [];
