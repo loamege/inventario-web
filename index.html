@@ -204,8 +204,7 @@ tbody tr:hover{background:#F5F0FF}
     <input id="inv-search" placeholder="Buscar por SKU o nombre..." oninput="renderInventario()">
     <span id="inv-count" style="font-size:13px;color:#888;align-self:center"></span>
     <select id="inv-sort" onchange="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
-      <option value="">Sin orden</option>
-      <option value="sku-asc">SKU A→Z</option>
+      <option value="sku-asc" selected>SKU A→Z</option>
       <option value="sku-desc">SKU Z→A</option>
       <option value="nombre-asc">Nombre A→Z</option>
       <option value="nombre-desc">Nombre Z→A</option>
@@ -284,9 +283,8 @@ tbody tr:hover{background:#F5F0FF}
     <input id="ventas-fdesde" type="date" onchange="renderVentas()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Desde">
     <input id="ventas-fhasta" type="date" onchange="renderVentas()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Hasta">
     <select id="ventas-sort" onchange="renderVentas()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
-      <option value="">Sin orden</option>
-      <option value="fecha-desc">M&aacute;s reciente ↑</option>
-      <option value="fecha-asc">M&aacute;s antiguo ↓</option>
+      <option value="fecha-desc" selected>Más reciente ↑</option>
+      <option value="fecha-asc">Más antiguo ↓</option>
       <option value="sku-asc">SKU A→Z</option>
       <option value="sku-desc">SKU Z→A</option>
       <option value="nombre-asc">Nombre A→Z</option>
