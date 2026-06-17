@@ -1544,7 +1544,7 @@ function renderVentas() {
     items.forEach(function(v) {
       const url = v.referencia ? 'Cot. ' + esc(v.referencia) : '--';
       const vid = v.id;
-      html += '<tr><td>' + esc(v.fecha) + '</td><td>' + canalLabel(v.canal||'') + '</td><td>' + esc(v.sku) + '</td><td>' + esc(v.nombre) + '</td><td>' + v.cantidad + '</td><td>$' + fmt(v.precioUnitario) + '</td><td>$' + fmt(v.total) + '</td><td>' + esc(v.cliente) + '</td><td>' + esc(v.pago) + '</td><td>' + esc(v.estado) + '</td><td>' + url + '</td><td>' + esc(v.observacion) + '</td><td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarVenta(\'' + vid + '\')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta(\'' + vid + '\')">Eliminar</button></td></tr>';
+      html += '<tr><td>' + esc(v.fecha) + '</td><td>' + canalLabel(v.canal||'') + '</td><td>' + esc(v.sku) + '</td><td>' + esc(v.nombre) + '</td><td>' + v.cantidad + '</td><td>$' + fmt(v.precioUnitario) + '</td><td style="white-space:nowrap">$' + fmt(v.total) + ' <span onclick="toggleCheckVenta(\'' + vid + '\')" style="cursor:pointer;font-size:16px;margin-left:4px;user-select:none">' + (v.checked ? '✅' : '⬜') + '</span></td><td>' + esc(v.cliente) + '</td><td>' + esc(v.pago) + '</td><td>' + esc(v.estado) + '</td><td>' + url + '</td><td>' + esc(v.observacion) + '</td><td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarVenta(\'' + vid + '\')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta(\'' + vid + '\')">Eliminar</button></td></tr>';
     });
   });
   document.getElementById('ventas-body').innerHTML = html || '<tr><td colspan="13" class="empty">No hay ventas registradas</td></tr>';
@@ -2263,6 +2263,14 @@ function eliminarVenta(idStr) {
   toast('Venta eliminada');
 }
 
+function toggleCheckVenta(idStr) {
+  var v = data.ventas.find(function(x) { return String(x.id) === String(idStr); });
+  if (!v) return;
+  v.checked = !v.checked;
+  guardarDatos();
+  renderVentas();
+}
+
 function abrirModalVenta(titulo, venta) {
   var f = venta || {};
   var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">';
@@ -2296,7 +2304,8 @@ function abrirModalVenta(titulo, venta) {
       pago: document.getElementById('vf-pago').value.trim(),
       estado: document.getElementById('vf-estado').value,
       referencia: document.getElementById('vf-referencia').value.trim(),
-      observacion: document.getElementById('vf-observacion').value.trim()
+      observacion: document.getElementById('vf-observacion').value.trim(),
+      checked: f.checked || false
     };
     if (f.id) {
       var idx = data.ventas.findIndex(function(v) { return String(v.id) === String(f.id); });
