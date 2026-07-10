@@ -147,6 +147,9 @@ tbody tr:hover{background:#F5F0FF}
 <div class="tabs">
   <button class="tab active" data-tab="formulario">Formulario</button>
   <button class="tab" data-tab="inventario">Inventario</button>
+  <button class="tab" data-tab="falabella">Falabella</button>
+  <button class="tab" data-tab="ml">Mercado Libre</button>
+  <button class="tab" data-tab="walmart">Walmart</button>
   <button class="tab" data-tab="cotizador">Cotizador</button>
   <button class="tab" data-tab="ventas">Ventas</button>
   <button class="tab" data-tab="cotizaciones">Cotizaciones</button>
@@ -236,6 +239,69 @@ tbody tr:hover{background:#F5F0FF}
     <table><thead><tr>
       <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock Woo</th><th>Stock Falabella</th><th>Stock Walmart</th><th>Stock ML</th><th>Total</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="inv-body"></tbody></table>
+  </div>
+</div>
+
+<div id="contenido-falabella" class="content">
+  <h2>Falabella</h2>
+  <div class="search-bar">
+    <input id="fal-search" placeholder="Buscar por SKU o nombre..." oninput="renderFalabella()">
+    <span id="fal-count" style="font-size:13px;color:#888;align-self:center"></span>
+    <select id="fal-sort" onchange="renderFalabella()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="sku-asc" selected>SKU A→Z</option>
+      <option value="sku-desc">SKU Z→A</option>
+      <option value="nombre-asc">Nombre A→Z</option>
+      <option value="nombre-desc">Nombre Z→A</option>
+      <option value="stock-asc">Stock ↑</option>
+      <option value="stock-desc">Stock ↓</option>
+    </select>
+  </div>
+  <div class="movil">
+    <table><thead><tr>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock Falabella</th><th>Stock Total</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
+    </tr></thead><tbody id="fal-body"></tbody></table>
+  </div>
+</div>
+
+<div id="contenido-ml" class="content">
+  <h2>Mercado Libre</h2>
+  <div class="search-bar">
+    <input id="ml-search" placeholder="Buscar por SKU o nombre..." oninput="renderML()">
+    <span id="ml-count" style="font-size:13px;color:#888;align-self:center"></span>
+    <select id="ml-sort" onchange="renderML()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="sku-asc" selected>SKU A→Z</option>
+      <option value="sku-desc">SKU Z→A</option>
+      <option value="nombre-asc">Nombre A→Z</option>
+      <option value="nombre-desc">Nombre Z→A</option>
+      <option value="stock-asc">Stock ↑</option>
+      <option value="stock-desc">Stock ↓</option>
+    </select>
+  </div>
+  <div class="movil">
+    <table><thead><tr>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock ML</th><th>Stock Total</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
+    </tr></thead><tbody id="ml-body"></tbody></table>
+  </div>
+</div>
+
+<div id="contenido-walmart" class="content">
+  <h2>Walmart</h2>
+  <div class="search-bar">
+    <input id="wal-search" placeholder="Buscar por SKU o nombre..." oninput="renderWalmart()">
+    <span id="wal-count" style="font-size:13px;color:#888;align-self:center"></span>
+    <select id="wal-sort" onchange="renderWalmart()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="sku-asc" selected>SKU A→Z</option>
+      <option value="sku-desc">SKU Z→A</option>
+      <option value="nombre-asc">Nombre A→Z</option>
+      <option value="nombre-desc">Nombre Z→A</option>
+      <option value="stock-asc">Stock ↑</option>
+      <option value="stock-desc">Stock ↓</option>
+    </select>
+  </div>
+  <div class="movil">
+    <table><thead><tr>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock Walmart</th><th>Stock Total</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
+    </tr></thead><tbody id="wal-body"></tbody></table>
   </div>
 </div>
 
@@ -704,6 +770,9 @@ document.querySelectorAll('.tab').forEach(t => {
     const id = this.dataset.tab;
     document.getElementById('contenido-' + id).classList.add('active');
     if (id === 'inventario') renderInventario();
+    if (id === 'falabella') renderFalabella();
+    if (id === 'ml') renderML();
+    if (id === 'walmart') renderWalmart();
     if (id === 'cotizador') renderCotizador();
     if (id === 'ventas') renderVentas();
     if (id === 'kardex') renderKardex();
@@ -1017,6 +1086,41 @@ function renderInventario() {
     </tr>`;
   }).join('');
 }
+
+function renderCanal(canal, stockKey, searchId, countId, sortId, bodyId) {
+  var q = (document.getElementById(searchId).value || '').toLowerCase();
+  var list = data.productos.filter(function(p){return (p[stockKey]||0) > 0});
+  if (q) list = list.filter(function(p){return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q)});
+  var sort = document.getElementById(sortId).value;
+  if (sort) {
+    list = list.slice().sort(function(a,b) {
+      if (sort === 'sku-asc') return a.sku.localeCompare(b.sku);
+      if (sort === 'sku-desc') return b.sku.localeCompare(a.sku);
+      if (sort === 'nombre-asc') return a.nombre.localeCompare(b.nombre);
+      if (sort === 'nombre-desc') return b.nombre.localeCompare(a.nombre);
+      if (sort === 'stock-asc') return (a[stockKey]||0) - (b[stockKey]||0);
+      if (sort === 'stock-desc') return (b[stockKey]||0) - (a[stockKey]||0);
+      return 0;
+    });
+  }
+  document.getElementById(countId).textContent = list.length + ' producto(s)';
+  document.getElementById(bodyId).innerHTML = list.map(function(p) {
+    var skuEnc = esc(p.sku);
+    var img = p.imagen ? '<img class="img-preview" src="'+p.imagen+'" alt="">' : '--';
+    return '<tr>' +
+      '<td>'+skuEnc+'</td><td>'+esc(p.codBarra)+'</td><td>'+esc(p.nombre)+'</td>' +
+      '<td>$'+fmt(p.precioCosto)+'</td><td>$'+fmt(p.precioVenta)+'</td>' +
+      '<td style="font-weight:700">'+(p[stockKey]||0)+'</td><td>'+totalStock(p)+'</td>' +
+      '<td>'+esc(p.proveedor)+'</td><td>'+img+'</td>' +
+      '<td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido(\''+skuEnc+'\')">Editar</button>' +
+      '<button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto(\''+skuEnc+'\')">Eliminar</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function renderFalabella() { renderCanal('falabella', 'stockFalabella', 'fal-search', 'fal-count', 'fal-sort', 'fal-body'); }
+function renderML() { renderCanal('ml', 'stockML', 'ml-search', 'ml-count', 'ml-sort', 'ml-body'); }
+function renderWalmart() { renderCanal('walmart', 'stockWalmart', 'wal-search', 'wal-count', 'wal-sort', 'wal-body'); }
 
 function exportarInventarioPDF() {
   var q = (document.getElementById('inv-search').value || '').toLowerCase();
