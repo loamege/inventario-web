@@ -176,6 +176,7 @@ tbody tr:hover{background:#F5F0FF}
       <label>Stock WooCommerce</label><input id="f-stock-woo" type="number">
       <label>Stock Falabella</label><input id="f-stock-falabella" type="number">
       <label>Stock Walmart</label><input id="f-stock-walmart" type="number">
+      <label>Stock Mercado Libre</label><input id="f-stock-ml" type="number">
       <label>Ancho (cm)</label><input id="f-ancho" type="number" step="0.1">
       <label>Largo (cm)</label><input id="f-largo" type="number" step="0.1">
       <label>Alto (cm)</label><input id="f-alto" type="number" step="0.1">
@@ -227,12 +228,13 @@ tbody tr:hover{background:#F5F0FF}
       <option value="woo">WooCommerce</option>
       <option value="falabella">Falabella</option>
       <option value="walmart">Walmart</option>
+      <option value="ml">Mercado Libre</option>
       <option value="sinstock">Sin stock</option>
     </select>
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock Woo</th><th>Stock Falabella</th><th>Stock Walmart</th><th>Total</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock Woo</th><th>Stock Falabella</th><th>Stock Walmart</th><th>Stock ML</th><th>Total</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="inv-body"></tbody></table>
   </div>
 </div>
@@ -323,6 +325,7 @@ tbody tr:hover{background:#F5F0FF}
       <option value="woo">WooCommerce</option>
       <option value="falabella">Falabella</option>
       <option value="walmart">Walmart</option>
+      <option value="ml">Mercado Libre</option>
     </select>
     <select id="kardex-sort" onchange="renderKardex()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
       <option value="">Sin orden</option>
@@ -436,22 +439,25 @@ function datosDefault() {
 }
 
 function totalStock(p) {
-  return (p.stockWoo||0) + (p.stockFalabella||0) + (p.stockWalmart||0);
+  return (p.stockWoo||0) + (p.stockFalabella||0) + (p.stockWalmart||0) + (p.stockML||0);
 }
 function stockKey(canal) {
   if (canal === 'woo' || canal === 'WooCommerce' || canal === 'Woo') return 'stockWoo';
   if (canal === 'falabella' || canal === 'Falabella') return 'stockFalabella';
-  return 'stockWalmart';
+  if (canal === 'walmart' || canal === 'Walmart') return 'stockWalmart';
+  if (canal === 'ml' || canal === 'Mercado Libre' || canal === 'MercadoLibre') return 'stockML';
+  return 'stockWoo';
 }
-function canales() { return ['woo','falabella','walmart']; }
+function canales() { return ['woo','falabella','walmart','ml']; }
 function canalLabel(c) {
-  return {woo:'WooCommerce',falabella:'Falabella',walmart:'Walmart'}[c]||c;
+  return {woo:'WooCommerce',falabella:'Falabella',walmart:'Walmart',ml:'Mercado Libre'}[c]||c;
 }
 function canalSelectHtml(name, sel) {
   return '<select id="'+name+'" style="font-size:13px;padding:6px;border:1px solid #ccc;border-radius:4px">' +
     '<option value="woo"'+(sel==='woo'?' selected':'')+'>WooCommerce</option>' +
     '<option value="falabella"'+(sel==='falabella'?' selected':'')+'>Falabella</option>' +
-    '<option value="walmart"'+(sel==='walmart'?' selected':'')+'>Walmart</option></select>';
+    '<option value="walmart"'+(sel==='walmart'?' selected':'')+'>Walmart</option>' +
+    '<option value="ml"'+(sel==='ml'?' selected':'')+'>Mercado Libre</option></select>';
 }
 
 function migrarProductos(lista) {
@@ -463,6 +469,7 @@ function migrarProductos(lista) {
     if (p.stockWoo === undefined) p.stockWoo = 0;
     if (p.stockFalabella === undefined) p.stockFalabella = 0;
     if (p.stockWalmart === undefined) p.stockWalmart = 0;
+    if (p.stockML === undefined) p.stockML = 0;
   });
 }
 
@@ -516,9 +523,7 @@ let data = (function() {
         var fbData = snap.data();
         var localVer = d._syncVersion || 0;
         var fbVer = fbData._syncVersion || 0;
-        var localCount = (d.productos || []).length;
-        var fbCount = (fbData.productos || []).length;
-        if (fbVer > localVer || fbCount > localCount) {
+        if (fbVer > localVer) {
           migrarProductos(fbData.productos);
           localStorage.setItem(STORE_KEY, JSON.stringify(fbData));
           Object.assign(d, fbData);
@@ -778,6 +783,7 @@ function getFormData() {
     stockWoo: parseInt(document.getElementById('f-stock-woo').value) || 0,
     stockFalabella: parseInt(document.getElementById('f-stock-falabella').value) || 0,
     stockWalmart: parseInt(document.getElementById('f-stock-walmart').value) || 0,
+    stockML: parseInt(document.getElementById('f-stock-ml').value) || 0,
     ancho: parseFloat(document.getElementById('f-ancho').value) || 0,
     largo: parseFloat(document.getElementById('f-largo').value) || 0,
     alto: parseFloat(document.getElementById('f-alto').value) || 0,
@@ -798,6 +804,7 @@ function setFormData(p) {
   document.getElementById('f-stock-woo').value = (p.stockWoo||0);
   document.getElementById('f-stock-falabella').value = (p.stockFalabella||0);
   document.getElementById('f-stock-walmart').value = (p.stockWalmart||0);
+  document.getElementById('f-stock-ml').value = (p.stockML||0);
   document.getElementById('f-ancho').value = p.ancho || '';
   document.getElementById('f-largo').value = p.largo || '';
   document.getElementById('f-alto').value = p.alto || '';
@@ -826,7 +833,7 @@ async function agregarProducto() {
   }
   guardarDatos();
   if (!data.pendientes) data.pendientes = [];
-  data.pendientes.unshift({ id: Date.now(), fecha: hoy(), tipo: 'producto', sku: f.sku, nombre: f.nombre, precio: f.precioVenta, stock: f.stockWoo, detalle: 'Stock WooCommerce: '+f.stockWoo+' | Falabella: '+f.stockFalabella+' | Walmart: '+f.stockWalmart, estado: 'pendiente' });
+  data.pendientes.unshift({ id: Date.now(), fecha: hoy(), tipo: 'producto', sku: f.sku, nombre: f.nombre, precio: f.precioVenta, stock: f.stockWoo, detalle: 'Stock WooCommerce: '+f.stockWoo+' | Falabella: '+f.stockFalabella+' | Walmart: '+f.stockWalmart+' | ML: '+f.stockML, estado: 'pendiente' });
   guardarDatos();
   limpiarFormulario();
   toast('Producto agregado. Stock total: ' + totalStock(f) + ' uds.');
@@ -915,7 +922,7 @@ function anadirNuevoStock() {
       var stockW = prod.stockWoo||0, stockF = prod.stockFalabella||0, stockM = prod.stockWalmart||0;
       abrirModal('Cantidad de compra',
         `<p><strong>${esc(prod.nombre)}</strong></p>
-         <p>Stock actual: Woo ${stockW} | Falabella ${stockF} | Walmart ${stockM} | Total ${totalStock(prod)}</p>
+         <p>Stock actual: Woo ${stockW} | Falabella ${stockF} | Walmart ${stockM} | ML ${p.stockML||0} | Total ${totalStock(prod)}</p>
          <p>Canal: ${canalSelectHtml('modal-canal','woo')}</p>
          <p>Proveedor:</p><input id="modal-prov" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px" value="${esc(prod.proveedor)}">
          <p style="margin-top:8px">Cantidad a agregar:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">`,
@@ -971,6 +978,7 @@ function renderInventario() {
   if (canalFiltro === 'woo') list = list.filter(function(p){return (p.stockWoo||0) > 0});
   else if (canalFiltro === 'falabella') list = list.filter(function(p){return (p.stockFalabella||0) > 0});
   else if (canalFiltro === 'walmart') list = list.filter(function(p){return (p.stockWalmart||0) > 0});
+  else if (canalFiltro === 'ml') list = list.filter(function(p){return (p.stockML||0) > 0});
   else if (canalFiltro === 'sinstock') list = list.filter(function(p){return totalStock(p) === 0});
   var sort = document.getElementById('inv-sort').value;
   if (sort) {
@@ -999,11 +1007,11 @@ function renderInventario() {
     var pesoCls = (pesoVal && pvolVal && pesoVal > pvolVal) ? ' style="background:#d4edda;font-weight:700"' : '';
     var pvolCls = (pvolVal && pesoVal && pvolVal > pesoVal) ? ' style="background:#d4edda;font-weight:700"' : '';
     var caja = p.caja || '--';
-    var stockW = p.stockWoo||0, stockF = p.stockFalabella||0, stockM = p.stockWalmart||0, stockT = totalStock(p);
+    var stockW = p.stockWoo||0, stockF = p.stockFalabella||0, stockM = p.stockWalmart||0, stockL = p.stockML||0, stockT = totalStock(p);
     return `<tr>
       <td>${skuEnc}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
       <td>$${fmt(p.precioCosto)}</td><td>$${fmt(p.precioVenta)}</td>
-      <td>${stockW}</td><td>${stockF}</td><td>${stockM}</td><td style="font-weight:700">${stockT}</td>
+      <td>${stockW}</td><td>${stockF}</td><td>${stockM}</td><td>${stockL}</td><td style="font-weight:700">${stockT}</td>
       <td>${ancho}</td><td>${largo}</td><td>${alto}</td><td${pesoCls}>${peso}</td><td${pvolCls}>${pvol}</td><td>${esc(caja)}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
       <td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido('${skuEnc}')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${skuEnc}')">Eliminar</button></td>
     </tr>`;
@@ -1047,16 +1055,16 @@ function exportarInventarioPDF() {
   doc.setTextColor(136);
   doc.text('Generado: ' + hoy() + ' - ' + list.length + ' producto(s)', 14, 27);
   var rows = list.map(function(p) {
-    return [p.sku||'', p.nombre||'', p.stockWoo||0, p.stockFalabella||0, p.stockWalmart||0, totalStock(p), p.caja||'', p.imagen ? ' ' : ''];
+    return [p.sku||'', p.nombre||'', p.stockWoo||0, p.stockFalabella||0, p.stockWalmart||0, p.stockML||0, totalStock(p), p.caja||'', p.imagen ? ' ' : ''];
   });
   doc.autoTable({
-    head: [['SKU', 'Producto', 'Stock Woo', 'Stock Falabella', 'Stock Walmart', 'Total', 'Caja', 'Imagen']],
+    head: [['SKU', 'Producto', 'Stock Woo', 'Stock Falabella', 'Stock Walmart', 'Stock ML', 'Total', 'Caja', 'Imagen']],
     body: rows,
     startY: 33,
     theme: 'grid',
     headStyles: { fillColor: [45, 42, 59], textColor: 255, fontSize: 8 },
     bodyStyles: { fontSize: 7 },
-    columnStyles: { 0: { cellWidth: 26 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 14, halign: 'center' }, 3: { cellWidth: 14, halign: 'center' }, 4: { cellWidth: 14, halign: 'center' }, 5: { cellWidth: 14, halign: 'center' }, 6: { cellWidth: 22 }, 7: { cellWidth: 22 } },
+    columnStyles: { 0: { cellWidth: 24 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 13, halign: 'center' }, 3: { cellWidth: 13, halign: 'center' }, 4: { cellWidth: 13, halign: 'center' }, 5: { cellWidth: 13, halign: 'center' }, 6: { cellWidth: 13, halign: 'center' }, 7: { cellWidth: 20 }, 8: { cellWidth: 20 } },
     didParseCell: function(data) {
       if (data.section === 'body') {
         var p = list[data.row.index];
@@ -1064,7 +1072,7 @@ function exportarInventarioPDF() {
       }
     },
     didDrawCell: function(data) {
-      if (data.section === 'body' && data.column.index === 7) {
+      if (data.section === 'body' && data.column.index === 8) {
         var p = list[data.row.index];
         if (p && p.imagen) {
           try { doc.addImage(p.imagen, 'JPEG', data.cell.x + 1, data.cell.y + 1, 20, 20); } catch(e) {}
@@ -1086,6 +1094,7 @@ function editarProductoRapido(sku) {
       '<p><label style="font-size:11px;color:#666">Stock WooCommerce</label><br><input id="edt-stock-woo" type="number" value="'+(prod.stockWoo||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Stock Falabella</label><br><input id="edt-stock-falabella" type="number" value="'+(prod.stockFalabella||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Stock Walmart</label><br><input id="edt-stock-walmart" type="number" value="'+(prod.stockWalmart||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+      '<p><label style="font-size:11px;color:#666">Stock Mercado Libre</label><br><input id="edt-stock-ml" type="number" value="'+(prod.stockML||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Ancho (cm)</label><br><input id="edt-ancho" type="number" step="0.1" value="'+(prod.ancho||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Largo (cm)</label><br><input id="edt-largo" type="number" step="0.1" value="'+(prod.largo||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Alto (cm)</label><br><input id="edt-alto" type="number" step="0.1" value="'+(prod.alto||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
@@ -1106,6 +1115,7 @@ function editarProductoRapido(sku) {
       prod.stockWoo = parseInt(document.getElementById('edt-stock-woo').value) || 0;
       prod.stockFalabella = parseInt(document.getElementById('edt-stock-falabella').value) || 0;
       prod.stockWalmart = parseInt(document.getElementById('edt-stock-walmart').value) || 0;
+      prod.stockML = parseInt(document.getElementById('edt-stock-ml').value) || 0;
       prod.ancho = parseFloat(document.getElementById('edt-ancho').value) || 0;
       prod.largo = parseFloat(document.getElementById('edt-largo').value) || 0;
       prod.alto = parseFloat(document.getElementById('edt-alto').value) || 0;
@@ -1428,9 +1438,9 @@ async function registrarVenta() {
   if (!confirm('Registrar venta de ' + items.length + ' producto(s)?')) return;
   let cliente = data.cotizacion.cliente || prompt('Nombre del cliente:', 'Cliente final') || 'Cliente final';
   let pago = prompt('M&eacute;todo de pago (Transferencia/Tarjeta/Efectivo/Otro):', 'Transferencia') || 'Transferencia';
-  let canal = prompt('Canal de venta (woo / falabella / walmart):', 'woo') || 'woo';
+  let canal = prompt('Canal de venta (woo / falabella / walmart / ml):', 'woo') || 'woo';
   canal = canal.toLowerCase();
-  if (!['woo','falabella','walmart'].includes(canal)) canal = 'woo';
+  if (!['woo','falabella','walmart','ml'].includes(canal)) canal = 'woo';
   let stockIssues = false;
   const codigo = data.cotizacion.codigo;
   const key = stockKey(canal);
@@ -1581,7 +1591,7 @@ function renderKardex() {
   if (q) {
     const prod = data.productos.find(p => p.sku.toLowerCase().includes(q));
     if (prod) {
-      document.getElementById('kardex-stock').textContent = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | Total: '+totalStock(prod);
+      document.getElementById('kardex-stock').textContent = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | ML: '+(prod.stockML||0)+' | Total: '+totalStock(prod);
     } else {
       document.getElementById('kardex-stock').textContent = '';
     }
@@ -1637,7 +1647,7 @@ function seleccionarProductoKardex(sku) {
 async function registrarEntrada() {
   abrirModalProducto('Registrar Entrada', function(prod) {
     cerrarModal();
-    var totalStr = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | Total: '+totalStock(prod);
+    var totalStr = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | ML: '+(prod.stockML||0)+' | Total: '+totalStock(prod);
     abrirModal('Cantidad de entrada',
       '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + totalStr + '</p><p>Canal: ' + canalSelectHtml('modal-canal','woo') + '</p><p>Cantidad a ingresar:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
       function() {
@@ -1667,7 +1677,7 @@ async function registrarEntrada() {
 
 async function registrarSalida() {
   abrirModalProducto('Registrar Salida', function(prod) {
-    var totalStr = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | Total: '+totalStock(prod);
+    var totalStr = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | ML: '+(prod.stockML||0)+' | Total: '+totalStock(prod);
     if (totalStock(prod) <= 0) { toast('Stock total: 0 uds. No se puede retirar'); return; }
     cerrarModal();
     abrirModal('Cantidad de salida',
@@ -1701,7 +1711,7 @@ async function registrarSalida() {
 async function registrarAjuste() {
   abrirModalProducto('Registrar Ajuste', function(prod) {
     cerrarModal();
-    var totalStr = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | Total: '+totalStock(prod);
+    var totalStr = 'Woo: '+(prod.stockWoo||0)+' | Falabella: '+(prod.stockFalabella||0)+' | Walmart: '+(prod.stockWalmart||0)+' | ML: '+(prod.stockML||0)+' | Total: '+totalStock(prod);
     abrirModal('Ajuste de stock',
       '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + totalStr + '</p><p>Canal: ' + canalSelectHtml('modal-canal','woo') + '</p><p>Concepto:</p><input id="modal-concepto" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px" value="Ajuste fisico"><p style="margin-top:8px">Cantidad (positiva = aumenta, negativa = disminuye):</p><input id="modal-cant" type="number" value="0" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
       function() {
@@ -1740,7 +1750,7 @@ function exportarExcelCompleto() {
   const prodData = data.productos.map(p => ({
     SKU: p.sku, 'C&oacute;d. Barra': p.codBarra, Producto: p.nombre,
     'Precio Costo': p.precioCosto, 'Precio Venta': p.precioVenta,
-    'Stock WooCommerce': p.stockWoo||0, 'Stock Falabella': p.stockFalabella||0, 'Stock Walmart': p.stockWalmart||0, 'Stock Total': totalStock(p),
+    'Stock WooCommerce': p.stockWoo||0, 'Stock Falabella': p.stockFalabella||0, 'Stock Walmart': p.stockWalmart||0, 'Stock Mercado Libre': p.stockML||0, 'Stock Total': totalStock(p),
     'Ancho (cm)': p.ancho || 0, 'Largo (cm)': p.largo || 0, 'Alto (cm)': p.alto || 0, 'Peso (kg)': p.peso || 0, 'Peso Vol. (kg)': (p.ancho && p.largo && p.alto) ? parseFloat(((p.ancho * p.largo * p.alto) / 4000).toFixed(2)) : 0, 'Caja': p.caja || '',
     Proveedor: p.proveedor, 'Observaci&oacute;n Compra': p.observacionCompra
   }));
@@ -1840,6 +1850,7 @@ function importarExcel() {
             stockWoo: parseInt(r['Stock WooCommerce'] || r['stockWoo'] || r['Stock'] || r['stock'] || 0),
             stockFalabella: parseInt(r['Stock Falabella'] || r['stockFalabella'] || 0),
             stockWalmart: parseInt(r['Stock Walmart'] || r['stockWalmart'] || 0),
+            stockML: parseInt(r['Stock Mercado Libre'] || r['stockML'] || 0),
             ancho: parseFloat(r['Ancho (cm)'] || r['ancho'] || 0),
             largo: parseFloat(r['Largo (cm)'] || r['largo'] || 0),
             alto: parseFloat(r['Alto (cm)'] || r['alto'] || 0),
@@ -1941,6 +1952,7 @@ function restaurarStockYkardex() {
               existente.stockWoo = parseInt(r['Stock WooCommerce'] || r['stockWoo'] || r['Stock'] || r['stock'] || 0);
               existente.stockFalabella = parseInt(r['Stock Falabella'] || r['stockFalabella'] || 0);
               existente.stockWalmart = parseInt(r['Stock Walmart'] || r['stockWalmart'] || 0);
+              existente.stockML = parseInt(r['Stock Mercado Libre'] || r['stockML'] || 0);
               existente.precioCosto = parseFloat(r['Precio Costo'] || r['precioCosto'] || 0);
               existente.precioVenta = parseFloat(r['Precio Venta'] || r['precioVenta'] || 0);
               existente.proveedor = String(r['Proveedor'] || r['proveedor'] || '');
@@ -2189,48 +2201,41 @@ function guardarEdicionCotizacion(codigo) {
   // Si cambia de Enviada a Vendida, registrar venta
   if (estadoAnterior !== 'Vendida' && nuevoEstado === 'Vendida') {
     const pago = prompt('M&eacute;todo de pago (Transferencia/Tarjeta/Efectivo/Otro):', 'Transferencia') || 'Transferencia';
-    let canal = prompt('Canal de venta (woo / falabella / walmart):', 'woo') || 'woo';
+    let canal = prompt('Canal de venta (woo / falabella / walmart / ml):', 'woo') || 'woo';
     canal = canal.toLowerCase();
-    if (!['woo','falabella','walmart'].includes(canal)) canal = 'woo';
+    if (!['woo','falabella','walmart','ml'].includes(canal)) canal = 'woo';
     const key = stockKey(canal);
-    let stockIssues = false;
+    if (!data.ventas) data.ventas = [];
+    if (!data.kardex) data.kardex = [];
+    if (!data.pendientes) data.pendientes = [];
     c.items.forEach(function(item) {
-      const prod = data.productos.find(function(p) { return p.sku === item.sku; });
-      if (!prod) return;
-      let cant = item.cantidad;
-      if ((prod[key]||0) < cant) {
-        toast('Stock insuficiente en '+canalLabel(canal)+' para ' + prod.nombre + ' (' + (prod[key]||0) + ' de ' + cant + ')');
-        cant = prod[key]||0;
-        stockIssues = true;
+      const prod = data.productos.find(function(p) { return p.sku.toLowerCase() === item.sku.toLowerCase(); });
+      const cant = item.cantidad;
+      if (prod) {
+        const stockAnt = prod[key]||0;
+        prod[key] = stockAnt - cant;
+        data.kardex.push({
+          id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+          tipo: 'Salida', concepto: 'Venta', cantidad: -cant,
+          stockAnt: stockAnt, stockRes: prod[key],
+          referencia: 'Cot. ' + codigo,
+          proveedor: '', observacionCompra: '', observacionVenta: item.observacion || '', canal: canal
+        });
+        data.pendientes.push({
+          tipo: 'producto', fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+          precio: prod.precioVenta || 0, stock: prod[key]||0,
+          detalle: 'Venta Cot. ' + codigo + ' (cant: ' + cant + ', stock restante: ' + (prod[key]||0) + ')',
+          estado: 'pendiente'
+        });
       }
-      if (cant <= 0) return;
-      const stockAnt = prod[key]||0;
-      prod[key] = stockAnt - cant;
-      data.kardex.push({
-        id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
-        tipo: 'Salida', concepto: 'Venta', cantidad: -cant,
-        stockAnt: stockAnt, stockRes: prod[key],
-        referencia: 'Cot. ' + codigo,
-        proveedor: '', observacionCompra: '', observacionVenta: item.observacion || '', canal: canal
-      });
       data.ventas.push({
-        id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+        id: Date.now() + Math.random(), fecha: hoy(), sku: item.sku, nombre: item.nombre,
         cantidad: cant, precioUnitario: item.precioUnitario,
         total: cant * item.precioUnitario,
         cliente: c.cliente, pago: pago, estado: 'Pagado',
         referencia: codigo, observacion: item.observacion || '', canal: canal
       });
-      if (!data.pendientes) data.pendientes = [];
-      data.pendientes.push({
-        tipo: 'producto', fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
-        precio: prod.precioVenta || 0, stock: prod[key]||0,
-        detalle: 'Venta Cot. ' + codigo + ' (cant: ' + cant + ', stock restante: ' + (prod[key]||0) + ')',
-        estado: 'pendiente'
-      });
     });
-    if (stockIssues) {
-      toast('Venta registrada con ajustes de stock: ' + codigo);
-    }
   }
 
   c.estado = nuevoEstado;
@@ -2505,7 +2510,9 @@ function cerrarSesion() {
 }
 
 function iniciarApp() {
-  if (fbDoc) sincronizarFirebase();
+  // Filtro mes actual por defecto en Ventas
+  var mesSel = document.getElementById('ventas-mes');
+  if (mesSel) mesSel.value = pad(new Date().getMonth() + 1);
   renderCotizador();
   renderVentas();
   renderInventario();
@@ -2562,12 +2569,12 @@ function renderDashboard() {
     html += '<p style="color:#888">Sin ventas registradas</p>';
   } else {
     if (ventasConCanal) {
-      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">WooCommerce</th><th style="text-align:right">Falabella</th><th style="text-align:right">Walmart</th><th style="text-align:right">Total</th></tr></thead><tbody>';
+      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">WooCommerce</th><th style="text-align:right">Falabella</th><th style="text-align:right">Walmart</th><th style="text-align:right">Mercado Libre</th><th style="text-align:right">Total</th></tr></thead><tbody>';
       sorted.forEach(function(m) {
         var parts = m.split('-');
         var label = nombresMes[parseInt(parts[1],10)-1] + ' ' + parts[0];
-        var vWoo = mesesCanal[m+'|woo']||0, vFal = mesesCanal[m+'|falabella']||0, vWal = mesesCanal[m+'|walmart']||0;
-        html += '<tr><td>' + label + '</td><td style="text-align:right">$' + fmt(vWoo) + '</td><td style="text-align:right">$' + fmt(vFal) + '</td><td style="text-align:right">$' + fmt(vWal) + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td></tr>';
+        var vWoo = mesesCanal[m+'|woo']||0, vFal = mesesCanal[m+'|falabella']||0, vWal = mesesCanal[m+'|walmart']||0, vML = mesesCanal[m+'|ml']||0;
+        html += '<tr><td>' + label + '</td><td style="text-align:right">$' + fmt(vWoo) + '</td><td style="text-align:right">$' + fmt(vFal) + '</td><td style="text-align:right">$' + fmt(vWal) + '</td><td style="text-align:right">$' + fmt(vML) + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td></tr>';
       });
       html += '</tbody></table></div>';
     } else {
