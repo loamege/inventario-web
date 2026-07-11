@@ -1561,9 +1561,24 @@ async function registrarVenta() {
   const items = data.cotizacion.items;
   if (items.length === 0) { toast('No hay productos en la cotizaci&oacute;n'); return; }
   if (!confirm('Registrar venta de ' + items.length + ' producto(s)?')) return;
-  let cliente = data.cotizacion.cliente || prompt('Nombre del cliente:', 'Cliente final') || 'Cliente final';
-  let pago = prompt('M&eacute;todo de pago (Transferencia/Tarjeta/Efectivo/Otro):', 'Transferencia') || 'Transferencia';
-  let canal = prompt('Canal de venta (woo / falabella / walmart / ml):', 'woo') || 'woo';
+  let cliente = data.cotizacion.cliente || '';
+  let pago = 'Transferencia';
+  let canal = 'woo';
+  var confirmed = await new Promise(function(resolve) {
+    abrirModal('Registrar Venta',
+      '<p><label style="font-weight:600">Cliente</label><input id="rv-cliente" class="modal-input" value="' + esc(cliente) + '" placeholder="Cliente final"></p>' +
+      '<p><label style="font-weight:600">M&eacute;todo de pago</label><select id="rv-pago" class="modal-input"><option value="Transferencia" selected>Transferencia</option><option value="Tarjeta">Tarjeta</option><option value="Efectivo">Efectivo</option><option value="Otro">Otro</option></select></p>' +
+      '<p><label style="font-weight:600">Canal de venta</label><select id="rv-canal" class="modal-input">' + canalSelectHtml('rv-canal', 'woo') + '</select></p>' +
+      '<style>.modal-input{width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px;box-sizing:border-box}</style>',
+      function() {
+        cliente = document.getElementById('rv-cliente').value.trim() || 'Cliente final';
+        pago = document.getElementById('rv-pago').value;
+        canal = document.getElementById('rv-canal').value.toLowerCase();
+        resolve(true);
+      }, function() { resolve(false); }
+    );
+  });
+  if (!confirmed) return;
   canal = canal.toLowerCase();
   if (!['woo','falabella','walmart','ml'].includes(canal)) canal = 'woo';
   let stockIssues = false;
@@ -2331,42 +2346,58 @@ function guardarEdicionCotizacion(codigo) {
 
   // Si cambia de Enviada a Vendida, registrar venta
   if (estadoAnterior !== 'Vendida' && nuevoEstado === 'Vendida') {
-    const pago = prompt('M&eacute;todo de pago (Transferencia/Tarjeta/Efectivo/Otro):', 'Transferencia') || 'Transferencia';
-    let canal = prompt('Canal de venta (woo / falabella / walmart / ml):', 'woo') || 'woo';
-    canal = canal.toLowerCase();
-    if (!['woo','falabella','walmart','ml'].includes(canal)) canal = 'woo';
-    const key = stockKey(canal);
-    if (!data.ventas) data.ventas = [];
-    if (!data.kardex) data.kardex = [];
-    if (!data.pendientes) data.pendientes = [];
-    c.items.forEach(function(item) {
-      const prod = data.productos.find(function(p) { return p.sku.toLowerCase() === item.sku.toLowerCase(); });
-      const cant = item.cantidad;
-      if (prod) {
-        const stockAnt = prod[key]||0;
-        prod[key] = stockAnt - cant;
-        data.kardex.push({
-          id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
-          tipo: 'Salida', concepto: 'Venta', cantidad: -cant,
-          stockAnt: stockAnt, stockRes: prod[key],
-          referencia: 'Cot. ' + codigo,
-          proveedor: '', observacionCompra: '', observacionVenta: item.observacion || '', canal: canal
+    abrirModal('Registrar Venta',
+      '<p><label style="font-weight:600">M&eacute;todo de pago</label><select id="cv-pago" class="modal-input"><option value="Transferencia" selected>Transferencia</option><option value="Tarjeta">Tarjeta</option><option value="Efectivo">Efectivo</option><option value="Otro">Otro</option></select></p>' +
+      '<p><label style="font-weight:600">Canal de venta</label><select id="cv-canal" class="modal-input">' + canalSelectHtml('cv-canal', 'woo') + '</select></p>' +
+      '<style>.modal-input{width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px;box-sizing:border-box}</style>',
+      function() {
+        var pago = document.getElementById('cv-pago').value;
+        var canal = document.getElementById('cv-canal').value.toLowerCase();
+        if (!['woo','falabella','walmart','ml'].includes(canal)) canal = 'woo';
+        var key = stockKey(canal);
+        if (!data.ventas) data.ventas = [];
+        if (!data.kardex) data.kardex = [];
+        if (!data.pendientes) data.pendientes = [];
+        c.items.forEach(function(item) {
+          var prod = data.productos.find(function(p) { return p.sku.toLowerCase() === item.sku.toLowerCase(); });
+          var cant = item.cantidad;
+          if (prod) {
+            var stockAnt = prod[key]||0;
+            prod[key] = stockAnt - cant;
+            data.kardex.push({
+              id: Date.now() + Math.random(), fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+              tipo: 'Salida', concepto: 'Venta', cantidad: -cant,
+              stockAnt: stockAnt, stockRes: prod[key],
+              referencia: 'Cot. ' + codigo,
+              proveedor: '', observacionCompra: '', observacionVenta: item.observacion || '', canal: canal
+            });
+            data.pendientes.push({
+              tipo: 'producto', fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
+              precio: prod.precioVenta || 0, stock: prod[key]||0,
+              detalle: 'Venta Cot. ' + codigo + ' (cant: ' + cant + ', stock restante: ' + (prod[key]||0) + ')',
+              estado: 'pendiente'
+            });
+          }
+          data.ventas.push({
+            id: Date.now() + Math.random(), fecha: hoy(), sku: item.sku, nombre: item.nombre,
+            cantidad: cant, precioUnitario: item.precioUnitario,
+            total: cant * item.precioUnitario,
+            cliente: c.cliente, pago: pago, estado: 'Pagado',
+            referencia: codigo, observacion: item.observacion || '', canal: canal
+          });
         });
-        data.pendientes.push({
-          tipo: 'producto', fecha: hoy(), sku: prod.sku, nombre: prod.nombre,
-          precio: prod.precioVenta || 0, stock: prod[key]||0,
-          detalle: 'Venta Cot. ' + codigo + ' (cant: ' + cant + ', stock restante: ' + (prod[key]||0) + ')',
-          estado: 'pendiente'
-        });
+        c.estado = nuevoEstado;
+        guardarDatos();
+        renderCotizaciones();
+        renderVentas();
+        renderKardex();
+        renderPendientes();
+        renderInventario();
+        cerrarModal();
+        toast('Cotizaci&oacute;n actualizada: ' + codigo);
       }
-      data.ventas.push({
-        id: Date.now() + Math.random(), fecha: hoy(), sku: item.sku, nombre: item.nombre,
-        cantidad: cant, precioUnitario: item.precioUnitario,
-        total: cant * item.precioUnitario,
-        cliente: c.cliente, pago: pago, estado: 'Pagado',
-        referencia: codigo, observacion: item.observacion || '', canal: canal
-      });
-    });
+    );
+    return;
   }
 
   c.estado = nuevoEstado;
@@ -2378,7 +2409,6 @@ function guardarEdicionCotizacion(codigo) {
   renderInventario();
   cerrarModal();
   toast('Cotizaci&oacute;n actualizada: ' + codigo);
-}
 
 // ===== Eliminar registros =====
 function eliminarProductoDirecto(sku) {
@@ -2411,7 +2441,7 @@ function abrirModalVenta(titulo, venta) {
   var f = venta || {};
   var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">';
   html += '<div><label style="font-weight:600">Fecha</label><input id="vf-fecha" type="date" class="modal-input" value="' + (f.fecha||'') + '"></div>';
-  html += '<div><label style="font-weight:600">Canal</label><select id="vf-canal" class="modal-input">' + canalSelectHtml('vf-canal', f.canal||'woo') + '</select></div>';
+  html += '<div><label style="font-weight:600">Canal</label><select id="vf-canal" class="modal-input" onchange="autoFillPrecioVenta()">' + canalSelectHtml('vf-canal', f.canal||'woo') + '</select></div>';
   html += '<div><label style="font-weight:600">SKU</label><div style="display:flex;gap:4px"><input id="vf-sku" class="modal-input" style="flex:1" value="' + esc(f.sku||'') + '"><button class="btn btn-outline" style="font-size:11px;padding:4px 8px;white-space:nowrap" onclick="buscarProductoVenta()" type="button">SKU</button></div></div>';
   html += '<div><label style="font-weight:600">Producto</label><input id="vf-nombre" class="modal-input" value="' + esc(f.nombre||'') + '"></div>';
   html += '<div><label style="font-weight:600">Cantidad</label><input id="vf-cant" type="number" class="modal-input" value="' + (f.cantidad||0) + '" oninput="calcTotalVenta()"></div>';
@@ -2517,8 +2547,21 @@ function seleccionarProdVenta(idx) {
   }
   document.getElementById('vf-sku').value = p.sku;
   document.getElementById('vf-nombre').value = p.nombre;
-  if (!document.getElementById('vf-pu').value || parseFloat(document.getElementById('vf-pu').value) === 0) {
-    document.getElementById('vf-pu').value = p.precioVenta || 0;
+  autoFillPrecioVenta();
+}
+
+function autoFillPrecioVenta() {
+  var pu = document.getElementById('vf-pu');
+  var sku = document.getElementById('vf-sku').value.trim();
+  if (!sku) return;
+  var p = data.productos.find(function(x) { return x.sku === sku; });
+  if (!p) return;
+  var canal = document.getElementById('vf-canal').value;
+  var priceKey = { falabella: 'precioFalabella', walmart: 'precioWalmart', ml: 'precioML' }[canal];
+  if (priceKey && p[priceKey]) {
+    pu.value = p[priceKey];
+  } else {
+    pu.value = p.precioVenta || 0;
   }
   calcTotalVenta();
 }
