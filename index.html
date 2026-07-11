@@ -2650,27 +2650,33 @@ function iniciarSesion() {
   const btn = document.querySelector('#login-card .btn');
   btn.disabled = true;
   btn.textContent = 'Ingresando...';
+  function loginLocal(email, pass) {
+    if (email === 'loa.ayalam@gmail.com' && pass === 'Cuncunita2025!') {
+      sessionStorage.setItem('luciauth', '1');
+      document.getElementById('login-overlay').style.display = 'none';
+      toast('Bienvenido');
+      iniciarApp();
+      return true;
+    }
+    return false;
+  }
   if (typeof firebase !== 'undefined' && firebase.auth) {
     firebase.auth().signInWithEmailAndPassword(email, pass)
+      .then(function() {})
       .catch(function(e) {
         btn.disabled = false;
         btn.textContent = 'INGRESAR';
+        if (loginLocal(email, pass)) return;
         document.getElementById('login-error').textContent = (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential')
           ? 'Credenciales incorrectas' : 'Error: ' + e.message;
         document.getElementById('login-error').style.display = 'block';
       });
   } else {
-    if (email === 'Osvaldo' && pass === 'Cuncunita2025!') {
-      sessionStorage.setItem('luciauth', '1');
-      document.getElementById('login-overlay').style.display = 'none';
-      toast('Bienvenido, Osvaldo');
-      iniciarApp();
-    } else {
-      btn.disabled = false;
-      btn.textContent = 'INGRESAR';
-      document.getElementById('login-error').textContent = 'Credenciales incorrectas';
-      document.getElementById('login-error').style.display = 'block';
-    }
+    if (loginLocal(email, pass)) return;
+    btn.disabled = false;
+    btn.textContent = 'INGRESAR';
+    document.getElementById('login-error').textContent = 'Credenciales incorrectas';
+    document.getElementById('login-error').style.display = 'block';
   }
 }
 
@@ -2863,7 +2869,10 @@ function eliminarPendiente(idx) {
       } else {
         document.getElementById('login-user').value = '';
         document.getElementById('login-pass').value = '';
-        document.getElementById('login-overlay').style.display = '';
+        if (sessionStorage.getItem('luciauth')) {
+          document.getElementById('login-overlay').style.display = 'none';
+          iniciarApp();
+        }
       }
     });
   } else if (sessionStorage.getItem('luciauth')) {
