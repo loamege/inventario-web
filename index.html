@@ -176,6 +176,9 @@ tbody tr:hover{background:#F5F0FF}
       <label>Nombre del Producto</label><input id="f-nombre">
       <label>Precio Costo</label><input id="f-costo" type="number" step="0.01">
       <label>Precio Venta</label><input id="f-venta" type="number" step="0.01">
+      <label>Precio Falabella</label><input id="f-precio-falabella" type="number" step="0.01">
+      <label>Precio Walmart</label><input id="f-precio-walmart" type="number" step="0.01">
+      <label>Precio Mercado Libre</label><input id="f-precio-ml" type="number" step="0.01">
       <label>Stock WooCommerce</label><input id="f-stock-woo" type="number">
       <label>Asig. Falabella</label><input id="f-stock-falabella" type="number">
       <label>Asig. Walmart</label><input id="f-stock-walmart" type="number">
@@ -237,7 +240,7 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Stock Woo</th><th>Asig. Falabella</th><th>Asig. Walmart</th><th>Asig. ML</th><th>Stock Total</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>P. Fala</th><th>P. Wal</th><th>P. ML</th><th>Stock Woo</th><th>Asig. Falabella</th><th>Asig. Walmart</th><th>Asig. ML</th><th>Stock Total</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="inv-body"></tbody></table>
   </div>
 </div>
@@ -258,7 +261,7 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Asig. Falabella</th><th>Stock Real</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Falabella</th><th>Asig. Falabella</th><th>Stock Real</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="fal-body"></tbody></table>
   </div>
 </div>
@@ -279,7 +282,7 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Asig. ML</th><th>Stock Real</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. ML</th><th>Asig. ML</th><th>Stock Real</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="ml-body"></tbody></table>
   </div>
 </div>
@@ -300,7 +303,7 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>Asig. Walmart</th><th>Stock Real</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Walmart</th><th>Asig. Walmart</th><th>Stock Real</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="wal-body"></tbody></table>
   </div>
 </div>
@@ -536,6 +539,9 @@ function migrarProductos(lista) {
     if (p.stockFalabella === undefined) p.stockFalabella = 0;
     if (p.stockWalmart === undefined) p.stockWalmart = 0;
     if (p.stockML === undefined) p.stockML = 0;
+    if (p.precioFalabella === undefined) p.precioFalabella = 0;
+    if (p.precioWalmart === undefined) p.precioWalmart = 0;
+    if (p.precioML === undefined) p.precioML = 0;
   });
 }
 
@@ -849,6 +855,9 @@ function getFormData() {
     nombre: document.getElementById('f-nombre').value.trim(),
     precioCosto: parseFloat(document.getElementById('f-costo').value) || 0,
     precioVenta: parseFloat(document.getElementById('f-venta').value) || 0,
+    precioFalabella: parseFloat(document.getElementById('f-precio-falabella').value) || 0,
+    precioWalmart: parseFloat(document.getElementById('f-precio-walmart').value) || 0,
+    precioML: parseFloat(document.getElementById('f-precio-ml').value) || 0,
     stockWoo: parseInt(document.getElementById('f-stock-woo').value) || 0,
     stockFalabella: parseInt(document.getElementById('f-stock-falabella').value) || 0,
     stockWalmart: parseInt(document.getElementById('f-stock-walmart').value) || 0,
@@ -870,6 +879,9 @@ function setFormData(p) {
   document.getElementById('f-nombre').value = p.nombre || '';
   document.getElementById('f-costo').value = p.precioCosto || '';
   document.getElementById('f-venta').value = p.precioVenta || '';
+  document.getElementById('f-precio-falabella').value = p.precioFalabella || '';
+  document.getElementById('f-precio-walmart').value = p.precioWalmart || '';
+  document.getElementById('f-precio-ml').value = p.precioML || '';
   document.getElementById('f-stock-woo').value = (p.stockWoo||0);
   document.getElementById('f-stock-falabella').value = (p.stockFalabella||0);
   document.getElementById('f-stock-walmart').value = (p.stockWalmart||0);
@@ -936,7 +948,8 @@ async function actualizarProducto() {
     ...data.productos[idx],
     codBarra: f.codBarra, nombre: f.nombre,
     precioCosto: f.precioCosto, precioVenta: f.precioVenta,
-    stockWoo: f.stockWoo, stockFalabella: f.stockFalabella, stockWalmart: f.stockWalmart,
+    precioFalabella: f.precioFalabella, precioWalmart: f.precioWalmart, precioML: f.precioML,
+    stockWoo: f.stockWoo, stockFalabella: f.stockFalabella, stockWalmart: f.stockWalmart, stockML: f.stockML,
     ancho: f.ancho, largo: f.largo, alto: f.alto, peso: f.peso,
     caja: f.caja,
     proveedor: f.proveedor, observacionCompra: f.observacionCompra,
@@ -1077,9 +1090,11 @@ function renderInventario() {
     var pvolCls = (pvolVal && pesoVal && pvolVal > pesoVal) ? ' style="background:#d4edda;font-weight:700"' : '';
     var caja = p.caja || '--';
     var stockW = p.stockWoo||0, stockF = p.stockFalabella||0, stockM = p.stockWalmart||0, stockL = p.stockML||0, stockT = totalStock(p);
+    var pf = p.precioFalabella||0, pw = p.precioWalmart||0, pm = p.precioML||0;
     return `<tr>
       <td>${skuEnc}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
       <td>$${fmt(p.precioCosto)}</td><td>$${fmt(p.precioVenta)}</td>
+      <td>${pf ? '$'+fmt(pf) : '--'}</td><td>${pw ? '$'+fmt(pw) : '--'}</td><td>${pm ? '$'+fmt(pm) : '--'}</td>
       <td>${stockW}</td><td>${stockF}</td><td>${stockM}</td><td>${stockL}</td><td style="font-weight:700">${stockT}</td>
       <td>${ancho}</td><td>${largo}</td><td>${alto}</td><td${pesoCls}>${peso}</td><td${pvolCls}>${pvol}</td><td>${esc(caja)}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
       <td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido('${skuEnc}')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${skuEnc}')">Eliminar</button></td>
@@ -1087,7 +1102,7 @@ function renderInventario() {
   }).join('');
 }
 
-function renderCanal(canal, stockKey, searchId, countId, sortId, bodyId) {
+function renderCanal(canal, stockKey, priceKey, searchId, countId, sortId, bodyId) {
   var q = (document.getElementById(searchId).value || '').toLowerCase();
   var list = data.productos.filter(function(p){return (p[stockKey]||0) > 0});
   if (q) list = list.filter(function(p){return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q)});
@@ -1109,7 +1124,7 @@ function renderCanal(canal, stockKey, searchId, countId, sortId, bodyId) {
     var img = p.imagen ? '<img class="img-preview" src="'+p.imagen+'" alt="">' : '--';
     return '<tr>' +
       '<td>'+skuEnc+'</td><td>'+esc(p.codBarra)+'</td><td>'+esc(p.nombre)+'</td>' +
-      '<td>$'+fmt(p.precioCosto)+'</td><td>$'+fmt(p.precioVenta)+'</td>' +
+      '<td>$'+fmt(p.precioCosto)+'</td><td>$'+fmt(p[priceKey] || p.precioVenta)+'</td>' +
       '<td style="font-weight:700">'+(p[stockKey]||0)+'</td><td>'+(p.stockWoo||0)+'</td>' +
       '<td>'+esc(p.proveedor)+'</td><td>'+img+'</td>' +
       '<td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido(\''+skuEnc+'\')">Editar</button>' +
@@ -1118,9 +1133,9 @@ function renderCanal(canal, stockKey, searchId, countId, sortId, bodyId) {
   }).join('');
 }
 
-function renderFalabella() { renderCanal('falabella', 'stockFalabella', 'fal-search', 'fal-count', 'fal-sort', 'fal-body'); }
-function renderML() { renderCanal('ml', 'stockML', 'ml-search', 'ml-count', 'ml-sort', 'ml-body'); }
-function renderWalmart() { renderCanal('walmart', 'stockWalmart', 'wal-search', 'wal-count', 'wal-sort', 'wal-body'); }
+function renderFalabella() { renderCanal('falabella', 'stockFalabella', 'precioFalabella', 'fal-search', 'fal-count', 'fal-sort', 'fal-body'); }
+function renderML() { renderCanal('ml', 'stockML', 'precioML', 'ml-search', 'ml-count', 'ml-sort', 'ml-body'); }
+function renderWalmart() { renderCanal('walmart', 'stockWalmart', 'precioWalmart', 'wal-search', 'wal-count', 'wal-sort', 'wal-body'); }
 
 function exportarInventarioPDF() {
   var q = (document.getElementById('inv-search').value || '').toLowerCase();
@@ -1195,6 +1210,9 @@ function editarProductoRapido(sku) {
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' +
       '<p><label style="font-size:11px;color:#666">Precio Costo</label><br><input id="edt-costo" type="number" step="0.01" value="'+(prod.precioCosto||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Precio Venta</label><br><input id="edt-venta" type="number" step="0.01" value="'+(prod.precioVenta||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+      '<p><label style="font-size:11px;color:#666">P. Falabella</label><br><input id="edt-precio-falabella" type="number" step="0.01" value="'+(prod.precioFalabella||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+      '<p><label style="font-size:11px;color:#666">P. Walmart</label><br><input id="edt-precio-walmart" type="number" step="0.01" value="'+(prod.precioWalmart||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
+      '<p><label style="font-size:11px;color:#666">P. Mercado Libre</label><br><input id="edt-precio-ml" type="number" step="0.01" value="'+(prod.precioML||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Stock WooCommerce</label><br><input id="edt-stock-woo" type="number" value="'+(prod.stockWoo||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Asig. Falabella</label><br><input id="edt-stock-falabella" type="number" value="'+(prod.stockFalabella||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
       '<p><label style="font-size:11px;color:#666">Asig. Walmart</label><br><input id="edt-stock-walmart" type="number" value="'+(prod.stockWalmart||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:14px"></p>' +
@@ -1216,6 +1234,9 @@ function editarProductoRapido(sku) {
     function() {
       prod.precioCosto = parseFloat(document.getElementById('edt-costo').value) || 0;
       prod.precioVenta = parseFloat(document.getElementById('edt-venta').value) || 0;
+      prod.precioFalabella = parseFloat(document.getElementById('edt-precio-falabella').value) || 0;
+      prod.precioWalmart = parseFloat(document.getElementById('edt-precio-walmart').value) || 0;
+      prod.precioML = parseFloat(document.getElementById('edt-precio-ml').value) || 0;
       prod.stockWoo = parseInt(document.getElementById('edt-stock-woo').value) || 0;
       prod.stockFalabella = parseInt(document.getElementById('edt-stock-falabella').value) || 0;
       prod.stockWalmart = parseInt(document.getElementById('edt-stock-walmart').value) || 0;
@@ -1782,7 +1803,6 @@ async function registrarEntrada() {
 async function registrarSalida() {
   abrirModalProducto('Registrar Salida', function(prod) {
     var totalStr = 'Stock Real: '+(prod.stockWoo||0)+' | Asig. Falabella: '+(prod.stockFalabella||0)+' | Asig. Walmart: '+(prod.stockWalmart||0)+' | Asig. ML: '+(prod.stockML||0);
-    if (totalStock(prod) <= 0) { toast('Stock real: 0 uds. No se puede retirar'); return; }
     cerrarModal();
     abrirModal('Cantidad de salida',
       '<p><strong>' + esc(prod.nombre) + '</strong></p><p>Stock actual: ' + totalStr + '</p><p>Canal: ' + canalSelectHtml('modal-canal','woo') + '</p><p>Cantidad a retirar:</p><input id="modal-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
@@ -1854,6 +1874,7 @@ function exportarExcelCompleto() {
   const prodData = data.productos.map(p => ({
     SKU: p.sku, 'C&oacute;d. Barra': p.codBarra, Producto: p.nombre,
     'Precio Costo': p.precioCosto, 'Precio Venta': p.precioVenta,
+    'Precio Falabella': p.precioFalabella||0, 'Precio Walmart': p.precioWalmart||0, 'Precio Mercado Libre': p.precioML||0,
     'Stock WooCommerce': p.stockWoo||0, 'Asig. Falabella': p.stockFalabella||0, 'Asig. Walmart': p.stockWalmart||0, 'Asig. Mercado Libre': p.stockML||0, 'Stock Total': p.stockWoo||0,
     'Ancho (cm)': p.ancho || 0, 'Largo (cm)': p.largo || 0, 'Alto (cm)': p.alto || 0, 'Peso (kg)': p.peso || 0, 'Peso Vol. (kg)': (p.ancho && p.largo && p.alto) ? parseFloat(((p.ancho * p.largo * p.alto) / 4000).toFixed(2)) : 0, 'Caja': p.caja || '',
     Proveedor: p.proveedor, 'Observaci&oacute;n Compra': p.observacionCompra
@@ -1951,6 +1972,9 @@ function importarExcel() {
             nombre: String(r['Producto'] || r['nombre'] || ''),
             precioCosto: parseFloat(r['Precio Costo'] || r['precioCosto'] || 0),
             precioVenta: parseFloat(r['Precio Venta'] || r['precioVenta'] || 0),
+            precioFalabella: parseFloat(r['Precio Falabella'] || r['precioFalabella'] || 0),
+            precioWalmart: parseFloat(r['Precio Walmart'] || r['precioWalmart'] || 0),
+            precioML: parseFloat(r['Precio Mercado Libre'] || r['precioML'] || 0),
             stockWoo: parseInt(r['Stock WooCommerce'] || r['stockWoo'] || r['Stock'] || r['stock'] || 0),
             stockFalabella: parseInt(r['Asig. Falabella'] || r['Stock Falabella'] || r['stockFalabella'] || 0),
             stockWalmart: parseInt(r['Asig. Walmart'] || r['Stock Walmart'] || r['stockWalmart'] || 0),
@@ -2057,6 +2081,9 @@ function restaurarStockYkardex() {
               existente.stockFalabella = parseInt(r['Asig. Falabella'] || r['Stock Falabella'] || r['stockFalabella'] || 0);
               existente.stockWalmart = parseInt(r['Asig. Walmart'] || r['Stock Walmart'] || r['stockWalmart'] || 0);
               existente.stockML = parseInt(r['Asig. Mercado Libre'] || r['Stock Mercado Libre'] || r['stockML'] || 0);
+              existente.precioFalabella = parseFloat(r['Precio Falabella'] || r['precioFalabella'] || 0);
+              existente.precioWalmart = parseFloat(r['Precio Walmart'] || r['precioWalmart'] || 0);
+              existente.precioML = parseFloat(r['Precio Mercado Libre'] || r['precioML'] || 0);
               existente.precioCosto = parseFloat(r['Precio Costo'] || r['precioCosto'] || 0);
               existente.precioVenta = parseFloat(r['Precio Venta'] || r['precioVenta'] || 0);
               existente.proveedor = String(r['Proveedor'] || r['proveedor'] || '');
