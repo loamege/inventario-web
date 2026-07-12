@@ -122,7 +122,7 @@ tbody tr:hover{background:#F5F0FF}
       <input id="login-user" type="email" placeholder="Ingresa tu correo" autocomplete="email">
       <label>Contrase&ntilde;a</label>
       <input id="login-pass" type="password" placeholder="Ingresa tu contrase&ntilde;a" autocomplete="current-password">
-      <button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
+      <button class="btn btn-primary" onclick="(function(){var e=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value;document.getElementById('login-error').style.display='none';if(!e||!p){document.getElementById('login-error').textContent='Ingresa correo y contraseña';document.getElementById('login-error').style.display='block';return}if(e!=='loa.ayalam@gmail.com'||p!=='Cuncunita2025!'){document.getElementById('login-error').textContent='Credenciales incorrectas';document.getElementById('login-error').style.display='block';return}sessionStorage.setItem('luciauth','1');document.getElementById('login-overlay').style.display='none';location.reload()})()">INGRESAR</button>
       <div class="error" id="login-error"></div>
     </div>
   </div>
@@ -2846,7 +2846,9 @@ function eliminarPendiente(idx) {
     document.getElementById('login-overlay').style.display = 'none';
     iniciarApp();
   }
-  document.getElementById('login-pass').addEventListener('keydown', function(e) { if (e.key === 'Enter') iniciarSesion(); });
+  document.getElementById('login-pass').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.querySelector('#login-card .btn').click();
+  });
 })();
 </script>
 </body>
