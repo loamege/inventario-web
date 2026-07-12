@@ -2650,41 +2650,24 @@ function iniciarSesion() {
   const btn = document.querySelector('#login-card .btn');
   btn.disabled = true;
   btn.textContent = 'Ingresando...';
-  function loginLocal(email, pass) {
-    if (email === 'loa.ayalam@gmail.com' && pass === 'Cuncunita2025!') {
-      sessionStorage.setItem('luciauth', '1');
-      document.getElementById('login-overlay').style.display = 'none';
-      toast('Bienvenido');
-      iniciarApp();
-      return true;
-    }
-    return false;
-  }
-  if (typeof firebase !== 'undefined' && firebase.auth) {
-    firebase.auth().signInWithEmailAndPassword(email, pass)
-      .then(function() {})
-      .catch(function(e) {
-        btn.disabled = false;
-        btn.textContent = 'INGRESAR';
-        if (loginLocal(email, pass)) return;
-        document.getElementById('login-error').textContent = (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential')
-          ? 'Credenciales incorrectas' : 'Error: ' + e.message;
-        document.getElementById('login-error').style.display = 'block';
-      });
-  } else {
-    if (loginLocal(email, pass)) return;
+  if (email !== 'loa.ayalam@gmail.com' || pass !== 'Cuncunita2025!') {
     btn.disabled = false;
     btn.textContent = 'INGRESAR';
     document.getElementById('login-error').textContent = 'Credenciales incorrectas';
     document.getElementById('login-error').style.display = 'block';
+    return;
   }
+  sessionStorage.setItem('luciauth', '1');
+  document.getElementById('login-overlay').style.display = 'none';
+  btn.disabled = false;
+  btn.textContent = 'INGRESAR';
+  toast('Bienvenido');
+  iniciarApp();
+}
 }
 
 function cerrarSesion() {
   if (!confirm('¿Cerrar sesión?')) return;
-  if (typeof firebase !== 'undefined' && firebase.auth) {
-    firebase.auth().signOut().catch(function(){});
-  }
   sessionStorage.removeItem('luciauth');
   location.reload();
 }
@@ -2861,21 +2844,7 @@ function eliminarPendiente(idx) {
 
 // ===== INIT =====
 (function() {
-  if (typeof firebase !== 'undefined' && firebase.auth && location.protocol === 'https:') {
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        document.getElementById('login-overlay').style.display = 'none';
-        iniciarApp();
-      } else {
-        document.getElementById('login-user').value = '';
-        document.getElementById('login-pass').value = '';
-        if (sessionStorage.getItem('luciauth')) {
-          document.getElementById('login-overlay').style.display = 'none';
-          iniciarApp();
-        }
-      }
-    });
-  } else if (sessionStorage.getItem('luciauth')) {
+  if (sessionStorage.getItem('luciauth')) {
     document.getElementById('login-overlay').style.display = 'none';
     iniciarApp();
   }
