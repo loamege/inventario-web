@@ -123,7 +123,7 @@ tbody tr:hover{background:#F5F0FF}
       <label>Contrase&ntilde;a</label>
       <input id="login-pass" type="password" placeholder="Ingresa tu contrase&ntilde;a" autocomplete="current-password">
       <button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
-      <div class="error" id="login-error">Usuario o contrase&ntilde;a incorrectos</div>
+      <div class="error" id="login-error"></div>
     </div>
   </div>
 </div>
@@ -2639,30 +2639,28 @@ function eliminarKardex(idStr) {
 
 // ===== AUTH =====
 function iniciarSesion() {
-  const email = document.getElementById('login-user').value.trim();
-  const pass = document.getElementById('login-pass').value;
-  document.getElementById('login-error').style.display = 'none';
-  if (!email || !pass) {
-    document.getElementById('login-error').textContent = 'Ingresa correo y contraseña';
+  try {
+    const email = document.getElementById('login-user').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    document.getElementById('login-error').style.display = 'none';
+    if (!email || !pass) {
+      document.getElementById('login-error').textContent = 'Ingresa correo y contraseña';
+      document.getElementById('login-error').style.display = 'block';
+      return;
+    }
+    if (email !== 'loa.ayalam@gmail.com' || pass !== 'Cuncunita2025!') {
+      document.getElementById('login-error').textContent = 'Credenciales incorrectas';
+      document.getElementById('login-error').style.display = 'block';
+      return;
+    }
+    sessionStorage.setItem('luciauth', '1');
+    document.getElementById('login-overlay').style.display = 'none';
+    toast('Bienvenido');
+    iniciarApp();
+  } catch(e) {
+    document.getElementById('login-error').textContent = 'Error: ' + e.message;
     document.getElementById('login-error').style.display = 'block';
-    return;
   }
-  const btn = document.querySelector('#login-card .btn');
-  btn.disabled = true;
-  btn.textContent = 'Ingresando...';
-  if (email !== 'loa.ayalam@gmail.com' || pass !== 'Cuncunita2025!') {
-    btn.disabled = false;
-    btn.textContent = 'INGRESAR';
-    document.getElementById('login-error').textContent = 'Credenciales incorrectas';
-    document.getElementById('login-error').style.display = 'block';
-    return;
-  }
-  sessionStorage.setItem('luciauth', '1');
-  document.getElementById('login-overlay').style.display = 'none';
-  btn.disabled = false;
-  btn.textContent = 'INGRESAR';
-  toast('Bienvenido');
-  iniciarApp();
 }
 }
 
