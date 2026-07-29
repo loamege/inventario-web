@@ -20,6 +20,7 @@ header h1{font-size:20px;font-weight:600}
 .tab{background:transparent;color:#aaa;border:none;padding:10px 20px;cursor:pointer;font-size:14px;transition:.2s;border-bottom:3px solid transparent}
 .tab:hover{color:#fff}
 .tab.active{color:var(--ambar);border-bottom-color:var(--ambar)}
+.tab.hidden{display:none}
 .content{padding:20px;display:none}
 .content.active{display:block}
 h2{color:var(--noche);margin-bottom:16px;font-size:18px}
@@ -157,6 +158,9 @@ tbody tr:hover{background:#F5F0FF}
   <button class="tab" data-tab="pendientes">Pendientes WC</button>
   <button class="tab" data-tab="proveedores">Proveedores</button>
   <button class="tab" data-tab="dashboard">Dashboard</button>
+  <span style="margin-left:auto;display:flex;align-items:center">
+    <button class="tab" onclick="configurarPestanas()" title="Mostrar/ocultar pesta&ntilde;as" style="font-size:18px;padding:6px 12px">&#9881;</button>
+  </span>
 </div>
 
 <div id="contenido-formulario" class="content active">
@@ -2774,6 +2778,7 @@ function cerrarSesion() {
 }
 
 function iniciarApp() {
+  aplicarPestanasVisibles();
   // Filtro mes actual por defecto en Ventas
   var mesSel = document.getElementById('ventas-mes');
   if (mesSel) mesSel.value = pad(new Date().getMonth() + 1);
@@ -3330,8 +3335,37 @@ function eliminarCompra(id) {
   toast('Compra eliminada');
 }
 
+// ===== CONFIG PESTAÑAS =====
+function aplicarPestanasVisibles() {
+  var ocultas = JSON.parse(localStorage.getItem('pestanasOcultas') || '[]');
+  document.querySelectorAll('.tab').forEach(function(t) {
+    if (t.dataset.tab) t.classList.toggle('hidden', ocultas.includes(t.dataset.tab));
+  });
+}
+function configurarPestanas() {
+  var todas = ['formulario','inventario','falabella','ml','walmart','cotizador','ventas','cotizaciones','kardex','pendientes','proveedores','dashboard'];
+  var etiquetas = {formulario:'Formulario',inventario:'Inventario',falabella:'Falabella',ml:'Mercado Libre',walmart:'Walmart',cotizador:'Cotizador',ventas:'Ventas',cotizaciones:'Cotizaciones',kardex:'Kardex',pendientes:'Pendientes WC',proveedores:'Proveedores',dashboard:'Dashboard'};
+  var ocultas = JSON.parse(localStorage.getItem('pestanasOcultas') || '[]');
+  var html = '<p style="font-size:13px;color:#888;margin-bottom:12px">Marca las pesta&ntilde;as que quieres ocultar:</p>';
+  todas.forEach(function(id) {
+    var checked = ocultas.includes(id) ? '' : 'checked';
+    html += '<label style="display:block;margin:6px 0;font-size:14px;cursor:pointer"><input type="checkbox" ' + checked + ' data-tab-id="' + id + '"> ' + etiquetas[id] + '</label>';
+  });
+  abrirModal('Configurar Pesta&ntilde;as', html, function() {
+    var nuevasOcultas = [];
+    document.querySelectorAll('#modal-body input[data-tab-id]').forEach(function(cb) {
+      if (!cb.checked) nuevasOcultas.push(cb.dataset.tabId);
+    });
+    localStorage.setItem('pestanasOcultas', JSON.stringify(nuevasOcultas));
+    aplicarPestanasVisibles();
+    toast('Pesta&ntilde;as actualizadas');
+    return false;
+  });
+}
+
 // ===== INIT =====
 (function() {
+  aplicarPestanasVisibles();
   if (localStorage.getItem('luciauth')) {
     document.getElementById('login-overlay').style.display = 'none';
     iniciarApp();
