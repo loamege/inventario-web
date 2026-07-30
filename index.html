@@ -700,6 +700,11 @@ let data = (function() {
       }
     }).catch(function(){});
   }
+  // Limpiar compras hu&eacute;rfanas (proveedor eliminado)
+  var idsValidos = new Set((data.proveedores||[]).map(function(x){return x.id;}));
+  var antes = (data.compras||[]).length;
+  data.compras = (data.compras||[]).filter(function(c){ return idsValidos.has(c.proveedorId); });
+  if ((data.compras||[]).length < antes) guardarDatos();
   return d;
 })();
 
