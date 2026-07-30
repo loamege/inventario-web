@@ -477,29 +477,38 @@ tbody tr:hover{background:#F5F0FF}
 
 <div id="contenido-proveedores" class="content">
   <h2>Proveedores</h2>
-  <div class="btn-group">
-    <button class="btn btn-primary" onclick="nuevoProveedor()">+ NUEVO PROVEEDOR</button>
+  <div class="prov-subtabs" style="display:flex;gap:4px;margin-bottom:10px">
+    <button class="btn prov-subtab active" data-provview="lista" onclick="mostrarProvVista('lista')" style="font-size:12px;padding:4px 12px">Proveedores</button>
+    <button class="btn prov-subtab" data-provview="costos" onclick="mostrarProvVista('costos')" style="font-size:12px;padding:4px 12px">Costo Mensual</button>
   </div>
-  <div class="search-bar" style="flex-wrap:wrap;gap:6px">
-    <select id="prov-filtro-proveedor" onchange="renderProveedores()" style="flex:1;min-width:140px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
-      <option value="">Todos los proveedores</option>
-    </select>
-    <select id="prov-sort" onchange="renderProveedores()" style="padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
-      <option value="nombre-asc">Nombre A-Z</option>
-      <option value="rut">RUT</option>
-      <option value="razon-asc">Raz&oacute;n Social A-Z</option>
-      <option value="total-desc">Total Gastado &darr;</option>
-    </select>
-    <input id="prov-search" placeholder="Buscar..." oninput="renderProveedores()" style="flex:1;min-width:100px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
-    <input id="prov-filtro-contacto" placeholder="Contacto..." oninput="renderProveedores()" style="flex:1;min-width:100px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
-    <input id="prov-filtro-telefono" placeholder="Tel&eacute;fono..." oninput="renderProveedores()" style="flex:1;min-width:100px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
-    <input id="prov-filtro-factura" placeholder="N&deg; Factura..." oninput="renderProveedores()" style="flex:1;min-width:90px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
-    <span id="prov-count" style="font-size:13px;color:#888;align-self:center;white-space:nowrap"></span>
+  <div id="prov-vista-lista">
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="nuevoProveedor()">+ NUEVO PROVEEDOR</button>
+    </div>
+    <div class="search-bar" style="flex-wrap:wrap;gap:6px">
+      <select id="prov-filtro-proveedor" onchange="renderProveedores()" style="flex:1;min-width:140px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+        <option value="">Todos los proveedores</option>
+      </select>
+      <select id="prov-sort" onchange="renderProveedores()" style="padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+        <option value="nombre-asc">Nombre A-Z</option>
+        <option value="rut">RUT</option>
+        <option value="razon-asc">Raz&oacute;n Social A-Z</option>
+        <option value="total-desc">Total Gastado &darr;</option>
+      </select>
+      <input id="prov-search" placeholder="Buscar..." oninput="renderProveedores()" style="flex:1;min-width:100px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+      <input id="prov-filtro-contacto" placeholder="Contacto..." oninput="renderProveedores()" style="flex:1;min-width:100px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+      <input id="prov-filtro-telefono" placeholder="Tel&eacute;fono..." oninput="renderProveedores()" style="flex:1;min-width:100px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+      <input id="prov-filtro-factura" placeholder="N&deg; Factura..." oninput="renderProveedores()" style="flex:1;min-width:90px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+      <span id="prov-count" style="font-size:13px;color:#888;align-self:center;white-space:nowrap"></span>
+    </div>
+    <div class="movil">
+      <table><thead><tr>
+        <th>#</th><th>Nombre</th><th>RUT</th><th>Raz&oacute;n Social</th><th>Contacto</th><th>Tel&eacute;fono</th><th>Fact.</th><th>Compras</th><th>Total Gastado</th><th>Acci&oacute;n</th>
+      </tr></thead><tbody id="prov-body"></tbody></table>
+    </div>
   </div>
-  <div class="movil">
-    <table><thead><tr>
-      <th>#</th><th>Nombre</th><th>RUT</th><th>Raz&oacute;n Social</th><th>Contacto</th><th>Tel&eacute;fono</th><th>Fact.</th><th>Compras</th><th>Total Gastado</th><th>Acci&oacute;n</th>
-    </tr></thead><tbody id="prov-body"></tbody></table>
+  <div id="prov-vista-costos" style="display:none">
+    <div style="overflow-x:auto" id="prov-costos-content"></div>
   </div>
 </div>
 
@@ -834,7 +843,7 @@ document.querySelectorAll('.tab').forEach(t => {
     if (id === 'kardex') renderKardex();
     if (id === 'cotizaciones') renderCotizaciones();
     if (id === 'pendientes') renderPendientes();
-    if (id === 'proveedores') renderProveedores();
+    if (id === 'proveedores') { renderProveedores(); renderCostoMensual(); }
     if (id === 'dashboard') renderDashboard();
   });
 });
@@ -3035,6 +3044,75 @@ function renderProveedores() {
       '<button class="btn btn-outline" style="font-size:11px;padding:3px 6px" onclick="editarProveedor(\'' + escId(p.id) + '\')">Editar</button> ' +
       '<button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProveedor(\'' + escId(p.id) + '\')">Eliminar</button></td></tr>';
   }).join('');
+}
+
+function mostrarProvVista(vista) {
+  document.querySelectorAll('.prov-subtab').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelector('.prov-subtab[data-provview="'+vista+'"]').classList.add('active');
+  document.getElementById('prov-vista-lista').style.display = vista === 'lista' ? '' : 'none';
+  document.getElementById('prov-vista-costos').style.display = vista === 'costos' ? '' : 'none';
+  if (vista === 'costos') renderCostoMensual();
+}
+
+function renderCostoMensual() {
+  var compras = data.compras || [];
+  var proveedores = data.proveedores || [];
+  if (compras.length === 0) {
+    document.getElementById('prov-costos-content').innerHTML = '<p style="color:#888;font-size:13px">Sin compras registradas</p>';
+    return;
+  }
+  // group by month (YYYY-MM) and by proveedorId
+  var meses = {};
+  var provNombres = {};
+  proveedores.forEach(function(p) { provNombres[p.id] = p.nombre; });
+  compras.forEach(function(c) {
+    if (!c.fecha || !c.proveedorId) return;
+    var m = c.fecha.substring(0, 7); // YYYY-MM
+    if (!meses[m]) meses[m] = {};
+    if (!meses[m][c.proveedorId]) meses[m][c.proveedorId] = 0;
+    meses[m][c.proveedorId] += c.total || 0;
+  });
+  var monthList = Object.keys(meses).sort().reverse();
+  // collect all supplier IDs that appear in purchases
+  var provIds = [];
+  monthList.forEach(function(m) {
+    Object.keys(meses[m]).forEach(function(pid) {
+      if (provIds.indexOf(pid) === -1) provIds.push(pid);
+    });
+  });
+  // sort suppliers by name
+  provIds.sort(function(a, b) { return (provNombres[a]||'').localeCompare(provNombres[b]||''); });
+
+  // totals per supplier
+  var totalsProv = {};
+  provIds.forEach(function(pid) { totalsProv[pid] = 0; });
+  var grandTotal = 0;
+
+  var html = '<table style="font-size:12px;min-width:600px"><thead><tr><th>Mes</th>';
+  provIds.forEach(function(pid) {
+    html += '<th style="text-align:right">' + esc(provNombres[pid]||pid) + '</th>';
+  });
+  html += '<th style="text-align:right;background:#f0f0f0">Total Mes</th></tr></thead><tbody>';
+  monthList.forEach(function(m) {
+    var rowTotal = 0;
+    html += '<tr><td style="font-weight:600">' + esc(m) + '</td>';
+    provIds.forEach(function(pid) {
+      var val = meses[m][pid] || 0;
+      rowTotal += val;
+      totalsProv[pid] += val;
+      html += '<td style="text-align:right' + (val === 0 ? ';color:#ccc' : '') + '">' + (val ? '$' + fmt(val) : '-') + '</td>';
+    });
+    grandTotal += rowTotal;
+    html += '<td style="text-align:right;font-weight:700;background:#f0f0f0">$' + fmt(rowTotal) + '</td></tr>';
+  });
+  // totals row
+  html += '<tr style="font-weight:700;background:#e8e8e8"><td>Total</td>';
+  provIds.forEach(function(pid) {
+    html += '<td style="text-align:right">$' + fmt(totalsProv[pid]) + '</td>';
+  });
+  html += '<td style="text-align:right;background:#ddd">$' + fmt(grandTotal) + '</td></tr>';
+  html += '</tbody></table>';
+  document.getElementById('prov-costos-content').innerHTML = html;
 }
 
 function escId(id) { return String(id).replace(/'/g, "\\'"); }
