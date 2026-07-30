@@ -480,6 +480,7 @@ tbody tr:hover{background:#F5F0FF}
   <div class="prov-subtabs" style="display:flex;gap:4px;margin-bottom:10px">
     <button class="btn prov-subtab active" data-provview="lista" onclick="mostrarProvVista('lista')" style="font-size:12px;padding:4px 12px">Proveedores</button>
     <button class="btn prov-subtab" data-provview="costos" onclick="mostrarProvVista('costos')" style="font-size:12px;padding:4px 12px">Costo Mensual</button>
+    <button class="btn prov-subtab" data-provview="costos-producto" onclick="mostrarProvVista('costos-producto')" style="font-size:12px;padding:4px 12px">Costos por Producto</button>
   </div>
   <div id="prov-vista-lista">
     <div class="btn-group">
@@ -509,6 +510,13 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div id="prov-vista-costos" style="display:none">
     <div style="overflow-x:auto" id="prov-costos-content"></div>
+  </div>
+  <div id="prov-vista-costos-producto" style="display:none">
+    <div class="search-bar" style="flex-wrap:wrap;gap:6px;margin-bottom:10px">
+      <input id="cp-search" placeholder="Buscar producto por SKU o nombre..." oninput="renderCostosProducto()" style="flex:1;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+      <span id="cp-count" style="font-size:13px;color:#888;align-self:center"></span>
+    </div>
+    <div id="cp-content"></div>
   </div>
 </div>
 
@@ -3051,7 +3059,9 @@ function mostrarProvVista(vista) {
   document.querySelector('.prov-subtab[data-provview="'+vista+'"]').classList.add('active');
   document.getElementById('prov-vista-lista').style.display = vista === 'lista' ? '' : 'none';
   document.getElementById('prov-vista-costos').style.display = vista === 'costos' ? '' : 'none';
+  document.getElementById('prov-vista-costos-producto').style.display = vista === 'costos-producto' ? '' : 'none';
   if (vista === 'costos') renderCostoMensual();
+  if (vista === 'costos-producto') renderCostosProducto();
 }
 
 function renderCostoMensual() {
@@ -3113,6 +3123,133 @@ function renderCostoMensual() {
   html += '<td style="text-align:right;background:#ddd">$' + fmt(grandTotal) + '</td></tr>';
   html += '</tbody></table>';
   document.getElementById('prov-costos-content').innerHTML = html;
+}
+
+function renderCostosProducto() {
+  var compras = data.compras || [];
+  var proveedores = data.proveedores || [];
+  var provNombres = {};
+  proveedores.forEach(function(p) { provNombres[p.id] = p.nombre; });
+
+  // build data: SKU -> { nombre, suppliers: { provId -> [{fecha, costo, cantidad, compraId}, ...] } }
+  var prodMap = {};
+  compras.forEach(function(c) {
+    if (!c.items) return;
+    c.items.forEach(function(it) {
+      if (!it.sku) return;
+      if (!prodMap[it.sku]) prodMap[it.sku] = { nombre: it.nombre, suppliers: {} };
+      var skuData = prodMap[it.sku].suppliers;
+      if (!skuData[c.proveedorId]) skuData[c.proveedorId] = [];
+      skuData[c.proveedorId].push({
+        fecha: c.fecha,
+        costo: it.precioCosto,
+        cantidad: it.cantidad,
+        total: it.total || (it.cantidad * it.precioCosto),
+        compraId: c.id
+      });
+    });
+  });
+
+  var skus = Object.keys(prodMap);
+  var q = (document.getElementById('cp-search').value || '').toLowerCase();
+  if (q) skus = skus.filter(function(sku) {
+    var p = prodMap[sku];
+    return sku.toLowerCase().includes(q) || (p.nombre||'').toLowerCase().includes(q);
+  });
+  skus.sort();
+  document.getElementById('cp-count').textContent = skus.length + ' producto(s)';
+
+  var html = '';
+  skus.forEach(function(sku) {
+    var p = prodMap[sku];
+    var provIds = Object.keys(p.suppliers).sort(function(a,b) {
+      return (provNombres[a]||'').localeCompare(provNombres[b]||'');
+    });
+
+    // header for each product
+    html += '<div style="background:#fff;border:1px solid #ddd;border-radius:6px;margin-bottom:10px;overflow:hidden">';
+    html += '<div style="background:#f5f0ff;padding:8px 12px;font-weight:700;font-size:14px">' + esc(p.nombre) + ' <span style="font-weight:400;color:#888;font-size:12px">(' + esc(sku) + ')</span></div>';
+    html += '<div style="overflow-x:auto"><table style="font-size:12px;width:100%"><thead><tr>' +
+      '<th>Proveedor</th><th style="text-align:right">&Uacute;lt. Costo</th><th style="text-align:right">Costo M&iacute;n</th>' +
+      '<th style="text-align:right">Costo M&aacute;x</th><th style="text-align:right">Costo Prom.</th><th style="text-align:right">Compras</th>' +
+      '<th></th></tr></thead><tbody>';
+
+    provIds.forEach(function(pid) {
+      var purchases = p.suppliers[pid];
+      var costs = purchases.map(function(pr) { return pr.costo; });
+      var lastCost = costs[costs.length - 1];
+      var minCost = Math.min.apply(null, costs);
+      var maxCost = Math.max.apply(null, costs);
+      var avgCost = costs.reduce(function(s, c) { return s + c; }, 0) / costs.length;
+      var numPurchases = purchases.length;
+      var hasVariation = minCost !== maxCost;
+
+      html += '<tr>' +
+        '<td><strong>' + esc(provNombres[pid]||pid) + '</strong></td>' +
+        '<td style="text-align:right">$' + fmt(lastCost) + '</td>' +
+        '<td style="text-align:right' + (hasVariation ? ';color:#DC2626' : '') + '">$' + fmt(minCost) + '</td>' +
+        '<td style="text-align:right' + (hasVariation ? ';color:#059669' : '') + '">$' + fmt(maxCost) + '</td>' +
+        '<td style="text-align:right">$' + fmt(Math.round(avgCost)) + '</td>' +
+        '<td style="text-align:right">' + numPurchases + '</td>' +
+        '<td><button class="btn btn-outline" style="font-size:10px;padding:2px 6px" onclick="verHistorialCosto(\'' + escId(sku) + '\',\'' + escId(pid) + '\')">Ver historial</button></td>' +
+        '</tr>';
+    });
+    html += '</tbody></table></div></div>';
+  });
+
+  if (skus.length === 0) {
+    html = '<p style="color:#888;font-size:13px">' + (q ? 'Sin resultados' : 'No hay productos comprados') + '</p>';
+  }
+  document.getElementById('cp-content').innerHTML = html;
+}
+
+function verHistorialCosto(sku, proveedorId) {
+  var compras = data.compras || [];
+  var proveedores = data.proveedores || [];
+  var provNombre = '(desconocido)';
+  proveedores.forEach(function(p) { if (p.id === proveedorId) provNombre = p.nombre; });
+
+  // find all purchases for this supplier that contain this SKU
+  var history = [];
+  compras.forEach(function(c) {
+    if (c.proveedorId !== proveedorId) return;
+    (c.items||[]).forEach(function(it) {
+      if (it.sku === sku) {
+        history.push({ fecha: c.fecha, costo: it.precioCosto, cantidad: it.cantidad, total: it.total||(it.cantidad*it.precioCosto), factura: c.factura||'' });
+      }
+    });
+  });
+  history.sort(function(a, b) { return a.fecha.localeCompare(b.fecha); });
+
+  if (history.length === 0) { toast('Sin historial'); return; }
+
+  var firstCost = history[0].costo;
+  var lastCost = history[history.length - 1].costo;
+  var diff = lastCost - firstCost;
+  var diffPct = firstCost ? Math.round((diff / firstCost) * 100) : 0;
+  var diffColor = diff > 0 ? '#DC2626' : diff < 0 ? '#059669' : '#888';
+
+  var productName = '';
+  compras.some(function(c) {
+    return (c.items||[]).some(function(it) {
+      if (it.sku === sku) { productName = it.nombre; return true; }
+    });
+  });
+
+  var html = '<p style="font-size:13px"><strong>' + esc(productName) + '</strong> <span style="color:#888">(' + esc(sku) + ')</span> &mdash; ' + esc(provNombre) + '</p>' +
+    '<p style="font-size:12px">Primer costo: $' + fmt(firstCost) + ' &rarr; &Uacute;ltimo costo: $' + fmt(lastCost) +
+    ' <span style="color:' + diffColor + ';font-weight:700">(' + (diff > 0 ? '+' : '') + diffPct + '%)</span></p>' +
+    '<div style="overflow-x:auto;max-height:300px;overflow-y:auto"><table style="font-size:12px;min-width:400px"><thead><tr>' +
+    '<th>Fecha</th><th style="text-align:right">Costo</th><th style="text-align:right">Cant.</th><th style="text-align:right">Total</th><th>Factura</th></tr></thead><tbody>';
+
+  history.forEach(function(h) {
+    html += '<tr><td>' + esc(h.fecha) + '</td><td style="text-align:right">$' + fmt(h.costo) + '</td>' +
+      '<td style="text-align:right">' + h.cantidad + '</td><td style="text-align:right">$' + fmt(h.total) + '</td>' +
+      '<td>' + esc(h.factura) + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+
+  abrirModal('Historial de Costo - ' + esc(productName), html, function() { return false; });
 }
 
 function escId(id) { return String(id).replace(/'/g, "\\'"); }
