@@ -514,6 +514,25 @@ tbody tr:hover{background:#F5F0FF}
     </div>
   </div>
   <div id="prov-vista-costos" style="display:none">
+    <div class="search-bar" style="flex-wrap:wrap;gap:6px;margin-bottom:10px">
+      <select id="cm-filtro-ano" onchange="renderCostoMensual()" style="padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+        <option value="">Todos los a&ntilde;os</option>
+      </select>
+      <select id="cm-filtro-mes" onchange="renderCostoMensual()" style="padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+        <option value="">Todos los meses</option>
+        <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+        <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+        <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+      </select>
+      <select id="cm-filtro-proveedor" onchange="renderCostoMensual()" style="flex:1;min-width:140px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+        <option value="">Todos los proveedores</option>
+      </select>
+      <label style="font-size:12px;color:#888;align-self:center">Desde:</label>
+      <input id="cm-filtro-desde" type="date" onchange="renderCostoMensual()" style="padding:5px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+      <label style="font-size:12px;color:#888;align-self:center">Hasta:</label>
+      <input id="cm-filtro-hasta" type="date" onchange="renderCostoMensual()" style="padding:5px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+    </div>
     <div style="overflow-x:auto" id="prov-costos-content"></div>
   </div>
   <div id="prov-vista-costos-producto" style="display:none">
@@ -3149,18 +3168,57 @@ function renderCostoMensual() {
     document.getElementById('prov-costos-content').innerHTML = '<p style="color:#888;font-size:13px">Sin compras registradas</p>';
     return;
   }
-  // group by month (YYYY-MM) and by proveedorId
   var provNombres = {};
   proveedores.forEach(function(p) { provNombres[p.id] = p.nombre; });
-  var rows = []; // { mes, proveedorId, total }
+  var rows = []; // { mes, proveedorId, total, fecha }
   compras.forEach(function(c) {
     if (!c.fecha || !c.proveedorId) return;
-    rows.push({ mes: c.fecha.substring(0, 7), proveedorId: c.proveedorId, total: c.total||0 });
+    rows.push({ mes: c.fecha.substring(0, 7), proveedorId: c.proveedorId, total: c.total||0, fecha: c.fecha });
   });
   if (rows.length === 0) {
     document.getElementById('prov-costos-content').innerHTML = '<p style="color:#888;font-size:13px">Sin compras registradas</p>';
     return;
   }
+
+  // populate year dropdown
+  var years = {};
+  rows.forEach(function(r) { var y = r.mes.substring(0, 4); years[y] = true; });
+  var yearList = Object.keys(years).sort();
+  var selAno = document.getElementById('cm-filtro-ano');
+  var curAno = selAno.value;
+  selAno.innerHTML = '<option value="">Todos los a&ntilde;os</option>' + yearList.map(function(y) {
+    return '<option value="' + y + '">' + y + '</option>';
+  }).join('');
+  if (yearList.indexOf(curAno) !== -1) selAno.value = curAno; else selAno.value = '';
+
+  // populate supplier dropdown
+  var provIdsAll = [];
+  rows.forEach(function(r) { if (provIdsAll.indexOf(r.proveedorId) === -1) provIdsAll.push(r.proveedorId); });
+  provIdsAll.sort(function(a, b) { return (provNombres[a]||'').localeCompare(provNombres[b]||''); });
+  var selProv = document.getElementById('cm-filtro-proveedor');
+  var curProv = selProv.value;
+  selProv.innerHTML = '<option value="">Todos los proveedores</option>' + provIdsAll.map(function(pid) {
+    return '<option value="' + pid + '">' + esc(provNombres[pid]||pid) + '</option>';
+  }).join('');
+  if (provIdsAll.indexOf(curProv) !== -1) selProv.value = curProv; else selProv.value = '';
+
+  // read filters
+  var filtroAno = selAno.value;
+  var filtroMes = document.getElementById('cm-filtro-mes').value;
+  var filtroProv = selProv.value;
+  var filtroDesde = document.getElementById('cm-filtro-desde').value;
+  var filtroHasta = document.getElementById('cm-filtro-hasta').value;
+  if (filtroDesde) rows = rows.filter(function(r) { return r.fecha >= filtroDesde; });
+  if (filtroHasta) rows = rows.filter(function(r) { return r.fecha <= filtroHasta; });
+  if (filtroAno) rows = rows.filter(function(r) { return r.mes.substring(0, 4) === filtroAno; });
+  if (filtroMes) rows = rows.filter(function(r) { return r.mes.substring(5, 7) === filtroMes; });
+  if (filtroProv) rows = rows.filter(function(r) { return r.proveedorId === filtroProv; });
+
+  if (rows.length === 0) {
+    document.getElementById('prov-costos-content').innerHTML = '<p style="color:#888;font-size:13px">Sin resultados para los filtros seleccionados</p>';
+    return;
+  }
+
   // aggregate
   var agg = {};
   rows.forEach(function(r) {
@@ -3169,7 +3227,6 @@ function renderCostoMensual() {
     agg[key].total += r.total;
   });
   var aggList = Object.keys(agg).map(function(k) { return agg[k]; });
-  // totals per supplier
   var totalsProv = {};
   var monthTotals = {};
   aggList.forEach(function(a) {
