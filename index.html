@@ -3182,24 +3182,16 @@ function renderCostoMensual() {
   var provIds = Object.keys(totalsProv).sort(function(a, b) { return (provNombres[a]||'').localeCompare(provNombres[b]||''); });
   var grandTotal = provIds.reduce(function(s, pid) { return s + totalsProv[pid]; }, 0);
 
-  // Vertical table: Mes | Proveedor | Total
-  var html = '<h3 style="font-size:14px;margin:0 0 8px;color:var(--noche)">Desglose por Proveedor</h3>';
-  html += '<div style="overflow-x:auto;max-height:350px;overflow-y:auto;border:1px solid #ddd;border-radius:4px">';
-  html += '<table style="font-size:12px;min-width:400px"><thead><tr><th>Mes</th><th>Proveedor</th><th style="text-align:right">Total</th></tr></thead><tbody>';
+  // Resumen Mensual: Mes | Costo Total | Acumulado
+  var acum = 0;
+  var html = '<h3 style="font-size:14px;margin:0 0 8px;color:var(--noche)">Resumen Mensual</h3>';
+  html += '<table style="font-size:13px;min-width:400px"><thead><tr><th>Mes</th><th style="text-align:right">Costo Total del Mes</th><th style="text-align:right">Acumulado</th></tr></thead><tbody>';
   monthList.forEach(function(m) {
-    // sub-list for this month, sorted by supplier
-    var monthRows = aggList.filter(function(a) { return a.mes === m; });
-    monthRows.sort(function(a, b) { return (provNombres[a.proveedorId]||'').localeCompare(provNombres[b.proveedorId]||''); });
-    monthRows.forEach(function(a, i) {
-      html += '<tr' + (i === 0 ? ' style="border-top:2px solid #ddd"' : '') + '>' +
-        (i === 0 ? '<td style="font-weight:600" rowspan="' + monthRows.length + '">' + esc(m) + '</td>' : '') +
-        '<td>' + esc(provNombres[a.proveedorId]||a.proveedorId) + '</td>' +
-        '<td style="text-align:right">$' + fmt(a.total) + '</td></tr>';
-    });
+    acum += monthTotals[m];
+    html += '<tr><td style="font-weight:600">' + esc(m) + '</td><td style="text-align:right">$' + fmt(monthTotals[m]) + '</td><td style="text-align:right;font-weight:600">$' + fmt(acum) + '</td></tr>';
   });
-  // totals row
-  html += '<tr style="font-weight:700;background:#e8e8e8"><td colspan="2">Total General</td><td style="text-align:right">$' + fmt(grandTotal) + '</td></tr>';
-  html += '</tbody></table></div>';
+  html += '<tr style="font-weight:700;background:#e8e8e8"><td>Total Acumulado</td><td style="text-align:right">$' + fmt(grandTotal) + '</td><td style="text-align:right">$' + fmt(acum) + '</td></tr>';
+  html += '</tbody></table>';
 
   // Per-supplier totals
   html += '<h3 style="font-size:14px;margin:16px 0 8px;color:var(--noche)">Total por Proveedor</h3>';
@@ -3210,16 +3202,22 @@ function renderCostoMensual() {
   html += '<tr style="font-weight:700;background:#e8e8e8"><td>Total</td><td style="text-align:right">$' + fmt(grandTotal) + '</td></tr>';
   html += '</tbody></table>';
 
-  // Resumen Mensual: Mes | Costo Total | Acumulado
-  var acum = 0;
-  html += '<h3 style="font-size:14px;margin:16px 0 8px;color:var(--noche)">Resumen Mensual</h3>';
-  html += '<table style="font-size:13px;min-width:400px"><thead><tr><th>Mes</th><th style="text-align:right">Costo Total del Mes</th><th style="text-align:right">Acumulado</th></tr></thead><tbody>';
+  // Desglose: Mes | Proveedor | Total
+  html += '<h3 style="font-size:14px;margin:16px 0 8px;color:var(--noche)">Desglose por Proveedor</h3>';
+  html += '<div style="overflow-x:auto;max-height:350px;overflow-y:auto;border:1px solid #ddd;border-radius:4px">';
+  html += '<table style="font-size:12px;min-width:400px"><thead><tr><th>Mes</th><th>Proveedor</th><th style="text-align:right">Total</th></tr></thead><tbody>';
   monthList.forEach(function(m) {
-    acum += monthTotals[m];
-    html += '<tr><td style="font-weight:600">' + esc(m) + '</td><td style="text-align:right">$' + fmt(monthTotals[m]) + '</td><td style="text-align:right;font-weight:600">$' + fmt(acum) + '</td></tr>';
+    var monthRows = aggList.filter(function(a) { return a.mes === m; });
+    monthRows.sort(function(a, b) { return (provNombres[a.proveedorId]||'').localeCompare(provNombres[b.proveedorId]||''); });
+    monthRows.forEach(function(a, i) {
+      html += '<tr' + (i === 0 ? ' style="border-top:2px solid #ddd"' : '') + '>' +
+        (i === 0 ? '<td style="font-weight:600" rowspan="' + monthRows.length + '">' + esc(m) + '</td>' : '') +
+        '<td>' + esc(provNombres[a.proveedorId]||a.proveedorId) + '</td>' +
+        '<td style="text-align:right">$' + fmt(a.total) + '</td></tr>';
+    });
   });
-  html += '<tr style="font-weight:700;background:#e8e8e8"><td>Total Acumulado</td><td style="text-align:right">$' + fmt(grandTotal) + '</td><td style="text-align:right">$' + fmt(acum) + '</td></tr>';
-  html += '</tbody></table>';
+  html += '<tr style="font-weight:700;background:#e8e8e8"><td colspan="2">Total General</td><td style="text-align:right">$' + fmt(grandTotal) + '</td></tr>';
+  html += '</tbody></table></div>';
 
   document.getElementById('prov-costos-content').innerHTML = html;
 }
