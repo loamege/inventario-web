@@ -3118,7 +3118,11 @@ function renderProveedores() {
     var comprasProv = (data.compras||[]).filter(function(c) { return c.proveedorId === p.id; });
     var totalGastado = comprasProv.reduce(function(s, c) { return s + (c.total||0); }, 0);
     var numCompras = comprasProv.length;
-    var factOk = comprasProv.filter(function(c){return !!c.facturaArchivo}).length;
+    var factOk = comprasProv.filter(function(c){
+      var paid = c.estado === 'Pagado' || c.estado === 'Completo';
+      var hasDoc = !!c.facturaArchivo || !!(c.factura||'').trim();
+      return paid && hasDoc;
+    }).length;
     var factBadge = numCompras === 0 ? '<span style="color:#ccc">-</span>'
       : factOk === numCompras ? '<span style="color:#059669;font-weight:700">✓ '+factOk+'/'+numCompras+'</span>'
       : '<span style="color:#DC2626;font-weight:700">○ '+factOk+'/'+numCompras+'</span>';
