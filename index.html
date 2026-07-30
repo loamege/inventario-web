@@ -3534,10 +3534,10 @@ function verProveedor(id) {
     (p.direccion ? '<strong>Direcci&oacute;n:</strong> ' + esc(p.direccion) + '<br>' : '') +
     (p.notas ? '<strong>Notas:</strong> ' + esc(p.notas) + '<br>' : '') +
     '<strong>Total compras:</strong> $' + fmt(totalGastado) + ' (' + comprasProv.length + ' compras)</p>' +
-    (prodKeys.length ? '<hr style="margin:8px 0"><p style="font-weight:600;font-size:13px">Productos Comprados</p>' + prodHtml : '') +
-    '<hr style="margin:12px 0">' +
+    '<hr style="margin:8px 0">' +
     '<div style="text-align:right;margin-bottom:8px"><button class="btn btn-primary btn-nueva-compra" data-proveedor-id="' + escId(p.id) + '" style="font-size:12px;padding:5px 12px">+ NUEVA COMPRA</button></div>' +
-    comprasHtml,
+    comprasHtml +
+    (prodKeys.length ? '<hr style="margin:12px 0"><p style="font-weight:600;font-size:13px">Productos Comprados</p>' + prodHtml : ''),
     function() { return false; }
   );
   setTimeout(function() {
