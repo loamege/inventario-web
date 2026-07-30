@@ -3137,18 +3137,8 @@ function verProveedor(id) {
 }
 
 function nuevaCompra(proveedorId) {
-  abrirModal('Nueva Compra',
-    '<p><label style="font-weight:600;display:block;font-size:13px;color:var(--noche)">Fecha</label><input id="comp-fecha" type="date" value="' + hoy() + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
-    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Estado</label><select id="comp-estado" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
-    '<option value="Pendiente">Pendiente</option><option value="Pagado">Pagado</option><option value="Recibido Parcial">Recibido Parcial</option><option value="Completo">Completo</option></select>' +
-    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Factura / N° Boleta</label><input id="comp-factura" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
-    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Nota</label><input id="comp-nota" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
-    '<hr style="margin:12px 0">' +
-    '<p style="font-size:13px;font-weight:600;color:var(--noche)">Productos <button class="btn btn-outline" style="font-size:11px;padding:3px 8px;margin-left:8px" onclick="agregarItemCompra()">+ Agregar producto</button></p>' +
-    '<div id="comp-items"><p style="color:#888;font-size:13px">Sin productos a&uacute;n</p></div>' +
-    '<p style="text-align:right;font-size:15px;font-weight:700;margin-top:8px" id="comp-total-label">Total: $0</p></p>',
-    function() {
-      try {
+  window._compraSaveFn = function() {
+    try {
       var items = window._compItems || [];
       console.log('COMPRA: items='+items.length+', proveedorId='+proveedorId+', compras antes='+(data.compras||[]).length);
       if (items.length === 0) { toast('Agrega al menos un producto'); return false; }
@@ -3170,11 +3160,22 @@ function nuevaCompra(proveedorId) {
       delete window._compItems;
       guardarDatos();
       toast('Compra registrada');
-      } catch(e) { console.error('ERROR en compra:', e); toast('Error: '+e.message); }
-    }
+    } catch(e) { console.error('ERROR en compra:', e); toast('Error: '+e.message); }
+  };
+  abrirModal('Nueva Compra',
+    '<p><label style="font-weight:600;display:block;font-size:13px;color:var(--noche)">Fecha</label><input id="comp-fecha" type="date" value="' + hoy() + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Estado</label><select id="comp-estado" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<option value="Pendiente">Pendiente</option><option value="Pagado">Pagado</option><option value="Recibido Parcial">Recibido Parcial</option><option value="Completo">Completo</option></select>' +
+    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Factura / N° Boleta</label><input id="comp-factura" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Nota</label><input id="comp-nota" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<hr style="margin:12px 0">' +
+    '<p style="font-size:13px;font-weight:600;color:var(--noche)">Productos <button class="btn btn-outline" style="font-size:11px;padding:3px 8px;margin-left:8px" onclick="agregarItemCompra()">+ Agregar producto</button></p>' +
+    '<div id="comp-items"><p style="color:#888;font-size:13px">Sin productos a&uacute;n</p></div>' +
+    '<p style="text-align:right;font-size:15px;font-weight:700;margin-top:8px" id="comp-total-label">Total: $0</p></p>',
+    window._compraSaveFn
   );
   window._compItems = [];
-  document.getElementById('comp-fecha') && document.getElementById('comp-fecha').focus();
+  setTimeout(function() { var el = document.getElementById('comp-fecha'); if (el) el.focus(); }, 100);
 }
 
 function agregarItemCompra() {
@@ -3211,9 +3212,22 @@ function seleccionarItemCompra(i) {
       var costo = parseFloat(document.getElementById('item-costo').value) || 0;
       if (!window._compItems) window._compItems = [];
       window._compItems.push({ sku: p.sku, nombre: p.nombre, cantidad: cant, precioCosto: costo, total: cant * costo });
-      cerrarModal();
-      actualizarCompraItemsUI();
       toast('Agregado: ' + p.nombre);
+      // Reabrir modal de Nueva Compra con items actualizados
+      abrirModal('Nueva Compra',
+        '<p><label style="font-weight:600;display:block;font-size:13px;color:var(--noche)">Fecha</label><input id="comp-fecha" type="date" value="' + hoy() + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+        '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Estado</label><select id="comp-estado" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+        '<option value="Pendiente">Pendiente</option><option value="Pagado">Pagado</option><option value="Recibido Parcial">Recibido Parcial</option><option value="Completo">Completo</option></select>' +
+        '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Factura / N° Boleta</label><input id="comp-factura" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+        '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Nota</label><input id="comp-nota" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+        '<hr style="margin:12px 0">' +
+        '<p style="font-size:13px;font-weight:600;color:var(--noche)">Productos <button class="btn btn-outline" style="font-size:11px;padding:3px 8px;margin-left:8px" onclick="agregarItemCompra()">+ Agregar producto</button></p>' +
+        '<div id="comp-items"><p style="color:#888;font-size:13px">Sin productos a&uacute;n</p></div>' +
+        '<p style="text-align:right;font-size:15px;font-weight:700;margin-top:8px" id="comp-total-label">Total: $0</p></p>',
+        window._compraSaveFn
+      );
+      actualizarCompraItemsUI();
+      return false;
     }
   );
   return false;
