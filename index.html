@@ -509,7 +509,7 @@ tbody tr:hover{background:#F5F0FF}
     </div>
     <div class="movil">
       <table><thead><tr>
-        <th>#</th><th>Nombre</th><th>RUT</th><th>Raz&oacute;n Social</th><th>Contacto</th><th>Tel&eacute;fono</th><th>Estado</th><th>N° Factura</th><th>Adjunto</th><th>Compras</th><th>Total Gastado</th><th>Acci&oacute;n</th>
+        <th>#</th><th>Nombre</th><th>RUT</th><th>Raz&oacute;n Social</th><th>Contacto</th><th>Tel&eacute;fono</th><th>Redes</th><th>Web</th><th>Estado</th><th>N° Factura</th><th>Adjunto</th><th>Compras</th><th>Total Gastado</th><th>Acci&oacute;n</th>
       </tr></thead><tbody id="prov-body"></tbody></table>
     </div>
   </div>
@@ -2096,7 +2096,7 @@ function exportarExcelCompleto() {
   // Proveedores
   const provData = (data.proveedores||[]).map(p => ({
     ID: p.id, Nombre: p.nombre, RUT: p.rut||'', 'Razón Social': p.razonSocial||'', Contacto: p.contacto||'', Email: p.email||'',
-    Teléfono: p.telefono||'', Dirección: p.direccion||'', Notas: p.notas||''
+    Teléfono: p.telefono||'', Dirección: p.direccion||'', Instagram: p.instagram||'', TikTok: p.tiktok||'', Web: p.web||'', Notas: p.notas||''
   }));
   if (provData.length) {
     const wsProv = XLSX.utils.json_to_sheet(provData);
@@ -2245,6 +2245,9 @@ function importarExcel() {
             email: String(r['Email'] || r['email'] || ''),
             telefono: String(r['Teléfono'] || r['Telefono'] || r['telefono'] || ''),
             direccion: String(r['Dirección'] || r['Direccion'] || r['direccion'] || ''),
+            instagram: String(r['Instagram'] || r['instagram'] || ''),
+            tiktok: String(r['TikTok'] || r['tiktok'] || ''),
+            web: String(r['Web'] || r['web'] || ''),
             notas: String(r['Notas'] || r['notas'] || '')
           }));
         }
@@ -3130,7 +3133,7 @@ function renderProveedores() {
   document.getElementById('prov-count').textContent = lista.length + ' proveedor(es)';
   var tbody = document.getElementById('prov-body');
   if (lista.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="12" class="empty">No hay proveedores registrados</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" class="empty">No hay proveedores registrados</td></tr>';
     return;
   }
   tbody.innerHTML = lista.map(function(p, i) {
@@ -3152,7 +3155,10 @@ function renderProveedores() {
     var badgeAdjunto = numCompras === 0 ? '<span style="color:#ccc">-</span>'
       : okAdjunto === numCompras ? '<span style="color:#059669;font-weight:700">✓ '+okAdjunto+'/'+numCompras+'</span>'
       : '<span style="color:#DC2626;font-weight:700">○ '+okAdjunto+'/'+numCompras+'</span>';
+    var redesTxt = (p.instagram||'') + (p.instagram && p.web ? ' | ' : '') + (p.tiktok||'');
+    if ((p.instagram||'') && (p.tiktok||'')) redesTxt = (p.instagram||'') + ' | ' + (p.tiktok||'');
     return '<tr><td>' + (i+1) + '</td><td><strong>' + esc(p.nombre) + '</strong></td><td>' + esc(p.rut||'') + '</td><td>' + esc(p.razonSocial||'') + '</td><td>' + esc(p.contacto||'') + '</td><td>' + esc(p.telefono||'') + '</td>' +
+      '<td style="font-size:11px">' + esc(redesTxt) + '</td><td style="font-size:11px">' + esc(p.web||'') + '</td>' +
       '<td style="text-align:center;font-size:12px">'+badgeEstado+'</td><td style="text-align:center;font-size:12px">'+badgeFactura+'</td><td style="text-align:center;font-size:12px">'+badgeAdjunto+'</td><td>' + numCompras + '</td><td>$' + fmt(totalGastado) + '</td>' +
       '<td><button class="btn btn-outline" style="font-size:11px;padding:3px 8px" onclick="verProveedor(\'' + escId(p.id) + '\')">Ver</button> ' +
       '<button class="btn btn-outline" style="font-size:11px;padding:3px 6px" onclick="editarProveedor(\'' + escId(p.id) + '\')">Editar</button> ' +
@@ -3424,6 +3430,8 @@ function nuevoProveedor() {
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Email</label><input id="pv-email" type="email" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Tel&eacute;fono</label><input id="pv-telefono" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Direcci&oacute;n</label><input id="pv-direccion" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Instagram / TikTok</label><input id="pv-redes" placeholder="@usuario" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">P&aacute;gina Web</label><input id="pv-web" placeholder="https://..." style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Notas</label><textarea id="pv-notas" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:13px;resize:vertical;min-height:50px"></textarea></p>',
     function() {
       var nombre = document.getElementById('pv-nombre').value.trim();
@@ -3431,6 +3439,16 @@ function nuevoProveedor() {
       if (!data.proveedores) data.proveedores = [];
       var maxN = 0;
       data.proveedores.forEach(function(x) { var n = parseInt(x.id.replace('PROV-','')); if (n > maxN) maxN = n; });
+      var redesVal = document.getElementById('pv-redes').value.trim();
+      var ig, tk;
+      if (redesVal.indexOf('|') > -1) {
+        var parts = redesVal.split('|');
+        ig = parts[0].trim(); tk = parts[1].trim();
+      } else if (redesVal.indexOf('tiktok') > -1 || redesVal.indexOf('@') === -1) {
+        tk = redesVal;
+      } else {
+        ig = redesVal;
+      }
       data.proveedores.push({
         id: 'PROV-' + String(maxN + 1).padStart(3,'0'),
         nombre: nombre,
@@ -3440,6 +3458,9 @@ function nuevoProveedor() {
         email: document.getElementById('pv-email').value.trim(),
         telefono: document.getElementById('pv-telefono').value.trim(),
         direccion: document.getElementById('pv-direccion').value.trim(),
+        instagram: ig||'',
+        tiktok: tk||'',
+        web: document.getElementById('pv-web').value.trim(),
         notas: document.getElementById('pv-notas').value.trim()
       });
       guardarDatos();
@@ -3461,6 +3482,8 @@ function editarProveedor(id) {
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Email</label><input id="pv-email" value="' + esc(p.email||'') + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Tel&eacute;fono</label><input id="pv-telefono" value="' + esc(p.telefono||'') + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Direcci&oacute;n</label><input id="pv-direccion" value="' + esc(p.direccion||'') + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Instagram / TikTok</label><input id="pv-redes" value="' + esc([p.instagram,p.tiktok].filter(Boolean).join(' | ')) + '" placeholder="@usuario" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">P&aacute;gina Web</label><input id="pv-web" value="' + esc(p.web||'') + '" placeholder="https://..." style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Notas</label><textarea id="pv-notas" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:13px;resize:vertical;min-height:50px">' + esc(p.notas||'') + '</textarea></p>',
     function() {
       var nombre = document.getElementById('pv-nombre').value.trim();
@@ -3472,6 +3495,19 @@ function editarProveedor(id) {
       p.email = document.getElementById('pv-email').value.trim();
       p.telefono = document.getElementById('pv-telefono').value.trim();
       p.direccion = document.getElementById('pv-direccion').value.trim();
+      var redesVal = document.getElementById('pv-redes').value.trim();
+      var ig, tk;
+      if (redesVal.indexOf('|') > -1) {
+        var parts = redesVal.split('|');
+        ig = parts[0].trim(); tk = parts[1].trim();
+      } else if (redesVal.indexOf('tiktok') > -1 || (redesVal && redesVal.indexOf('@') === -1)) {
+        tk = redesVal;
+      } else {
+        ig = redesVal;
+      }
+      p.instagram = ig||'';
+      p.tiktok = tk||'';
+      p.web = document.getElementById('pv-web').value.trim();
       p.notas = document.getElementById('pv-notas').value.trim();
       guardarDatos();
       renderProveedores();
@@ -3539,6 +3575,9 @@ function verProveedor(id) {
     (p.email ? '<strong>Email:</strong> ' + esc(p.email) + '<br>' : '') +
     (p.telefono ? '<strong>Tel&eacute;fono:</strong> ' + esc(p.telefono) + '<br>' : '') +
     (p.direccion ? '<strong>Direcci&oacute;n:</strong> ' + esc(p.direccion) + '<br>' : '') +
+    (p.instagram ? '<strong>Instagram:</strong> ' + esc(p.instagram) + '<br>' : '') +
+    (p.tiktok ? '<strong>TikTok:</strong> ' + esc(p.tiktok) + '<br>' : '') +
+    (p.web ? '<strong>Web:</strong> <a href="' + esc(p.web) + '" target="_blank" style="color:#2563EB">' + esc(p.web) + '</a><br>' : '') +
     (p.notas ? '<strong>Notas:</strong> ' + esc(p.notas) + '<br>' : '') +
     '<strong>Total compras:</strong> $' + fmt(totalGastado) + ' (' + comprasProv.length + ' compras)</p>' +
     '<hr style="margin:8px 0">' +
