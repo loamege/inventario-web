@@ -16,12 +16,16 @@
 body{font-family:'Segoe UI',sans-serif;background:var(--crema);color:var(--texto)}
 header{background:var(--noche);color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
 header h1{font-size:20px;font-weight:600}
-.tabs{background:var(--noche);display:flex;gap:0;padding:0 16px}
-.tab{background:transparent;color:#aaa;border:none;padding:10px 20px;cursor:pointer;font-size:14px;transition:.2s;border-bottom:3px solid transparent}
-.tab:hover{color:#fff}
-.tab.active{color:var(--ambar);border-bottom-color:var(--ambar)}
+.app-layout{display:flex;min-height:calc(100vh - 60px)}
+.tabs{background:var(--noche);display:flex;flex-direction:column;gap:0;padding:8px 0;width:180px;flex-shrink:0}
+.tab{background:transparent;color:#aaa;border:none;padding:10px 16px;cursor:pointer;font-size:13px;transition:.2s;text-align:left;border-left:3px solid transparent}
+.tab:hover{color:#fff;background:rgba(255,255,255,.05)}
+.tab.active{color:var(--ambar);border-left-color:var(--ambar);border-bottom:none;background:rgba(245,197,66,.08)}
 .tab.hidden{display:none}
-.content{padding:20px;display:none}
+.tab-sidebar-btn{background:transparent;color:#888;border:none;cursor:pointer;font-size:18px;padding:10px 16px;text-align:left;margin-top:auto}
+.tab-sidebar-btn:hover{color:#fff}
+.main-content{flex:1;overflow-x:auto}
+.content{display:none;padding:20px}
 .content.active{display:block}
 h2{color:var(--noche);margin-bottom:16px;font-size:18px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:700px}
@@ -66,8 +70,11 @@ tbody tr:hover{background:#F5F0FF}
 .group-header td{background:#f0f4f8;padding:8px;font-size:13px;border-bottom:2px solid var(--noche);font-weight:600}
 @media(max-width:700px){
   .form-grid{grid-template-columns:1fr}
-  .tabs{overflow-x:auto;gap:0}
-  .tab{font-size:12px;padding:8px 12px;white-space:nowrap}
+  .app-layout{flex-direction:column}
+  .tabs{flex-direction:row;overflow-x:auto;gap:0;width:100%;padding:0 8px}
+  .tab{font-size:12px;padding:8px 12px;white-space:nowrap;border-left:none;border-bottom:3px solid transparent;text-align:center}
+  .tab.active{border-left:none;border-bottom-color:var(--ambar)}
+  .tab-sidebar-btn{display:none}
   .content{padding:12px}
   header{padding:10px 12px;flex-wrap:wrap;gap:8px}
   header h1{font-size:16px}
@@ -145,6 +152,7 @@ tbody tr:hover{background:#F5F0FF}
   </div>
 </header>
 
+<div class="app-layout">
 <div class="tabs">
   <button class="tab active" data-tab="formulario">Formulario</button>
   <button class="tab" data-tab="inventario">Inventario</button>
@@ -158,10 +166,9 @@ tbody tr:hover{background:#F5F0FF}
   <button class="tab" data-tab="pendientes">Pendientes WC</button>
   <button class="tab" data-tab="proveedores">Proveedores</button>
   <button class="tab" data-tab="dashboard">Dashboard</button>
-  <span style="margin-left:auto;display:flex;align-items:center">
-    <button class="tab" onclick="configurarPestanas()" title="Mostrar/ocultar pesta&ntilde;as" style="font-size:18px;padding:6px 12px">&#9881;</button>
-  </span>
+  <button class="tab-sidebar-btn" onclick="configurarPestanas()" title="Mostrar/ocultar pesta&ntilde;as">&#9881;</button>
 </div>
+<div class="main-content">
 
 <div id="contenido-formulario" class="content active">
   <h2>Registro de Productos</h2>
@@ -489,6 +496,9 @@ tbody tr:hover{background:#F5F0FF}
   <div id="dash-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px"></div>
   <div id="dash-ventas-mensuales" style="margin-top:24px"></div>
 </div>
+
+</div><!-- /.main-content -->
+</div><!-- /.app-layout -->
 
 <div class="modal" id="modal">
   <div class="modal-box">
