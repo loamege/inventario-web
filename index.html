@@ -509,7 +509,7 @@ tbody tr:hover{background:#F5F0FF}
     </div>
     <div class="movil">
       <table><thead><tr>
-        <th>#</th><th>Nombre</th><th>RUT</th><th>Raz&oacute;n Social</th><th>Contacto</th><th>Tel&eacute;fono</th><th>Fact.</th><th>Compras</th><th>Total Gastado</th><th>Acci&oacute;n</th>
+        <th>#</th><th>Nombre</th><th>RUT</th><th>Raz&oacute;n Social</th><th>Contacto</th><th>Tel&eacute;fono</th><th>Estado</th><th>N° Factura</th><th>Adjunto</th><th>Compras</th><th>Total Gastado</th><th>Acci&oacute;n</th>
       </tr></thead><tbody id="prov-body"></tbody></table>
     </div>
   </div>
@@ -3130,23 +3130,30 @@ function renderProveedores() {
   document.getElementById('prov-count').textContent = lista.length + ' proveedor(es)';
   var tbody = document.getElementById('prov-body');
   if (lista.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" class="empty">No hay proveedores registrados</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" class="empty">No hay proveedores registrados</td></tr>';
     return;
   }
   tbody.innerHTML = lista.map(function(p, i) {
     var comprasProv = (data.compras||[]).filter(function(c) { return c.proveedorId === p.id; });
     var totalGastado = comprasProv.reduce(function(s, c) { return s + (c.total||0); }, 0);
     var numCompras = comprasProv.length;
-    var factOk = comprasProv.filter(function(c){
-      var paid = c.estado === 'Pagado' || c.estado === 'Completo';
-      var hasDoc = !!c.facturaArchivo || !!(c.factura||'').trim();
-      return paid && hasDoc;
-    }).length;
-    var factBadge = numCompras === 0 ? '<span style="color:#ccc">-</span>'
-      : factOk === numCompras ? '<span style="color:#059669;font-weight:700">✓ '+factOk+'/'+numCompras+'</span>'
-      : '<span style="color:#DC2626;font-weight:700">○ '+factOk+'/'+numCompras+'</span>';
+    // 1. Estado de pago
+    var okEstado = comprasProv.filter(function(c){ return c.estado === 'Pagado' || c.estado === 'Completo'; }).length;
+    var badgeEstado = numCompras === 0 ? '<span style="color:#ccc">-</span>'
+      : okEstado === numCompras ? '<span style="color:#059669;font-weight:700">✓ '+okEstado+'/'+numCompras+'</span>'
+      : '<span style="color:#DC2626;font-weight:700">○ '+okEstado+'/'+numCompras+'</span>';
+    // 2. N° Factura
+    var okFactura = comprasProv.filter(function(c){ return !!(c.factura||'').trim(); }).length;
+    var badgeFactura = numCompras === 0 ? '<span style="color:#ccc">-</span>'
+      : okFactura === numCompras ? '<span style="color:#059669;font-weight:700">✓ '+okFactura+'/'+numCompras+'</span>'
+      : '<span style="color:#DC2626;font-weight:700">○ '+okFactura+'/'+numCompras+'</span>';
+    // 3. Adjunto
+    var okAdjunto = comprasProv.filter(function(c){ return !!c.facturaArchivo; }).length;
+    var badgeAdjunto = numCompras === 0 ? '<span style="color:#ccc">-</span>'
+      : okAdjunto === numCompras ? '<span style="color:#059669;font-weight:700">✓ '+okAdjunto+'/'+numCompras+'</span>'
+      : '<span style="color:#DC2626;font-weight:700">○ '+okAdjunto+'/'+numCompras+'</span>';
     return '<tr><td>' + (i+1) + '</td><td><strong>' + esc(p.nombre) + '</strong></td><td>' + esc(p.rut||'') + '</td><td>' + esc(p.razonSocial||'') + '</td><td>' + esc(p.contacto||'') + '</td><td>' + esc(p.telefono||'') + '</td>' +
-      '<td style="text-align:center;font-size:13px">'+factBadge+'</td><td>' + numCompras + '</td><td>$' + fmt(totalGastado) + '</td>' +
+      '<td style="text-align:center;font-size:12px">'+badgeEstado+'</td><td style="text-align:center;font-size:12px">'+badgeFactura+'</td><td style="text-align:center;font-size:12px">'+badgeAdjunto+'</td><td>' + numCompras + '</td><td>$' + fmt(totalGastado) + '</td>' +
       '<td><button class="btn btn-outline" style="font-size:11px;padding:3px 8px" onclick="verProveedor(\'' + escId(p.id) + '\')">Ver</button> ' +
       '<button class="btn btn-outline" style="font-size:11px;padding:3px 6px" onclick="editarProveedor(\'' + escId(p.id) + '\')">Editar</button> ' +
       '<button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProveedor(\'' + escId(p.id) + '\')">Eliminar</button></td></tr>';
