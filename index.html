@@ -22,6 +22,10 @@ header h1{font-size:20px;font-weight:600}
 .tab:hover{color:#fff;background:rgba(255,255,255,.05)}
 .tab.active{color:var(--ambar);border-left-color:var(--ambar);border-bottom:none;background:rgba(245,197,66,.08)}
 .tab.hidden{display:none}
+.tab-sub{background:transparent;color:#888;border:none;padding:6px 16px 6px 32px;cursor:pointer;font-size:12px;transition:.2s;text-align:left;display:block;width:100%;border-left:3px solid transparent}
+.tab-sub:hover{color:#fff}
+.tab-sub.active{color:var(--ambar);border-left-color:var(--ambar);background:rgba(245,197,66,.08)}
+.tab-sub.hidden{display:none}
 .tab-sidebar-btn{background:transparent;color:#888;border:none;cursor:pointer;font-size:18px;padding:10px 16px;text-align:left;margin-top:auto}
 .tab-sidebar-btn:hover{color:#fff}
 .main-content{flex:1;overflow-x:auto}
@@ -164,7 +168,12 @@ tbody tr:hover{background:#F5F0FF}
   <button class="tab" data-tab="cotizaciones">Cotizaciones</button>
   <button class="tab" data-tab="kardex">Kardex</button>
   <button class="tab" data-tab="pendientes">Pendientes WC</button>
-  <button class="tab" data-tab="proveedores">Proveedores</button>
+  <div class="tab-wrapper" id="tab-wrapper-proveedores">
+    <button class="tab" data-tab="proveedores">Proveedores <span id="prov-arrow" style="float:right;font-size:10px">&#9654;</span></button>
+    <button class="tab-sub hidden" data-provview="lista" onclick="clickProvSub('lista')" id="prov-sub-lista">Lista</button>
+    <button class="tab-sub hidden" data-provview="costos" onclick="clickProvSub('costos')" id="prov-sub-costos">Costo Mensual</button>
+    <button class="tab-sub hidden" data-provview="costos-producto" onclick="clickProvSub('costos-producto')" id="prov-sub-costos-producto">Costos por Producto</button>
+  </div>
   <button class="tab" data-tab="dashboard">Dashboard</button>
   <button class="tab-sidebar-btn" onclick="configurarPestanas()" title="Mostrar/ocultar pesta&ntilde;as">&#9881;</button>
 </div>
@@ -477,11 +486,7 @@ tbody tr:hover{background:#F5F0FF}
 
 <div id="contenido-proveedores" class="content">
   <h2>Proveedores</h2>
-  <div class="prov-subtabs" style="display:flex;gap:4px;margin-bottom:10px">
-    <button class="btn prov-subtab active" data-provview="lista" onclick="mostrarProvVista('lista')" style="font-size:12px;padding:4px 12px">Proveedores</button>
-    <button class="btn prov-subtab" data-provview="costos" onclick="mostrarProvVista('costos')" style="font-size:12px;padding:4px 12px">Costo Mensual</button>
-    <button class="btn prov-subtab" data-provview="costos-producto" onclick="mostrarProvVista('costos-producto')" style="font-size:12px;padding:4px 12px">Costos por Producto</button>
-  </div>
+  <div class="prov-subtabs" style="display:none"></div>
   <div id="prov-vista-lista">
     <div class="btn-group">
       <button class="btn btn-primary" onclick="nuevoProveedor()">+ NUEVO PROVEEDOR</button>
@@ -837,10 +842,43 @@ function inputModalHtml(label, val) {
 // ===== TABS =====
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', function() {
+    const id = this.dataset.tab;
+    // don't close submenu if clicking proveedores again
+    if (id === 'proveedores') {
+      var isActive = this.classList.contains('active');
+      var subs = document.querySelectorAll('#tab-wrapper-proveedores .tab-sub');
+      var arrow = document.getElementById('prov-arrow');
+      // if already active, just toggle submenu
+      if (isActive) {
+        var hidden = subs[0].classList.contains('hidden');
+        subs.forEach(function(s) { s.classList.toggle('hidden'); });
+        arrow.innerHTML = hidden ? '&#9660;' : '&#9654;';
+        if (hidden) {
+          // ensure current sub-view renders
+          var activeSub = document.querySelector('#tab-wrapper-proveedores .tab-sub.active');
+          mostrarProvVista(activeSub ? activeSub.dataset.provview : 'lista');
+        }
+        return;
+      }
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.content').forEach(x => x.classList.remove('active'));
+      this.classList.add('active');
+      document.getElementById('contenido-proveedores').classList.add('active');
+      // show submenu
+      subs.forEach(function(s) { s.classList.remove('hidden'); });
+      arrow.innerHTML = '&#9660;';
+      // render active sub-view
+      var activeSub = document.querySelector('#tab-wrapper-proveedores .tab-sub.active');
+      mostrarProvVista(activeSub ? activeSub.dataset.provview : 'lista');
+      renderProveedores();
+      renderCostoMensual();
+      return;
+    }
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
     document.querySelectorAll('.content').forEach(x => x.classList.remove('active'));
+    // hide all submenus
+    document.querySelectorAll('.tab-wrapper .tab-sub').forEach(function(s) { s.classList.add('hidden'); });
     this.classList.add('active');
-    const id = this.dataset.tab;
     document.getElementById('contenido-' + id).classList.add('active');
     if (id === 'inventario') renderInventario();
     if (id === 'falabella') renderFalabella();
@@ -851,10 +889,14 @@ document.querySelectorAll('.tab').forEach(t => {
     if (id === 'kardex') renderKardex();
     if (id === 'cotizaciones') renderCotizaciones();
     if (id === 'pendientes') renderPendientes();
-    if (id === 'proveedores') { renderProveedores(); renderCostoMensual(); }
     if (id === 'dashboard') renderDashboard();
   });
 });
+function clickProvSub(vista) {
+  document.querySelectorAll('#tab-wrapper-proveedores .tab-sub').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelector('#tab-wrapper-proveedores .tab-sub[data-provview="'+vista+'"]').classList.add('active');
+  mostrarProvVista(vista);
+}
 function cambiarTab(id) {
   const tab = document.querySelector('.tab[data-tab="' + id + '"]');
   if (tab) tab.click();
@@ -3055,8 +3097,6 @@ function renderProveedores() {
 }
 
 function mostrarProvVista(vista) {
-  document.querySelectorAll('.prov-subtab').forEach(function(b) { b.classList.remove('active'); });
-  document.querySelector('.prov-subtab[data-provview="'+vista+'"]').classList.add('active');
   document.getElementById('prov-vista-lista').style.display = vista === 'lista' ? '' : 'none';
   document.getElementById('prov-vista-costos').style.display = vista === 'costos' ? '' : 'none';
   document.getElementById('prov-vista-costos-producto').style.display = vista === 'costos-producto' ? '' : 'none';
