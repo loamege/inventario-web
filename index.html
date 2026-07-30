@@ -840,6 +840,35 @@ function inputModalHtml(label, val) {
 }
 
 // ===== TABS =====
+function guardarTabUI() {
+  var activeTab = document.querySelector('.tab.active');
+  if (activeTab) {
+    localStorage.setItem('ui_tab', activeTab.dataset.tab);
+    var activeProvSub = document.querySelector('#tab-wrapper-proveedores .tab-sub.active');
+    localStorage.setItem('ui_prov_sub', activeProvSub ? activeProvSub.dataset.provview : 'lista');
+  }
+}
+function restaurarTabUI() {
+  var tabId = localStorage.getItem('ui_tab');
+  if (tabId) {
+    var btn = document.querySelector('.tab[data-tab="' + tabId + '"]');
+    if (btn) {
+      btn.click();
+      // restore prov sub-view after a tick
+      if (tabId === 'proveedores') {
+        var provSub = localStorage.getItem('ui_prov_sub');
+        if (provSub) {
+          setTimeout(function() {
+            var subBtn = document.querySelector('#tab-wrapper-proveedores .tab-sub[data-provview="' + provSub + '"]');
+            if (subBtn) subBtn.click();
+          }, 50);
+        }
+      }
+      return;
+    }
+  }
+  // default: Formulario active already set in HTML
+}
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', function() {
     const id = this.dataset.tab;
@@ -858,6 +887,7 @@ document.querySelectorAll('.tab').forEach(t => {
           var activeSub = document.querySelector('#tab-wrapper-proveedores .tab-sub.active');
           mostrarProvVista(activeSub ? activeSub.dataset.provview : 'lista');
         }
+        guardarTabUI();
         return;
       }
       document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
@@ -872,6 +902,7 @@ document.querySelectorAll('.tab').forEach(t => {
       mostrarProvVista(activeSub ? activeSub.dataset.provview : 'lista');
       renderProveedores();
       renderCostoMensual();
+      guardarTabUI();
       return;
     }
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
@@ -890,12 +921,14 @@ document.querySelectorAll('.tab').forEach(t => {
     if (id === 'cotizaciones') renderCotizaciones();
     if (id === 'pendientes') renderPendientes();
     if (id === 'dashboard') renderDashboard();
+    guardarTabUI();
   });
 });
 function clickProvSub(vista) {
   document.querySelectorAll('#tab-wrapper-proveedores .tab-sub').forEach(function(s) { s.classList.remove('active'); });
   document.querySelector('#tab-wrapper-proveedores .tab-sub[data-provview="'+vista+'"]').classList.add('active');
   mostrarProvVista(vista);
+  guardarTabUI();
 }
 function cambiarTab(id) {
   const tab = document.querySelector('.tab[data-tab="' + id + '"]');
@@ -2873,6 +2906,7 @@ function iniciarApp() {
   renderPendientes();
   renderDashboard();
   document.getElementById('contenido-formulario').style.display = '';
+  restaurarTabUI();
 }
 
 // ===== DASHBOARD =====
