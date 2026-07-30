@@ -3517,11 +3517,15 @@ function editarProveedor(id) {
 }
 
 function eliminarProveedor(id) {
-  if (!confirm('Eliminar este proveedor? Las compras asociadas no se eliminar&aacute;n.')) return;
+  var comprasRel = (data.compras||[]).filter(function(c) { return c.proveedorId === id; });
+  var msg = 'Eliminar este proveedor?';
+  if (comprasRel.length) msg += ' Tambi&eacute;n se eliminar&aacute;n sus ' + comprasRel.length + ' compra(s) asociada(s).';
+  if (!confirm(msg)) return;
   data.proveedores = (data.proveedores||[]).filter(function(x) { return x.id !== id; });
+  data.compras = (data.compras||[]).filter(function(c) { return c.proveedorId !== id; });
   guardarDatos();
   renderProveedores();
-  toast('Proveedor eliminado');
+  toast('Proveedor eliminado con sus compras');
 }
 
 function verProveedor(id) {
