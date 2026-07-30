@@ -3200,6 +3200,20 @@ function renderCostoMensual() {
   });
   html += '<td style="text-align:right;background:#ddd">$' + fmt(grandTotal) + '</td></tr>';
   html += '</tbody></table>';
+
+  // Simple table: Mes | Costo Total | Acumulado
+  var acum = 0;
+  html += '<h3 style="font-size:14px;margin:20px 0 8px;color:var(--noche)">Resumen Mensual</h3>';
+  html += '<table style="font-size:13px;min-width:400px"><thead><tr><th>Mes</th><th style="text-align:right">Costo Total del Mes</th><th style="text-align:right">Acumulado</th></tr></thead><tbody>';
+  monthList.slice().reverse().forEach(function(m) {
+    var rowTotal = 0;
+    provIds.forEach(function(pid) { rowTotal += meses[m][pid] || 0; });
+    acum += rowTotal;
+    html += '<tr><td style="font-weight:600">' + esc(m) + '</td><td style="text-align:right">$' + fmt(rowTotal) + '</td><td style="text-align:right;font-weight:600">$' + fmt(acum) + '</td></tr>';
+  });
+  html += '<tr style="font-weight:700;background:#e8e8e8"><td>Total Acumulado</td><td style="text-align:right">$' + fmt(grandTotal) + '</td><td style="text-align:right">$' + fmt(acum) + '</td></tr>';
+  html += '</tbody></table>';
+
   document.getElementById('prov-costos-content').innerHTML = html;
 }
 
