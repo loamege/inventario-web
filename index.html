@@ -3134,7 +3134,9 @@ function nuevaCompra(proveedorId) {
     '<div id="comp-items"><p style="color:#888;font-size:13px">Sin productos a&uacute;n</p></div>' +
     '<p style="text-align:right;font-size:15px;font-weight:700;margin-top:8px" id="comp-total-label">Total: $0</p></p>',
     function() {
+      try {
       var items = window._compItems || [];
+      console.log('COMPRA: items='+items.length+', proveedorId='+proveedorId+', compras antes='+(data.compras||[]).length);
       if (items.length === 0) { toast('Agrega al menos un producto'); return false; }
       if (!data.compras) data.compras = [];
       var maxN = 0;
@@ -3150,9 +3152,11 @@ function nuevaCompra(proveedorId) {
         total: total,
         items: JSON.parse(JSON.stringify(items))
       });
+      console.log('COMPRA: guardada id='+data.compras[data.compras.length-1].id+', total compras='+data.compras.length);
       delete window._compItems;
       guardarDatos();
       toast('Compra registrada');
+      } catch(e) { console.error('ERROR en compra:', e); toast('Error: '+e.message); }
     }
   );
   window._compItems = [];
