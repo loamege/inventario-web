@@ -3150,66 +3150,73 @@ function renderCostoMensual() {
     return;
   }
   // group by month (YYYY-MM) and by proveedorId
-  var meses = {};
   var provNombres = {};
   proveedores.forEach(function(p) { provNombres[p.id] = p.nombre; });
+  var rows = []; // { mes, proveedorId, total }
   compras.forEach(function(c) {
     if (!c.fecha || !c.proveedorId) return;
-    var m = c.fecha.substring(0, 7); // YYYY-MM
-    if (!meses[m]) meses[m] = {};
-    if (!meses[m][c.proveedorId]) meses[m][c.proveedorId] = 0;
-    meses[m][c.proveedorId] += c.total || 0;
+    rows.push({ mes: c.fecha.substring(0, 7), proveedorId: c.proveedorId, total: c.total||0 });
   });
-  var monthList = Object.keys(meses).sort().reverse();
-  // collect all supplier IDs that appear in purchases
-  var provIds = [];
-  monthList.forEach(function(m) {
-    Object.keys(meses[m]).forEach(function(pid) {
-      if (provIds.indexOf(pid) === -1) provIds.push(pid);
-    });
+  if (rows.length === 0) {
+    document.getElementById('prov-costos-content').innerHTML = '<p style="color:#888;font-size:13px">Sin compras registradas</p>';
+    return;
+  }
+  // aggregate
+  var agg = {};
+  rows.forEach(function(r) {
+    var key = r.mes + '|' + r.proveedorId;
+    if (!agg[key]) agg[key] = { mes: r.mes, proveedorId: r.proveedorId, total: 0 };
+    agg[key].total += r.total;
   });
-  // sort suppliers by name
-  provIds.sort(function(a, b) { return (provNombres[a]||'').localeCompare(provNombres[b]||''); });
-
+  var aggList = Object.keys(agg).map(function(k) { return agg[k]; });
   // totals per supplier
   var totalsProv = {};
-  provIds.forEach(function(pid) { totalsProv[pid] = 0; });
-  var grandTotal = 0;
-
-  var html = '<table style="font-size:12px;min-width:600px"><thead><tr><th>Mes</th>';
-  provIds.forEach(function(pid) {
-    html += '<th style="text-align:right">' + esc(provNombres[pid]||pid) + '</th>';
+  var monthTotals = {};
+  aggList.forEach(function(a) {
+    if (!totalsProv[a.proveedorId]) totalsProv[a.proveedorId] = 0;
+    totalsProv[a.proveedorId] += a.total;
+    if (!monthTotals[a.mes]) monthTotals[a.mes] = 0;
+    monthTotals[a.mes] += a.total;
   });
-  html += '<th style="text-align:right;background:#f0f0f0">Total Mes</th></tr></thead><tbody>';
+  var monthList = Object.keys(monthTotals).sort();
+  var provIds = Object.keys(totalsProv).sort(function(a, b) { return (provNombres[a]||'').localeCompare(provNombres[b]||''); });
+  var grandTotal = provIds.reduce(function(s, pid) { return s + totalsProv[pid]; }, 0);
+
+  // Vertical table: Mes | Proveedor | Total
+  var html = '<h3 style="font-size:14px;margin:0 0 8px;color:var(--noche)">Desglose por Proveedor</h3>';
+  html += '<div style="overflow-x:auto;max-height:350px;overflow-y:auto;border:1px solid #ddd;border-radius:4px">';
+  html += '<table style="font-size:12px;min-width:400px"><thead><tr><th>Mes</th><th>Proveedor</th><th style="text-align:right">Total</th></tr></thead><tbody>';
   monthList.forEach(function(m) {
-    var rowTotal = 0;
-    html += '<tr><td style="font-weight:600">' + esc(m) + '</td>';
-    provIds.forEach(function(pid) {
-      var val = meses[m][pid] || 0;
-      rowTotal += val;
-      totalsProv[pid] += val;
-      html += '<td style="text-align:right' + (val === 0 ? ';color:#ccc' : '') + '">' + (val ? '$' + fmt(val) : '-') + '</td>';
+    // sub-list for this month, sorted by supplier
+    var monthRows = aggList.filter(function(a) { return a.mes === m; });
+    monthRows.sort(function(a, b) { return (provNombres[a.proveedorId]||'').localeCompare(provNombres[b.proveedorId]||''); });
+    monthRows.forEach(function(a, i) {
+      html += '<tr' + (i === 0 ? ' style="border-top:2px solid #ddd"' : '') + '>' +
+        (i === 0 ? '<td style="font-weight:600" rowspan="' + monthRows.length + '">' + esc(m) + '</td>' : '') +
+        '<td>' + esc(provNombres[a.proveedorId]||a.proveedorId) + '</td>' +
+        '<td style="text-align:right">$' + fmt(a.total) + '</td></tr>';
     });
-    grandTotal += rowTotal;
-    html += '<td style="text-align:right;font-weight:700;background:#f0f0f0">$' + fmt(rowTotal) + '</td></tr>';
   });
   // totals row
-  html += '<tr style="font-weight:700;background:#e8e8e8"><td>Total</td>';
+  html += '<tr style="font-weight:700;background:#e8e8e8"><td colspan="2">Total General</td><td style="text-align:right">$' + fmt(grandTotal) + '</td></tr>';
+  html += '</tbody></table></div>';
+
+  // Per-supplier totals
+  html += '<h3 style="font-size:14px;margin:16px 0 8px;color:var(--noche)">Total por Proveedor</h3>';
+  html += '<table style="font-size:13px;min-width:300px"><thead><tr><th>Proveedor</th><th style="text-align:right">Total</th></tr></thead><tbody>';
   provIds.forEach(function(pid) {
-    html += '<td style="text-align:right">$' + fmt(totalsProv[pid]) + '</td>';
+    html += '<tr><td>' + esc(provNombres[pid]||pid) + '</td><td style="text-align:right">$' + fmt(totalsProv[pid]) + '</td></tr>';
   });
-  html += '<td style="text-align:right;background:#ddd">$' + fmt(grandTotal) + '</td></tr>';
+  html += '<tr style="font-weight:700;background:#e8e8e8"><td>Total</td><td style="text-align:right">$' + fmt(grandTotal) + '</td></tr>';
   html += '</tbody></table>';
 
-  // Simple table: Mes | Costo Total | Acumulado
+  // Resumen Mensual: Mes | Costo Total | Acumulado
   var acum = 0;
-  html += '<h3 style="font-size:14px;margin:20px 0 8px;color:var(--noche)">Resumen Mensual</h3>';
+  html += '<h3 style="font-size:14px;margin:16px 0 8px;color:var(--noche)">Resumen Mensual</h3>';
   html += '<table style="font-size:13px;min-width:400px"><thead><tr><th>Mes</th><th style="text-align:right">Costo Total del Mes</th><th style="text-align:right">Acumulado</th></tr></thead><tbody>';
-  monthList.slice().reverse().forEach(function(m) {
-    var rowTotal = 0;
-    provIds.forEach(function(pid) { rowTotal += meses[m][pid] || 0; });
-    acum += rowTotal;
-    html += '<tr><td style="font-weight:600">' + esc(m) + '</td><td style="text-align:right">$' + fmt(rowTotal) + '</td><td style="text-align:right;font-weight:600">$' + fmt(acum) + '</td></tr>';
+  monthList.forEach(function(m) {
+    acum += monthTotals[m];
+    html += '<tr><td style="font-weight:600">' + esc(m) + '</td><td style="text-align:right">$' + fmt(monthTotals[m]) + '</td><td style="text-align:right;font-weight:600">$' + fmt(acum) + '</td></tr>';
   });
   html += '<tr style="font-weight:700;background:#e8e8e8"><td>Total Acumulado</td><td style="text-align:right">$' + fmt(grandTotal) + '</td><td style="text-align:right">$' + fmt(acum) + '</td></tr>';
   html += '</tbody></table>';
