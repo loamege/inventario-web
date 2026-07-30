@@ -480,9 +480,21 @@ tbody tr:hover{background:#F5F0FF}
   <div class="btn-group">
     <button class="btn btn-primary" onclick="nuevoProveedor()">+ NUEVO PROVEEDOR</button>
   </div>
-  <div class="search-bar">
-    <input id="prov-search" placeholder="Buscar proveedor..." oninput="renderProveedores()" style="flex:1;max-width:300px">
-    <span id="prov-count" style="font-size:13px;color:#888;align-self:center"></span>
+  <div class="search-bar" style="flex-wrap:wrap;gap:6px">
+    <select id="prov-filtro-proveedor" onchange="renderProveedores()" style="flex:1;min-width:140px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+      <option value="">Todos los proveedores</option>
+    </select>
+    <select id="prov-sort" onchange="renderProveedores()" style="padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+      <option value="nombre-asc">Nombre A-Z</option>
+      <option value="rut">RUT</option>
+      <option value="razon-asc">Raz&oacute;n Social A-Z</option>
+      <option value="total-desc">Total Gastado &darr;</option>
+    </select>
+    <input id="prov-search" placeholder="Buscar..." oninput="renderProveedores()" style="flex:1;min-width:100px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+    <input id="prov-filtro-contacto" placeholder="Contacto..." oninput="renderProveedores()" style="flex:1;min-width:100px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+    <input id="prov-filtro-telefono" placeholder="Tel&eacute;fono..." oninput="renderProveedores()" style="flex:1;min-width:100px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+    <input id="prov-filtro-factura" placeholder="N&deg; Factura..." oninput="renderProveedores()" style="flex:1;min-width:90px;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">
+    <span id="prov-count" style="font-size:13px;color:#888;align-self:center;white-space:nowrap"></span>
   </div>
   <div class="movil">
     <table><thead><tr>
@@ -2966,8 +2978,43 @@ function eliminarPendiente(idx) {
 
 function renderProveedores() {
   var lista = data.proveedores || [];
+
+  // populate proveedor dropdown
+  var selProv = document.getElementById('prov-filtro-proveedor');
+  var currentFilterProv = selProv.value;
+  selProv.innerHTML = '<option value="">Todos los proveedores</option>' +
+    lista.map(function(p){return '<option value="'+esc(p.nombre)+'">'+esc(p.nombre)+'</option>'}).join('');
+  selProv.value = currentFilterProv;
+
+  // filters
   var q = (document.getElementById('prov-search').value || '').toLowerCase();
+  var filtroProveedor = selProv.value;
+  var filtroContacto = (document.getElementById('prov-filtro-contacto').value || '').toLowerCase();
+  var filtroTelefono = (document.getElementById('prov-filtro-telefono').value || '').toLowerCase();
+  var filtroFactura = (document.getElementById('prov-filtro-factura').value || '').toLowerCase();
+
+  if (filtroProveedor) lista = lista.filter(function(p) { return p.nombre === filtroProveedor; });
   if (q) lista = lista.filter(function(p) { return (p.nombre||'').toLowerCase().includes(q) || (p.rut||'').toLowerCase().includes(q) || (p.razonSocial||'').toLowerCase().includes(q) || (p.contacto||'').toLowerCase().includes(q) || (p.telefono||'').includes(q); });
+  if (filtroContacto) lista = lista.filter(function(p) { return (p.contacto||'').toLowerCase().includes(filtroContacto); });
+  if (filtroTelefono) lista = lista.filter(function(p) { return (p.telefono||'').toLowerCase().includes(filtroTelefono); });
+  if (filtroFactura) lista = lista.filter(function(p) {
+    var comprasProv = (data.compras||[]).filter(function(c) { return c.proveedorId === p.id; });
+    return comprasProv.some(function(c) { return (c.factura||'').toLowerCase().includes(filtroFactura); });
+  });
+
+  // sort
+  var sortMode = document.getElementById('prov-sort').value;
+  lista = lista.slice().sort(function(a, b) {
+    var comprasA = (data.compras||[]).filter(function(c){return c.proveedorId===a.id;});
+    var comprasB = (data.compras||[]).filter(function(c){return c.proveedorId===b.id;});
+    var totalA = comprasA.reduce(function(s,c){return s+(c.total||0);},0);
+    var totalB = comprasB.reduce(function(s,c){return s+(c.total||0);},0);
+    if (sortMode === 'rut') return (a.rut||'').localeCompare(b.rut||'', undefined, {numeric:true});
+    if (sortMode === 'razon-asc') return (a.razonSocial||'').localeCompare(b.razonSocial||'');
+    if (sortMode === 'total-desc') return totalB - totalA;
+    return (a.nombre||'').localeCompare(b.nombre||'');
+  });
+
   document.getElementById('prov-count').textContent = lista.length + ' proveedor(es)';
   var tbody = document.getElementById('prov-body');
   if (lista.length === 0) {
@@ -3137,31 +3184,11 @@ function verProveedor(id) {
 }
 
 function nuevaCompra(proveedorId) {
-  window._compraSaveFn = function() {
-    try {
-      var items = window._compItems || [];
-      console.log('COMPRA: items='+items.length+', proveedorId='+proveedorId+', compras antes='+(data.compras||[]).length);
-      if (items.length === 0) { toast('Agrega al menos un producto'); return false; }
-      if (!data.compras) data.compras = [];
-      var maxN = 0;
-      data.compras.forEach(function(x) { var n = parseInt(x.id.replace('COMP-','')); if (n > maxN) maxN = n; });
-      var total = items.reduce(function(s, it) { return s + (it.cantidad||0) * (it.precioCosto||0); }, 0);
-      data.compras.push({
-        id: 'COMP-' + String(maxN + 1).padStart(3,'0'),
-        proveedorId: proveedorId,
-        fecha: document.getElementById('comp-fecha').value || hoy(),
-        estado: document.getElementById('comp-estado').value,
-        factura: document.getElementById('comp-factura').value.trim(),
-        nota: document.getElementById('comp-nota').value.trim(),
-        total: total,
-        items: JSON.parse(JSON.stringify(items))
-      });
-      console.log('COMPRA: guardada id='+data.compras[data.compras.length-1].id+', total compras='+data.compras.length);
-      delete window._compItems;
-      guardarDatos();
-      toast('Compra registrada');
-    } catch(e) { console.error('ERROR en compra:', e); toast('Error: '+e.message); }
-  };
+  window._compraProvId = proveedorId;
+  if (!window._compItems) window._compItems = [];
+  mostrarFormNuevaCompra();
+}
+function mostrarFormNuevaCompra() {
   abrirModal('Nueva Compra',
     '<p><label style="font-weight:600;display:block;font-size:13px;color:var(--noche)">Fecha</label><input id="comp-fecha" type="date" value="' + hoy() + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Estado</label><select id="comp-estado" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
@@ -3169,68 +3196,77 @@ function nuevaCompra(proveedorId) {
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Factura / N° Boleta</label><input id="comp-factura" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Nota</label><input id="comp-nota" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<hr style="margin:12px 0">' +
-    '<p style="font-size:13px;font-weight:600;color:var(--noche)">Productos <button class="btn btn-outline" style="font-size:11px;padding:3px 8px;margin-left:8px" onclick="agregarItemCompra()">+ Agregar producto</button></p>' +
+    '<p style="font-size:13px;font-weight:600;color:var(--noche)">Productos <button class="btn btn-outline" style="font-size:11px;padding:3px 8px;margin-left:8px" onclick="mostrarBuscadorCompra()">+ Agregar producto</button></p>' +
     '<div id="comp-items"><p style="color:#888;font-size:13px">Sin productos a&uacute;n</p></div>' +
     '<p style="text-align:right;font-size:15px;font-weight:700;margin-top:8px" id="comp-total-label">Total: $0</p></p>',
-    window._compraSaveFn
+    function() {
+      var items = window._compItems || [];
+      if (items.length === 0) { toast('Agrega al menos un producto'); return false; }
+      if (!data.compras) data.compras = [];
+      var maxN = 0;
+      data.compras.forEach(function(x) { var n = parseInt(x.id.replace('COMP-','')); if (n > maxN) maxN = n; });
+      var total = items.reduce(function(s, it) { return s + (it.cantidad||0) * (it.precioCosto||0); }, 0);
+      data.compras.push({
+        id: 'COMP-' + String(maxN + 1).padStart(3,'0'),
+        proveedorId: window._compraProvId,
+        fecha: document.getElementById('comp-fecha').value || hoy(),
+        estado: document.getElementById('comp-estado').value,
+        factura: document.getElementById('comp-factura').value.trim(),
+        nota: document.getElementById('comp-nota').value.trim(),
+        total: total,
+        items: JSON.parse(JSON.stringify(items))
+      });
+      delete window._compItems;
+      guardarDatos();
+      toast('Compra registrada');
+    }
   );
-  window._compItems = [];
+  actualizarCompraItemsUI();
   setTimeout(function() { var el = document.getElementById('comp-fecha'); if (el) el.focus(); }, 100);
 }
-
-function agregarItemCompra() {
-  abrirModal('Agregar producto',
-    '<p>Busca producto por SKU o nombre:</p><input id="comp-buscar" placeholder="GEN-0001 o nombre..." style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:16px">' +
-    '<p style="margin-top:6px;font-size:12px;color:#888">Presiona Aceptar para buscar</p>',
-    function() {
-      var q = document.getElementById('comp-buscar').value.trim().toLowerCase();
-      if (!q) return;
-      var results = data.productos.filter(function(p) { return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q); });
-      if (results.length === 0) { toast('Sin resultados'); return; }
-      var html = '<div style="max-height:300px;overflow-y:auto">' + results.map(function(p, i) {
-        return '<div style="padding:10px 8px;border-bottom:1px solid #eee;cursor:pointer" onclick="seleccionarItemCompra(' + i + ')">' +
-          '<strong>' + esc(p.nombre) + '</strong><br>' +
-          '<span style="font-size:12px;color:#666">SKU: ' + esc(p.sku) + ' | Costo: $' + fmt(p.precioCosto) + ' | Stock Total: ' + totalStock(p) + '</span></div>';
-      }).join('') + '</div>';
-      document.getElementById('modal-body').innerHTML = html;
-      window._busquedaResults = results;
-      return false;
-    }
-  );
+function mostrarBuscadorCompra() {
+  var html = '<p style="margin-bottom:8px"><button class="btn btn-outline" onclick="mostrarFormNuevaCompra()" style="font-size:11px;padding:3px 8px">&larr; Volver</button></p>' +
+    '<p>Busca producto por SKU o nombre:</p><input id="comp-buscar" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:16px">' +
+    '<div id="comp-resultados"></div>';
+  document.getElementById('modal-title').textContent = 'Agregar producto';
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-confirm').onclick = function() {
+    var q = document.getElementById('comp-buscar').value.trim().toLowerCase();
+    if (!q) return;
+    var results = data.productos.filter(function(p) { return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q); });
+    if (results.length === 0) { toast('Sin resultados'); return; }
+    var rHtml = '<div style="max-height:250px;overflow-y:auto;margin-top:8px">' + results.map(function(p, i) {
+      return '<div style="padding:8px;border-bottom:1px solid #eee;cursor:pointer" onclick="seleccionarItemCompra(' + i + ')">' +
+        '<strong>' + esc(p.nombre) + '</strong><br>' +
+        '<span style="font-size:12px;color:#666">SKU: ' + esc(p.sku) + ' | Costo: $' + fmt(p.precioCosto) + ' | Stock Total: ' + totalStock(p) + '</span></div>';
+    }).join('') + '</div>';
+    document.getElementById('comp-resultados').innerHTML = rHtml;
+    window._busquedaResults = results;
+  };
   setTimeout(function(){ document.getElementById('comp-buscar').focus(); }, 100);
 }
-
 function seleccionarItemCompra(i) {
   var p = window._busquedaResults[i];
-  if (!p) return false;
-  abrirModal('Cantidad - ' + esc(p.nombre),
+  if (!p) return;
+  var html = '<p style="margin-bottom:8px"><button class="btn btn-outline" onclick="mostrarBuscadorCompra()" style="font-size:11px;padding:3px 8px">&larr; Volver</button></p>' +
     '<p><strong>' + esc(p.nombre) + '</strong></p><p>SKU: ' + esc(p.sku) + ' | Costo actual: $' + fmt(p.precioCosto) + '</p>' +
     '<p style="margin-top:8px">Cantidad:</p><input id="item-cant" type="number" min="1" value="1" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
-    '<p style="margin-top:8px">Precio Costo unitario:</p><input id="item-costo" type="number" step="0.01" min="0" value="' + p.precioCosto + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">',
-    function() {
-      var cant = parseInt(document.getElementById('item-cant').value) || 1;
-      var costo = parseFloat(document.getElementById('item-costo').value) || 0;
-      if (!window._compItems) window._compItems = [];
-      window._compItems.push({ sku: p.sku, nombre: p.nombre, cantidad: cant, precioCosto: costo, total: cant * costo });
-      toast('Agregado: ' + p.nombre);
-      // Reabrir modal de Nueva Compra con items actualizados
-      abrirModal('Nueva Compra',
-        '<p><label style="font-weight:600;display:block;font-size:13px;color:var(--noche)">Fecha</label><input id="comp-fecha" type="date" value="' + hoy() + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
-        '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Estado</label><select id="comp-estado" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
-        '<option value="Pendiente">Pendiente</option><option value="Pagado">Pagado</option><option value="Recibido Parcial">Recibido Parcial</option><option value="Completo">Completo</option></select>' +
-        '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Factura / N° Boleta</label><input id="comp-factura" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
-        '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Nota</label><input id="comp-nota" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
-        '<hr style="margin:12px 0">' +
-        '<p style="font-size:13px;font-weight:600;color:var(--noche)">Productos <button class="btn btn-outline" style="font-size:11px;padding:3px 8px;margin-left:8px" onclick="agregarItemCompra()">+ Agregar producto</button></p>' +
-        '<div id="comp-items"><p style="color:#888;font-size:13px">Sin productos a&uacute;n</p></div>' +
-        '<p style="text-align:right;font-size:15px;font-weight:700;margin-top:8px" id="comp-total-label">Total: $0</p></p>',
-        window._compraSaveFn
-      );
-      actualizarCompraItemsUI();
-      return false;
-    }
-  );
-  return false;
+    '<p style="margin-top:8px">Precio Costo unitario:</p><input id="item-costo" type="number" step="0.01" min="0" value="' + p.precioCosto + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<p style="margin-top:12px"><button class="btn btn-primary" onclick="confirmarItemCompra(' + i + ')" style="width:100%">AGREGAR A LA COMPRA</button></p>';
+  document.getElementById('modal-title').textContent = 'Cantidad - ' + esc(p.nombre);
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-confirm').onclick = function() { return false; };
+  setTimeout(function(){ document.getElementById('item-cant').focus(); }, 100);
+}
+function confirmarItemCompra(i) {
+  var p = window._busquedaResults[i];
+  if (!p) return;
+  var cant = parseInt(document.getElementById('item-cant').value) || 1;
+  var costo = parseFloat(document.getElementById('item-costo').value) || 0;
+  if (!window._compItems) window._compItems = [];
+  window._compItems.push({ sku: p.sku, nombre: p.nombre, cantidad: cant, precioCosto: costo, total: cant * costo });
+  toast('Agregado: ' + p.nombre);
+  mostrarFormNuevaCompra();
 }
 
 function actualizarCompraItemsUI() {
