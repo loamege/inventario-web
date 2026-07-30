@@ -598,9 +598,12 @@ function cargarDatos() {
 }
 
 function guardarDatos() {
+  try {
   if (!data._syncVersion) data._syncVersion = 0;
   data._syncVersion++;
-  localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  var json = JSON.stringify(data);
+  localStorage.setItem(STORE_KEY, json);
+  console.log('GUARDADO OK. compras='+(data.compras||[]).length+', proveedores='+(data.proveedores||[]).length);
   if (fbDoc) {
     document.getElementById('sync-status').textContent = '⟳';
     fbDoc.set(data).then(function() {
@@ -618,6 +621,7 @@ function guardarDatos() {
     });
   }
   autoBackup();
+  } catch(e) { console.error('GUARDAR ERROR:', e); toast('Error al guardar: '+e.message); }
 }
 
 let data = (function() {
