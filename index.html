@@ -702,9 +702,9 @@ let data = (function() {
   }
   // Limpiar compras hu&eacute;rfanas (proveedor eliminado)
   var idsValidos = new Set((d.proveedores||[]).map(function(x){return x.id;}));
-  var antes = (d.compras||[]).length;
   d.compras = (d.compras||[]).filter(function(c){ return idsValidos.has(c.proveedorId); });
-  if ((d.compras||[]).length < antes) guardarDatos();
+  // No llamar guardarDatos() aquí: sobrescribiría Firestore con datos locales
+  // antes de que termine la lectura de Firebase al cargar.
   return d;
 })();
 
