@@ -134,8 +134,9 @@ tbody tr:hover{background:#F5F0FF}
       <input id="login-user" type="email" placeholder="Ingresa tu correo" autocomplete="email">
       <label>Contrase&ntilde;a</label>
       <input id="login-pass" type="password" placeholder="Ingresa tu contrase&ntilde;a" autocomplete="current-password">
-      <button class="btn btn-primary" onclick="(function(){var e=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value;document.getElementById('login-error').style.display='none';if(!e||!p){document.getElementById('login-error').textContent='Ingresa correo y contraseña';document.getElementById('login-error').style.display='block';return}if(e!=='loa.ayalam@gmail.com'||p!=='***PASSWORD_REDACTED***'){document.getElementById('login-error').textContent='Credenciales incorrectas';document.getElementById('login-error').style.display='block';return}localStorage.setItem('luciauth','1');document.getElementById('login-overlay').style.display='none';location.reload()})()">INGRESAR</button>
+      <button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
       <div class="error" id="login-error"></div>
+      <div style="text-align:center;margin-top:12px"><a href="#" onclick="recuperarContrasena();return false" style="font-size:12px;color:#2563EB">¿Olvidaste tu contrase&ntilde;a?</a></div>
     </div>
   </div>
 </div>
@@ -2661,6 +2662,7 @@ function guardarEdicionCotizacion(codigo) {
   renderInventario();
   cerrarModal();
   toast('Cotizaci&oacute;n actualizada: ' + codigo);
+}
 
 // ===== Eliminar registros =====
 function eliminarProductoDirecto(sku) {
@@ -2891,34 +2893,60 @@ function eliminarKardex(idStr) {
 
 // ===== AUTH =====
 function iniciarSesion() {
-  try {
-    const email = document.getElementById('login-user').value.trim();
-    const pass = document.getElementById('login-pass').value;
-    document.getElementById('login-error').style.display = 'none';
-    if (!email || !pass) {
-      document.getElementById('login-error').textContent = 'Ingresa correo y contraseña';
-      document.getElementById('login-error').style.display = 'block';
-      return;
-    }
-    if (email !== 'loa.ayalam@gmail.com' || pass !== '***PASSWORD_REDACTED***') {
-      document.getElementById('login-error').textContent = 'Credenciales incorrectas';
-      document.getElementById('login-error').style.display = 'block';
-      return;
-    }
+  var email = document.getElementById('login-user').value.trim();
+  var pass = document.getElementById('login-pass').value;
+  document.getElementById('login-error').style.display = 'none';
+  if (!email || !pass) {
+    document.getElementById('login-error').textContent = 'Ingresa correo y contraseña';
+    document.getElementById('login-error').style.display = 'block';
+    return;
+  }
+  var btn = document.querySelector('#login-card .btn');
+  if (btn) btn.disabled = true;
+  var finError = function(msg) {
+    document.getElementById('login-error').textContent = msg;
+    document.getElementById('login-error').style.display = 'block';
+    if (btn) btn.disabled = false;
+  };
+  if (typeof firebase !== 'undefined' && firebase.auth) {
+    firebase.auth().signInWithEmailAndPassword(email, pass).then(function() {
+      localStorage.setItem('luciauth', '1');
+      document.getElementById('login-overlay').style.display = 'none';
+      toast('Bienvenido');
+      iniciarApp();
+    }).catch(function(e) {
+      if (e && (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password')) {
+        finError('Credenciales incorrectas');
+      } else if (e && e.code === 'auth/invalid-email') {
+        finError('Correo inv&aacute;lido');
+      } else {
+        finError((e && e.message) || 'Error al iniciar sesi&oacute;n');
+      }
+    });
+  } else {
+    // Modo local (archivo o servidor sin Firebase): acceso directo
     localStorage.setItem('luciauth', '1');
     document.getElementById('login-overlay').style.display = 'none';
-    toast('Bienvenido');
+    toast('Bienvenido (modo local)');
     iniciarApp();
-  } catch(e) {
-    document.getElementById('login-error').textContent = 'Error: ' + e.message;
-    document.getElementById('login-error').style.display = 'block';
   }
 }
+
+function recuperarContrasena() {
+  var email = document.getElementById('login-user').value.trim();
+  if (!email) { alert('Ingresa tu correo para enviar el enlace de recuperaci&oacute;n'); return; }
+  if (typeof firebase === 'undefined' || !firebase.auth) { alert('Modo local: la recuperaci&oacute;n no aplica'); return; }
+  firebase.auth().sendPasswordResetEmail(email).then(function() {
+    alert('Te enviamos un correo para restablecer tu contrase&ntilde;a');
+  }).catch(function(e) { alert('Error: ' + (e.message || 'no se pudo enviar el correo')); });
 }
 
 function cerrarSesion() {
   if (!confirm('¿Cerrar sesión?')) return;
   localStorage.removeItem('luciauth');
+  if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+    firebase.auth().signOut();
+  }
   location.reload();
 }
 
@@ -3920,9 +3948,18 @@ function configurarPestanas() {
 // ===== INIT =====
 (function() {
   aplicarPestanasVisibles();
-  if (localStorage.getItem('luciauth')) {
+  var esLocal = (typeof firebase === 'undefined' || !firebase.auth);
+  if (esLocal) {
     document.getElementById('login-overlay').style.display = 'none';
     iniciarApp();
+  } else {
+    firebase.auth().onAuthStateChanged(function(user) {
+      if (user) {
+        localStorage.setItem('luciauth', '1');
+        document.getElementById('login-overlay').style.display = 'none';
+        iniciarApp();
+      }
+    });
   }
   document.getElementById('login-pass').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') document.querySelector('#login-card .btn').click();
