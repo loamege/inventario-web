@@ -3048,13 +3048,23 @@ function renderDashboard() {
   var ganancia = valVenta - valCosto;
   var stockBajo = prods.filter(function(p) { return totalStock(p) <= 3; }).length;
   var ventasTotal = ventas.reduce(function(s, v) { return s + (v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0); }, 0);
+  var vByCanal = {};
+  ventas.forEach(function(v) {
+    var c = v.canal || 'woo';
+    vByCanal[c] = (vByCanal[c]||0) + (v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0);
+  });
   var cotisPend = cotis.filter(function(c) { return c.estado === 'Enviada'; }).length;
   var cards = [
     { label: 'Total Productos', value: String(totalProd), color: '#4F46E5' },
     { label: 'Valor Inventario (Venta)', value: '$' + fmt(valVenta), color: '#059669' },
     { label: 'Ganancia Potencial', value: '$' + fmt(ganancia), color: '#D97706' },
     { label: 'Stock Bajo (<=3)', value: String(stockBajo), color: '#DC2626' },
-    { label: 'Ventas Totales', value: '$' + fmt(ventasTotal), color: '#7C3AED' },
+    { label: 'Ventas WooCommerce', value: '$' + fmt(vByCanal['woo']||0), color: '#7C3AED' },
+    { label: 'Ventas Falabella', value: '$' + fmt(vByCanal['falabella']||0), color: '#E11D48' },
+    { label: 'Ventas Walmart', value: '$' + fmt(vByCanal['walmart']||0), color: '#0EA5E9' },
+    { label: 'Ventas Mercado Libre', value: '$' + fmt(vByCanal['ml']||0), color: '#F59E0B' },
+    { label: 'Ventas Paris', value: '$' + fmt(vByCanal['paris']||0), color: '#10B981' },
+    { label: 'Ventas Globales', value: '$' + fmt(ventasTotal), color: '#000' },
     { label: 'Cotizaciones Pendientes', value: String(cotisPend), color: '#0891B2' }
   ];
   document.getElementById('dash-grid').innerHTML = cards.map(function(c) {
@@ -3079,26 +3089,30 @@ function renderDashboard() {
     }
   });
   var nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  var sorted = Object.keys(meses).sort().reverse();
+  var sorted = Object.keys(meses).sort();
   var html = '<h3 style="margin-top:20px;margin-bottom:10px;font-size:16px">Ventas por Mes</h3>';
   if (sorted.length === 0) {
     html += '<p style="color:#888">Sin ventas registradas</p>';
   } else {
     if (ventasConCanal) {
-      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">WooCommerce</th><th style="text-align:right">Falabella</th><th style="text-align:right">Walmart</th><th style="text-align:right">Mercado Libre</th><th style="text-align:right">Total</th></tr></thead><tbody>';
+      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:400px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">WooCommerce</th><th style="text-align:right">Falabella</th><th style="text-align:right">Walmart</th><th style="text-align:right">Mercado Libre</th><th style="text-align:right">Paris</th><th style="text-align:right">Total</th><th style="text-align:right">Acumulado</th></tr></thead><tbody>';
+      var acumulado = 0;
       sorted.forEach(function(m) {
         var parts = m.split('-');
         var label = nombresMes[parseInt(parts[1],10)-1] + ' ' + parts[0];
-        var vWoo = mesesCanal[m+'|woo']||0, vFal = mesesCanal[m+'|falabella']||0, vWal = mesesCanal[m+'|walmart']||0, vML = mesesCanal[m+'|ml']||0;
-        html += '<tr><td>' + label + '</td><td style="text-align:right">$' + fmt(vWoo) + '</td><td style="text-align:right">$' + fmt(vFal) + '</td><td style="text-align:right">$' + fmt(vWal) + '</td><td style="text-align:right">$' + fmt(vML) + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td></tr>';
+        var vWoo = mesesCanal[m+'|woo']||0, vFal = mesesCanal[m+'|falabella']||0, vWal = mesesCanal[m+'|walmart']||0, vML = mesesCanal[m+'|ml']||0, vPar = mesesCanal[m+'|paris']||0;
+        acumulado += meses[m];
+        html += '<tr><td>' + label + '</td><td style="text-align:right">$' + fmt(vWoo) + '</td><td style="text-align:right">$' + fmt(vFal) + '</td><td style="text-align:right">$' + fmt(vWal) + '</td><td style="text-align:right">$' + fmt(vML) + '</td><td style="text-align:right">$' + fmt(vPar) + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td><td style="text-align:right;font-weight:700;color:#4F46E5">$' + fmt(acumulado) + '</td></tr>';
       });
       html += '</tbody></table></div>';
     } else {
-      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">Total</th></tr></thead><tbody>';
+      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">Total</th><th style="text-align:right">Acumulado</th></tr></thead><tbody>';
+      var acumulado = 0;
       sorted.forEach(function(m) {
         var parts = m.split('-');
         var label = nombresMes[parseInt(parts[1],10)-1] + ' ' + parts[0];
-        html += '<tr><td>' + label + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td></tr>';
+        acumulado += meses[m];
+        html += '<tr><td>' + label + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td><td style="text-align:right;font-weight:700;color:#4F46E5">$' + fmt(acumulado) + '</td></tr>';
       });
       html += '</tbody></table></div>';
     }
