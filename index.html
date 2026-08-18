@@ -164,6 +164,7 @@ tbody tr:hover{background:#F5F0FF}
   <button class="tab" data-tab="falabella">Falabella</button>
   <button class="tab" data-tab="ml">Mercado Libre</button>
   <button class="tab" data-tab="walmart">Walmart</button>
+  <button class="tab" data-tab="paris">Paris</button>
   <button class="tab" data-tab="cotizador">Cotizador</button>
   <button class="tab" data-tab="ventas">Ventas</button>
   <button class="tab" data-tab="cotizaciones">Cotizaciones</button>
@@ -205,6 +206,8 @@ tbody tr:hover{background:#F5F0FF}
       <label>Asig. Falabella</label><input id="f-stock-falabella" type="number">
       <label>Asig. Walmart</label><input id="f-stock-walmart" type="number">
       <label>Asig. Mercado Libre</label><input id="f-stock-ml" type="number">
+      <label>Precio Paris</label><input id="f-precio-paris" type="number" step="0.01">
+      <label>Asig. Paris</label><input id="f-stock-paris" type="number">
       <label>Ancho (cm)</label><input id="f-ancho" type="number" step="0.1">
       <label>Largo (cm)</label><input id="f-largo" type="number" step="0.1">
       <label>Alto (cm)</label><input id="f-alto" type="number" step="0.1">
@@ -257,12 +260,13 @@ tbody tr:hover{background:#F5F0FF}
       <option value="falabella">Falabella</option>
       <option value="walmart">Walmart</option>
       <option value="ml">Mercado Libre</option>
+      <option value="paris">Paris</option>
       <option value="sinstock">Sin stock</option>
     </select>
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>P. Fala</th><th>P. Wal</th><th>P. ML</th><th>Stock Woo</th><th>Asig. Falabella</th><th>Asig. Walmart</th><th>Asig. ML</th><th>Stock Total</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>P. Fala</th><th>P. Wal</th><th>P. ML</th><th>P. Paris</th><th>Stock Woo</th><th>Asig. Falabella</th><th>Asig. Walmart</th><th>Asig. ML</th><th>Asig. Paris</th><th>Stock Total</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="inv-body"></tbody></table>
   </div>
 </div>
@@ -327,6 +331,27 @@ tbody tr:hover{background:#F5F0FF}
     <table><thead><tr>
       <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Walmart</th><th>Asig. Walmart</th><th>Stock Real</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="wal-body"></tbody></table>
+  </div>
+</div>
+
+<div id="contenido-paris" class="content">
+  <h2>Paris (Cencosud)</h2>
+  <div class="search-bar">
+    <input id="par-search" placeholder="Buscar por SKU o nombre..." oninput="renderParis()">
+    <span id="par-count" style="font-size:13px;color:#888;align-self:center"></span>
+    <select id="par-sort" onchange="renderParis()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="sku-asc" selected>SKU A→Z</option>
+      <option value="sku-desc">SKU Z→A</option>
+      <option value="nombre-asc">Nombre A→Z</option>
+      <option value="nombre-desc">Nombre Z→A</option>
+      <option value="stock-asc">Stock ↑</option>
+      <option value="stock-desc">Stock ↓</option>
+    </select>
+  </div>
+  <div class="movil">
+    <table><thead><tr>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Paris</th><th>Asig. Paris</th><th>Stock Real</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
+    </tr></thead><tbody id="par-body"></tbody></table>
   </div>
 </div>
 
@@ -582,8 +607,15 @@ try {
   if (typeof firebase !== 'undefined' && location.protocol === 'https:') {
     const app = firebase.initializeApp(firebaseConfig);
     fbDoc = app.firestore().doc('inventario/datos');
+    console.log('FIREBASE OK - projectId:', firebaseConfig.projectId, 'doc: inventario/datos');
+    document.getElementById('sync-status').textContent = '🟢 FB conectado';
+    document.getElementById('sync-status').style.color = '#00a32a';
+  } else {
+    console.warn('FIREBASE NO DISPONIBLE - protocolo:', location.protocol, 'firebase defined:', typeof firebase !== 'undefined');
+    document.getElementById('sync-status').textContent = '🔴 FB sin conexión';
+    document.getElementById('sync-status').style.color = '#d63638';
   }
-} catch(e) { console.warn('Firebase no disponible'); }
+} catch(e) { console.warn('Firebase error:', e); }
 
 // ===== DATA LAYER (localStorage síncrono + Firebase async al fondo) =====
 const STORE_KEY = 'lucidata';
@@ -593,25 +625,27 @@ function datosDefault() {
 }
 
 function totalStock(p) {
-  return (p.stockWoo||0);
+  return (p.stockWoo||0) + (p.stockFalabella||0) + (p.stockWalmart||0) + (p.stockML||0) + (p.stockParis||0);
 }
 function stockKey(canal) {
   if (canal === 'woo' || canal === 'WooCommerce' || canal === 'Woo') return 'stockWoo';
   if (canal === 'falabella' || canal === 'Falabella') return 'stockFalabella';
   if (canal === 'walmart' || canal === 'Walmart') return 'stockWalmart';
   if (canal === 'ml' || canal === 'Mercado Libre' || canal === 'MercadoLibre') return 'stockML';
+  if (canal === 'paris' || canal === 'Paris' || canal === 'Cencosud') return 'stockParis';
   return 'stockWoo';
 }
-function canales() { return ['woo','falabella','walmart','ml']; }
+function canales() { return ['woo','falabella','walmart','ml','paris']; }
 function canalLabel(c) {
-  return {woo:'WooCommerce',falabella:'Falabella',walmart:'Walmart',ml:'Mercado Libre'}[c]||c;
+  return {woo:'WooCommerce',falabella:'Falabella',walmart:'Walmart',ml:'Mercado Libre',paris:'Paris'}[c]||c;
 }
 function canalSelectHtml(name, sel) {
   return '<select id="'+name+'" style="font-size:13px;padding:6px;border:1px solid #ccc;border-radius:4px">' +
     '<option value="woo"'+(sel==='woo'?' selected':'')+'>WooCommerce</option>' +
     '<option value="falabella"'+(sel==='falabella'?' selected':'')+'>Falabella</option>' +
     '<option value="walmart"'+(sel==='walmart'?' selected':'')+'>Walmart</option>' +
-    '<option value="ml"'+(sel==='ml'?' selected':'')+'>Mercado Libre</option></select>';
+    '<option value="ml"'+(sel==='ml'?' selected':'')+'>Mercado Libre</option>' +
+    '<option value="paris"'+(sel==='paris'?' selected':'')+'>Paris</option></select>';
 }
 
 function migrarProductos(lista) {
@@ -624,9 +658,11 @@ function migrarProductos(lista) {
     if (p.stockFalabella === undefined) p.stockFalabella = 0;
     if (p.stockWalmart === undefined) p.stockWalmart = 0;
     if (p.stockML === undefined) p.stockML = 0;
+    if (p.stockParis === undefined) p.stockParis = 0;
     if (p.precioFalabella === undefined) p.precioFalabella = 0;
     if (p.precioWalmart === undefined) p.precioWalmart = 0;
     if (p.precioML === undefined) p.precioML = 0;
+    if (p.precioParis === undefined) p.precioParis = 0;
   });
 }
 
@@ -684,6 +720,9 @@ let data = (function() {
     fbDoc.get().then(function(snap) {
       if (snap.exists) {
         var fbData = snap.data();
+        ['ventas','kardex','cotizaciones','pendientes'].forEach(function(k) {
+          if (fbData[k] && !Array.isArray(fbData[k])) { var arr = []; Object.keys(fbData[k]).forEach(function(ik){ arr.push(fbData[k][ik]); }); fbData[k] = arr; }
+        });
         var localVer = d._syncVersion || 0;
         var fbVer = fbData._syncVersion || 0;
         if (fbVer > localVer) {
@@ -697,6 +736,17 @@ let data = (function() {
           renderPendientes();
           renderProveedores();
           toast('Datos sincronizados desde Firebase');
+        } else {
+          var fbVentas = fbData.ventas || [];
+          var localVentas = d.ventas || [];
+          var localRefs = new Set(localVentas.map(function(v){return v.referencia||v.id||''}));
+          var nuevas = fbVentas.filter(function(v){return !localRefs.has(v.referencia||v.id||'')});
+          if (nuevas.length > 0) {
+            d.ventas = localVentas.concat(nuevas);
+            localStorage.setItem(STORE_KEY, JSON.stringify(d));
+            renderVentas();
+            toast(nuevas.length + ' venta(s) nuevas desde Firebase');
+          }
         }
       }
     }).catch(function(){});
@@ -715,7 +765,17 @@ function sincronizarFirebase() {
   fbDoc.get().then(function(snap) {
     if (snap.exists) {
       var fbData = snap.data();
+      ['ventas','kardex','cotizaciones','pendientes'].forEach(function(k) {
+        if (fbData[k] && !Array.isArray(fbData[k])) { var arr = []; Object.keys(fbData[k]).forEach(function(ik){ arr.push(fbData[k][ik]); }); fbData[k] = arr; }
+      });
+      console.log('SYNC FB - ventas type:', typeof fbData.ventas, 'isArray:', Array.isArray(fbData.ventas), 'count:', (fbData.ventas||[]).length, 'productos:', (fbData.productos||[]).length);
       migrarProductos(fbData.productos);
+      var localVentas = data.ventas || [];
+      var fbVentas = fbData.ventas || [];
+      var localRefs = new Set(localVentas.map(function(v){return v.referencia||v.id||''}));
+      var nuevas = fbVentas.filter(function(v){return !localRefs.has(v.referencia||v.id||'')});
+      fbData.ventas = localVentas.concat(nuevas);
+      console.log('SYNC FB - local:', localVentas.length, 'fb:', fbVentas.length, 'nuevas:', nuevas.length, 'total:', fbData.ventas.length);
       localStorage.setItem(STORE_KEY, JSON.stringify(fbData));
       Object.assign(data, fbData);
       renderCotizador();
@@ -723,7 +783,8 @@ function sincronizarFirebase() {
       renderInventario();
       renderKardex();
       renderPendientes();
-      toast('Sincronizado desde Firebase: ' + (fbData.productos ? fbData.productos.length : 0) + ' productos');
+      renderProveedores();
+      toast('Sincronizado: ' + (fbData.productos ? fbData.productos.length : 0) + ' productos, ' + nuevas.length + ' ventas nuevas');
     } else {
       toast('No hay datos en Firebase');
     }
@@ -940,6 +1001,7 @@ document.querySelectorAll('.tab').forEach(t => {
     if (id === 'falabella') renderFalabella();
     if (id === 'ml') renderML();
     if (id === 'walmart') renderWalmart();
+    if (id === 'paris') renderParis();
     if (id === 'cotizador') renderCotizador();
     if (id === 'ventas') renderVentas();
     if (id === 'kardex') renderKardex();
@@ -1026,10 +1088,12 @@ function getFormData() {
     precioFalabella: parseFloat(document.getElementById('f-precio-falabella').value) || 0,
     precioWalmart: parseFloat(document.getElementById('f-precio-walmart').value) || 0,
     precioML: parseFloat(document.getElementById('f-precio-ml').value) || 0,
+    precioParis: parseFloat(document.getElementById('f-precio-paris').value) || 0,
     stockWoo: parseInt(document.getElementById('f-stock-woo').value) || 0,
     stockFalabella: parseInt(document.getElementById('f-stock-falabella').value) || 0,
     stockWalmart: parseInt(document.getElementById('f-stock-walmart').value) || 0,
     stockML: parseInt(document.getElementById('f-stock-ml').value) || 0,
+    stockParis: parseInt(document.getElementById('f-stock-paris').value) || 0,
     ancho: parseFloat(document.getElementById('f-ancho').value) || 0,
     largo: parseFloat(document.getElementById('f-largo').value) || 0,
     alto: parseFloat(document.getElementById('f-alto').value) || 0,
@@ -1050,10 +1114,12 @@ function setFormData(p) {
   document.getElementById('f-precio-falabella').value = p.precioFalabella || '';
   document.getElementById('f-precio-walmart').value = p.precioWalmart || '';
   document.getElementById('f-precio-ml').value = p.precioML || '';
+  document.getElementById('f-precio-paris').value = p.precioParis || '';
   document.getElementById('f-stock-woo').value = (p.stockWoo||0);
   document.getElementById('f-stock-falabella').value = (p.stockFalabella||0);
   document.getElementById('f-stock-walmart').value = (p.stockWalmart||0);
   document.getElementById('f-stock-ml').value = (p.stockML||0);
+  document.getElementById('f-stock-paris').value = (p.stockParis||0);
   document.getElementById('f-ancho').value = p.ancho || '';
   document.getElementById('f-largo').value = p.largo || '';
   document.getElementById('f-alto').value = p.alto || '';
@@ -1229,6 +1295,7 @@ function renderInventario() {
   else if (canalFiltro === 'falabella') list = list.filter(function(p){return (p.stockFalabella||0) > 0});
   else if (canalFiltro === 'walmart') list = list.filter(function(p){return (p.stockWalmart||0) > 0});
   else if (canalFiltro === 'ml') list = list.filter(function(p){return (p.stockML||0) > 0});
+  else if (canalFiltro === 'paris') list = list.filter(function(p){return (p.stockParis||0) > 0});
   else if (canalFiltro === 'sinstock') list = list.filter(function(p){return totalStock(p) === 0});
   var sort = document.getElementById('inv-sort').value;
   if (sort) {
@@ -1257,13 +1324,13 @@ function renderInventario() {
     var pesoCls = (pesoVal && pvolVal && pesoVal > pvolVal) ? ' style="background:#d4edda;font-weight:700"' : '';
     var pvolCls = (pvolVal && pesoVal && pvolVal > pesoVal) ? ' style="background:#d4edda;font-weight:700"' : '';
     var caja = p.caja || '--';
-    var stockW = p.stockWoo||0, stockF = p.stockFalabella||0, stockM = p.stockWalmart||0, stockL = p.stockML||0, stockT = totalStock(p);
-    var pf = p.precioFalabella||0, pw = p.precioWalmart||0, pm = p.precioML||0;
+    var stockW = p.stockWoo||0, stockF = p.stockFalabella||0, stockM = p.stockWalmart||0, stockL = p.stockML||0, stockP = p.stockParis||0, stockT = totalStock(p);
+    var pf = p.precioFalabella||0, pw = p.precioWalmart||0, pm = p.precioML||0, pp = p.precioParis||0;
     return `<tr>
       <td>${skuEnc}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
       <td>$${fmt(p.precioCosto)}</td><td>$${fmt(p.precioVenta)}</td>
-      <td>${pf ? '$'+fmt(pf) : '--'}</td><td>${pw ? '$'+fmt(pw) : '--'}</td><td>${pm ? '$'+fmt(pm) : '--'}</td>
-      <td>${stockW}</td><td>${stockF}</td><td>${stockM}</td><td>${stockL}</td><td style="font-weight:700">${stockT}</td>
+      <td>${pf ? '$'+fmt(pf) : '--'}</td><td>${pw ? '$'+fmt(pw) : '--'}</td><td>${pm ? '$'+fmt(pm) : '--'}</td><td>${pp ? '$'+fmt(pp) : '--'}</td>
+      <td>${stockW}</td><td>${stockF}</td><td>${stockM}</td><td>${stockL}</td><td>${stockP}</td><td style="font-weight:700">${stockT}</td>
       <td>${ancho}</td><td>${largo}</td><td>${alto}</td><td${pesoCls}>${peso}</td><td${pvolCls}>${pvol}</td><td>${esc(caja)}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
       <td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido('${skuEnc}')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${skuEnc}')">Eliminar</button></td>
     </tr>`;
@@ -1304,6 +1371,7 @@ function renderCanal(canal, stockKey, priceKey, searchId, countId, sortId, bodyI
 function renderFalabella() { renderCanal('falabella', 'stockFalabella', 'precioFalabella', 'fal-search', 'fal-count', 'fal-sort', 'fal-body'); }
 function renderML() { renderCanal('ml', 'stockML', 'precioML', 'ml-search', 'ml-count', 'ml-sort', 'ml-body'); }
 function renderWalmart() { renderCanal('walmart', 'stockWalmart', 'precioWalmart', 'wal-search', 'wal-count', 'wal-sort', 'wal-body'); }
+function renderParis() { renderCanal('paris', 'stockParis', 'precioParis', 'par-search', 'par-count', 'par-sort', 'par-body'); }
 
 function exportarInventarioPDF() {
   var q = (document.getElementById('inv-search').value || '').toLowerCase();
@@ -1342,10 +1410,10 @@ function exportarInventarioPDF() {
   doc.setTextColor(136);
   doc.text('Generado: ' + hoy() + ' - ' + list.length + ' producto(s)', 14, 27);
   var rows = list.map(function(p) {
-    return [p.sku||'', p.nombre||'', p.stockWoo||0, p.stockFalabella||0, p.stockWalmart||0, p.stockML||0, totalStock(p), p.caja||'', p.imagen ? ' ' : ''];
+    return [p.sku||'', p.nombre||'', p.stockWoo||0, p.stockFalabella||0, p.stockWalmart||0, p.stockML||0, p.stockParis||0, totalStock(p), p.caja||'', p.imagen ? ' ' : ''];
   });
   doc.autoTable({
-    head: [['SKU', 'Producto', 'Stock Woo', 'Asig. Falabella', 'Asig. Walmart', 'Asig. ML', 'Stock Total', 'Caja', 'Imagen']],
+    head: [['SKU', 'Producto', 'Stock Woo', 'Asig. Falabella', 'Asig. Walmart', 'Asig. ML', 'Asig. Paris', 'Stock Total', 'Caja', 'Imagen']],
     body: rows,
     startY: 33,
     theme: 'grid',
@@ -1818,7 +1886,10 @@ async function registrarVenta() {
 
 // ===== VENTAS =====
 function renderVentas() {
-  let list = data.ventas;
+  var raw = data.ventas;
+  if (raw && !Array.isArray(raw)) { var arr = []; Object.keys(raw).forEach(function(k){ arr.push(raw[k]); }); data.ventas = arr; raw = arr; }
+  let list = raw || [];
+  console.log('renderVentas - total:', list.length, 'falabella:', list.filter(function(v){return (v.canal||'')==='falabella'}).length);
   const q = (document.getElementById('ventas-search').value || '').toLowerCase();
   if (q) list = list.filter(function(v) {
     return (v.sku||'').toLowerCase().includes(q) || (v.nombre||'').toLowerCase().includes(q) || (v.cliente||'').toLowerCase().includes(q);
@@ -1871,8 +1942,10 @@ function renderVentas() {
 
 // ===== KARDEX =====
 function renderKardex() {
+  var rawK = data.kardex;
+  if (rawK && !Array.isArray(rawK)) { var arrK = []; Object.keys(rawK).forEach(function(k){ arrK.push(rawK[k]); }); data.kardex = arrK; rawK = arrK; }
   const q = (document.getElementById('kardex-search').value || '').toLowerCase();
-  let list = data.kardex;
+  let list = rawK || [];
   if (q) list = list.filter(function(k) {
     return k.sku.toLowerCase().includes(q) || (k.tipo||'').toLowerCase().includes(q) || (k.concepto||'').toLowerCase().includes(q);
   });
@@ -2058,8 +2131,8 @@ function exportarExcelCompleto() {
   const prodData = data.productos.map(p => ({
     SKU: p.sku, 'C&oacute;d. Barra': p.codBarra, Producto: p.nombre,
     'Precio Costo': p.precioCosto, 'Precio Venta': p.precioVenta,
-    'Precio Falabella': p.precioFalabella||0, 'Precio Walmart': p.precioWalmart||0, 'Precio Mercado Libre': p.precioML||0,
-    'Stock WooCommerce': p.stockWoo||0, 'Asig. Falabella': p.stockFalabella||0, 'Asig. Walmart': p.stockWalmart||0, 'Asig. Mercado Libre': p.stockML||0, 'Stock Total': p.stockWoo||0,
+    'Precio Falabella': p.precioFalabella||0, 'Precio Walmart': p.precioWalmart||0, 'Precio Mercado Libre': p.precioML||0, 'Precio Paris': p.precioParis||0,
+    'Stock WooCommerce': p.stockWoo||0, 'Asig. Falabella': p.stockFalabella||0, 'Asig. Walmart': p.stockWalmart||0, 'Asig. Mercado Libre': p.stockML||0, 'Asig. Paris': p.stockParis||0, 'Stock Total': totalStock(p),
     'Ancho (cm)': p.ancho || 0, 'Largo (cm)': p.largo || 0, 'Alto (cm)': p.alto || 0, 'Peso (kg)': p.peso || 0, 'Peso Vol. (kg)': (p.ancho && p.largo && p.alto) ? parseFloat(((p.ancho * p.largo * p.alto) / 4000).toFixed(2)) : 0, 'Caja': p.caja || '',
     Proveedor: p.proveedor, 'Observaci&oacute;n Compra': p.observacionCompra
   }));
@@ -3925,8 +3998,8 @@ function aplicarPestanasVisibles() {
   });
 }
 function configurarPestanas() {
-  var todas = ['formulario','inventario','falabella','ml','walmart','cotizador','ventas','cotizaciones','kardex','pendientes','proveedores','dashboard'];
-  var etiquetas = {formulario:'Formulario',inventario:'Inventario',falabella:'Falabella',ml:'Mercado Libre',walmart:'Walmart',cotizador:'Cotizador',ventas:'Ventas',cotizaciones:'Cotizaciones',kardex:'Kardex',pendientes:'Pendientes WC',proveedores:'Proveedores',dashboard:'Dashboard'};
+  var todas = ['formulario','inventario','falabella','ml','walmart','paris','cotizador','ventas','cotizaciones','kardex','pendientes','proveedores','dashboard'];
+  var etiquetas = {formulario:'Formulario',inventario:'Inventario',falabella:'Falabella',ml:'Mercado Libre',walmart:'Walmart',paris:'Paris',cotizador:'Cotizador',ventas:'Ventas',cotizaciones:'Cotizaciones',kardex:'Kardex',pendientes:'Pendientes WC',proveedores:'Proveedores',dashboard:'Dashboard'};
   var ocultas = JSON.parse(localStorage.getItem('pestanasOcultas') || '[]');
   var html = '<p style="font-size:13px;color:#888;margin-bottom:12px">Marca las pesta&ntilde;as que quieres ocultar:</p>';
   todas.forEach(function(id) {
