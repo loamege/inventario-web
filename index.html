@@ -1915,7 +1915,7 @@ function renderVentas() {
     });
   }
   let totalVtas = 0, totalCant = 0;
-  list.forEach(v => { totalVtas += v.total || 0; totalCant += v.cantidad || 0; });
+  list.forEach(v => { totalVtas += v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0; totalCant += v.cantidad || 0; });
   document.getElementById('v-total').textContent = '$' + fmt(totalVtas);
   document.getElementById('v-cant').textContent = totalCant;
   document.getElementById('v-ultima').textContent = list.length > 0 ? list[list.length-1].fecha : '--';
@@ -1929,12 +1929,12 @@ function renderVentas() {
   Object.keys(groups).forEach(function(key) {
     var items = groups[key];
     var subTotal = 0, subCant = 0;
-    items.forEach(function(v) { subTotal += v.total || 0; subCant += v.cantidad || 0; });
+    items.forEach(function(v) { subTotal += v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0; subCant += v.cantidad || 0; });
     html += '<tr class="group-header"><td colspan="13"><strong>' + esc(key) + '</strong> &nbsp;|&nbsp; ' + items.length + ' producto(s) &nbsp;|&nbsp; ' + subCant + ' uds. &nbsp;|&nbsp; Total: $' + fmt(subTotal) + '</td></tr>';
     items.forEach(function(v) {
       const url = v.referencia ? 'Cot. ' + esc(v.referencia) : '--';
       const vid = v.id;
-      html += '<tr><td>' + esc(v.fecha) + '</td><td>' + canalLabel(v.canal||'') + '</td><td>' + esc(v.sku) + '</td><td>' + esc(v.nombre) + '</td><td>' + v.cantidad + '</td><td>$' + fmt(v.precioUnitario) + '</td><td style="white-space:nowrap">$' + fmt(v.total) + ' <span onclick="toggleCheckVenta(\'' + vid + '\')" style="cursor:pointer;font-size:16px;margin-left:4px;user-select:none">' + (v.checked ? '✅' : '⬜') + '</span></td><td>' + esc(v.cliente) + '</td><td>' + esc(v.pago) + '</td><td>' + esc(v.estado) + '</td><td>' + url + '</td><td>' + esc(v.observacion) + '</td><td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarVenta(\'' + vid + '\')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta(\'' + vid + '\')">Eliminar</button></td></tr>';
+      html += '<tr><td>' + esc(v.fecha) + '</td><td>' + canalLabel(v.canal||'') + '</td><td>' + esc(v.sku) + '</td><td>' + esc(v.nombre) + '</td><td>' + v.cantidad + '</td><td>$' + fmt(v.precioUnitario) + '</td><td style="white-space:nowrap">$' + fmt(v.total || ((v.cantidad||0) * (v.precioUnitario||0))) + ' <span onclick="toggleCheckVenta(\'' + vid + '\')" style="cursor:pointer;font-size:16px;margin-left:4px;user-select:none">' + (v.checked ? '✅' : '⬜') + '</span></td><td>' + esc(v.cliente) + '</td><td>' + esc(v.pago) + '</td><td>' + esc(v.estado) + '</td><td>' + url + '</td><td>' + esc(v.observacion) + '</td><td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarVenta(\'' + vid + '\')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta(\'' + vid + '\')">Eliminar</button></td></tr>';
     });
   });
   document.getElementById('ventas-body').innerHTML = html || '<tr><td colspan="13" class="empty">No hay ventas registradas</td></tr>';
@@ -2142,7 +2142,7 @@ function exportarExcelCompleto() {
   // Ventas
   const vtData = data.ventas.map(v => ({
     Fecha: v.fecha, Canal: canalLabel(v.canal||''), SKU: v.sku, Producto: v.nombre,
-    Cant: v.cantidad, 'P. Unitario': v.precioUnitario, Total: v.total,
+    Cant: v.cantidad, 'P. Unitario': v.precioUnitario, Total: v.total || ((v.cantidad||0) * (v.precioUnitario||0)),
     Cliente: v.cliente, Pago: v.pago, Estado: v.estado,
     Referencia: v.referencia, 'Observaci&oacute;n': v.observacion
   }));
@@ -2921,7 +2921,7 @@ function filtrarClientesVenta() {
   div.innerHTML = window._ventaBusqueda.map(function(v, i) {
     var label = v.referencia ? ('Cot. ' + esc(v.referencia) + ' — ' + esc(v.cliente)) : esc(v.cliente);
     return '<div style="padding:10px 8px;border-bottom:1px solid #eee;cursor:pointer" onclick="seleccionarClienteVentaIdx(' + i + ')">' +
-      '<strong>' + label + '</strong><br><span style="font-size:12px;color:#666">Última: ' + esc(v.fecha) + ' | $' + fmt(v.total) + '</span></div>';
+      '<strong>' + label + '</strong><br><span style="font-size:12px;color:#666">Última: ' + esc(v.fecha) + ' | $' + fmt(v.total || ((v.cantidad||0) * (v.precioUnitario||0))) + '</span></div>';
   }).join('');
 }
 function seleccionarClienteVentaIdx(idx) {
@@ -3047,7 +3047,7 @@ function renderDashboard() {
   var valCosto = prods.reduce(function(s, p) { return s + totalStock(p) * (p.precioCosto || 0); }, 0);
   var ganancia = valVenta - valCosto;
   var stockBajo = prods.filter(function(p) { return totalStock(p) <= 3; }).length;
-  var ventasTotal = ventas.reduce(function(s, v) { return s + (v.total || 0); }, 0);
+  var ventasTotal = ventas.reduce(function(s, v) { return s + (v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0); }, 0);
   var cotisPend = cotis.filter(function(c) { return c.estado === 'Enviada'; }).length;
   var cards = [
     { label: 'Total Productos', value: String(totalProd), color: '#4F46E5' },
@@ -3070,12 +3070,12 @@ function renderDashboard() {
     if (!v.fecha) return;
     var m = v.fecha.substring(0, 7);
     if (!meses[m]) meses[m] = 0;
-    meses[m] += v.total || 0;
+    meses[m] += v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0;
     if (ventasConCanal) {
       var c = v.canal || 'woo';
       var key = m + '|' + c;
       if (!mesesCanal[key]) mesesCanal[key] = 0;
-      mesesCanal[key] += v.total || 0;
+      mesesCanal[key] += v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0;
     }
   });
   var nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
