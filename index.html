@@ -273,6 +273,7 @@ tbody tr:hover{background:#F5F0FF}
 
 <div id="contenido-falabella" class="content">
   <h2>Falabella</h2>
+  <div id="fal-stats" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px"></div>
   <div class="search-bar">
     <input id="fal-search" placeholder="Buscar por SKU o nombre..." oninput="renderFalabella()">
     <span id="fal-count" style="font-size:13px;color:#888;align-self:center"></span>
@@ -294,6 +295,7 @@ tbody tr:hover{background:#F5F0FF}
 
 <div id="contenido-ml" class="content">
   <h2>Mercado Libre</h2>
+  <div id="ml-stats" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px"></div>
   <div class="search-bar">
     <input id="ml-search" placeholder="Buscar por SKU o nombre..." oninput="renderML()">
     <span id="ml-count" style="font-size:13px;color:#888;align-self:center"></span>
@@ -315,6 +317,7 @@ tbody tr:hover{background:#F5F0FF}
 
 <div id="contenido-walmart" class="content">
   <h2>Walmart</h2>
+  <div id="wal-stats" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px"></div>
   <div class="search-bar">
     <input id="wal-search" placeholder="Buscar por SKU o nombre..." oninput="renderWalmart()">
     <span id="wal-count" style="font-size:13px;color:#888;align-self:center"></span>
@@ -336,6 +339,7 @@ tbody tr:hover{background:#F5F0FF}
 
 <div id="contenido-paris" class="content">
   <h2>Paris (Cencosud)</h2>
+  <div id="par-stats" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px"></div>
   <div class="search-bar">
     <input id="par-search" placeholder="Buscar por SKU o nombre..." oninput="renderParis()">
     <span id="par-count" style="font-size:13px;color:#888;align-self:center"></span>
@@ -1338,6 +1342,29 @@ function renderInventario() {
 }
 
 function renderCanal(canal, stockKey, priceKey, searchId, countId, sortId, bodyId) {
+  var statsId = {falabella:'fal-stats',ml:'ml-stats',walmart:'wal-stats',paris:'par-stats'}[canal];
+  var statsEl = document.getElementById(statsId);
+  if (statsEl) {
+    var totalStockCanal = data.productos.reduce(function(s,p){return s+(p[stockKey]||0)},0);
+    var now = new Date();
+    var anioActual = now.getFullYear();
+    var mesActual = now.getMonth()+1;
+    var filterKey = 'canalYear_'+canal;
+    if (!window[filterKey]) window[filterKey] = anioActual;
+    var anioSel = window[filterKey];
+    var ventasCanal = (data.ventas||[]).filter(function(v){return (v.canal||'woo')===canal});
+    var ventasAnio = ventasCanal.filter(function(v){return v.fecha && v.fecha.substring(0,4)==String(anioSel)});
+    var totalAnio = ventasAnio.reduce(function(s,v){return s+(v.total||((v.cantidad||0)*(v.precioUnitario||0))||0)},0);
+    var mesLabel = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    var totalMes = ventasAnio.filter(function(v){return v.fecha && parseInt(v.fecha.substring(5,7),10)===mesActual}).reduce(function(s,v){return s+(v.total||((v.cantidad||0)*(v.precioUnitario||0))||0)},0);
+    var opciones = '';
+    for (var y=anioActual;y>=anioActual-3;y--) opciones+='<option value="'+y+'"'+(y==anioSel?' selected':'')+'>'+y+'</option>';
+    statsEl.innerHTML =
+      '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:8px 14px;font-size:13px"><span style="color:#888">Stock total:</span> <strong>'+totalStockCanal+'</strong> uds.</div>'+
+      '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:8px 14px;font-size:13px"><span style="color:#888">Ventas '+anioSel+':</span> <strong style="color:#4F46E5">$'+fmt(totalAnio)+'</strong></div>'+
+      '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:8px 14px;font-size:13px"><span style="color:#888">Ventas '+mesLabel[mesActual]+' '+anioSel+':</span> <strong style="color:#059669">$'+fmt(totalMes)+'</strong></div>'+
+      '<select onchange="window[\''+filterKey+'\']=parseInt(this.value);renderCanal(\''+canal+'\',\''+stockKey+'\',\''+priceKey+'\',\''+searchId+'\',\''+countId+'\',\''+sortId+'\',\''+bodyId+'\')" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">'+opciones+'</select>';
+  }
   var q = (document.getElementById(searchId).value || '').toLowerCase();
   var list = data.productos.filter(function(p){return (p[stockKey]||0) > 0});
   if (q) list = list.filter(function(p){return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q)});
