@@ -245,6 +245,10 @@ tbody tr:hover{background:#F5F0FF}
     </select>
     <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="editarSKU()">EDITAR SKU</button>
     <button class="btn btn-ambar" style="font-size:12px;padding:5px 12px" onclick="exportarInventarioPDF()">EXPORTAR PDF</button>
+    <div style="position:relative">
+      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('inv')">COLUMNAS</button>
+      <div id="inv-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
+    </div>
   </div>
   <div class="search-bar" style="margin-top:6px;gap:6px;flex-wrap:wrap">
     <select id="inv-filtro-prov" onchange="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;flex:1;min-width:120px">
@@ -285,6 +289,10 @@ tbody tr:hover{background:#F5F0FF}
       <option value="stock-asc">Stock ↑</option>
       <option value="stock-desc">Stock ↓</option>
     </select>
+    <div style="position:relative">
+      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('fal')">COLUMNAS</button>
+      <div id="fal-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
+    </div>
   </div>
   <div class="movil">
     <table><thead><tr>
@@ -307,6 +315,10 @@ tbody tr:hover{background:#F5F0FF}
       <option value="stock-asc">Stock ↑</option>
       <option value="stock-desc">Stock ↓</option>
     </select>
+    <div style="position:relative">
+      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('ml')">COLUMNAS</button>
+      <div id="ml-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
+    </div>
   </div>
   <div class="movil">
     <table><thead><tr>
@@ -329,6 +341,10 @@ tbody tr:hover{background:#F5F0FF}
       <option value="stock-asc">Stock ↑</option>
       <option value="stock-desc">Stock ↓</option>
     </select>
+    <div style="position:relative">
+      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('walmart')">COLUMNAS</button>
+      <div id="walmart-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
+    </div>
   </div>
   <div class="movil">
     <table><thead><tr>
@@ -351,6 +367,10 @@ tbody tr:hover{background:#F5F0FF}
       <option value="stock-asc">Stock ↑</option>
       <option value="stock-desc">Stock ↓</option>
     </select>
+    <div style="position:relative">
+      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('paris')">COLUMNAS</button>
+      <div id="paris-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
+    </div>
   </div>
   <div class="movil">
     <table><thead><tr>
@@ -412,6 +432,10 @@ tbody tr:hover{background:#F5F0FF}
       <option value="ml">Mercado Libre</option>
       <option value="paris">Paris</option>
     </select>
+    <div style="position:relative">
+      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('ventas')">COLUMNAS</button>
+      <div id="ventas-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
+    </div>
     <select id="ventas-sort" onchange="renderVentas()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
       <option value="fecha-desc" selected>Más reciente ↑</option>
       <option value="fecha-asc">Más antiguo ↓</option>
@@ -454,6 +478,7 @@ tbody tr:hover{background:#F5F0FF}
       <option value="falabella">Falabella</option>
       <option value="walmart">Walmart</option>
       <option value="ml">Mercado Libre</option>
+      <option value="paris">Paris</option>
     </select>
     <select id="kardex-sort" onchange="renderKardex()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
       <option value="">Sin orden</option>
@@ -463,6 +488,11 @@ tbody tr:hover{background:#F5F0FF}
       <option value="sku-desc">SKU Z→A</option>
       <option value="tipo-asc">Tipo A→Z</option>
       <option value="tipo-desc">Tipo Z→A</option>
+    </select>
+    <div style="position:relative">
+      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('kardex')">COLUMNAS</button>
+      <div id="kardex-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
+    </div>
     </select>
     <span id="kardex-stock" style="font-size:14px;font-weight:600;color:var(--noche);align-self:center"></span>
   </div>
@@ -1323,6 +1353,9 @@ function renderInventario() {
     });
   }
   document.getElementById('inv-count').textContent = list.length + ' producto(s)';
+  var hdr = '';
+  invCols.forEach(function(k){if(isInvColVisible(k))hdr+='<th>'+invColLabels[k]+'</th>'});
+  document.querySelector('#contenido-inventario thead tr').innerHTML = hdr;
   document.getElementById('inv-body').innerHTML = list.map(p => {
     var skuEnc = esc(p.sku);
     const img = p.imagen ? `<img class="img-preview" src="${p.imagen}" alt="">` : '--';
@@ -1338,16 +1371,66 @@ function renderInventario() {
     var caja = p.caja || '--';
     var stockW = p.stockWoo||0, stockF = p.stockFalabella||0, stockM = p.stockWalmart||0, stockL = p.stockML||0, stockP = p.stockParis||0, stockT = totalStock(p);
     var pf = p.precioFalabella||0, pw = p.precioWalmart||0, pm = p.precioML||0, pp = p.precioParis||0;
-    return `<tr>
-      <td>${skuEnc}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
-      <td>$${fmt(p.precioCosto)}</td><td>$${fmt(p.precioVenta)}</td>
-      <td>${pf ? '$'+fmt(pf) : '--'}</td><td>${pw ? '$'+fmt(pw) : '--'}</td><td>${pm ? '$'+fmt(pm) : '--'}</td><td>${pp ? '$'+fmt(pp) : '--'}</td>
-      <td>${stockW}</td><td${(stockF>stockW)?' style="color:#dc3545;font-weight:700"':''}>${stockF}</td><td${(stockM>stockW)?' style="color:#dc3545;font-weight:700"':''}>${stockM}</td><td${(stockL>stockW)?' style="color:#dc3545;font-weight:700"':''}>${stockL}</td><td${(stockP>stockW)?' style="color:#dc3545;font-weight:700"':''}>${stockP}</td><td style="font-weight:700">${stockT}</td>
-      <td>${ancho}</td><td>${largo}</td><td>${alto}</td><td${pesoCls}>${peso}</td><td${pvolCls}>${pvol}</td><td>${esc(caja)}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
-      <td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido('${skuEnc}')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${skuEnc}')">Eliminar</button></td>
-    </tr>`;
+    var cells = {sku:'<td>'+skuEnc+'</td>',codBarra:'<td>'+esc(p.codBarra)+'</td>',nombre:'<td>'+esc(p.nombre)+'</td>',precioCosto:'<td>$'+fmt(p.precioCosto)+'</td>',precioVenta:'<td>$'+fmt(p.precioVenta)+'</td>',precioFalabella:'<td>'+(pf?'$'+fmt(pf):'--')+'</td>',precioWalmart:'<td>'+(pw?'$'+fmt(pw):'--')+'</td>',precioML:'<td>'+(pm?'$'+fmt(pm):'--')+'</td>',precioParis:'<td>'+(pp?'$'+fmt(pp):'--')+'</td>',stockWoo:'<td>'+stockW+'</td>',stockFalabella:'<td'+(stockF>stockW?' style="color:#dc3545;font-weight:700"':'')+'>'+stockF+'</td>',stockWalmart:'<td'+(stockM>stockW?' style="color:#dc3545;font-weight:700"':'')+'>'+stockM+'</td>',stockML:'<td'+(stockL>stockW?' style="color:#dc3545;font-weight:700"':'')+'>'+stockL+'</td>',stockParis:'<td'+(stockP>stockW?' style="color:#dc3545;font-weight:700"':'')+'>'+stockP+'</td>',stockTotal:'<td style="font-weight:700">'+stockT+'</td>',ancho:'<td>'+ancho+'</td>',largo:'<td>'+largo+'</td>',alto:'<td>'+alto+'</td>',peso:'<td'+pesoCls+'>'+peso+'</td>',pvol:'<td'+pvolCls+'>'+pvol+'</td>',caja:'<td>'+esc(caja)+'</td>',proveedor:'<td>'+esc(p.proveedor)+'</td>',obsCompra:'<td>'+esc(p.observacionCompra)+'</td>',imagen:'<td>'+img+'</td>',accion:'<td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido(\''+skuEnc+'\')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto(\''+skuEnc+'\')">Eliminar</button></td>'};
+    var row = '';
+    invCols.forEach(function(k){if(isInvColVisible(k))row+=cells[k]});
+    return '<tr>'+row+'</tr>';
   }).join('');
 }
+
+var invCols = ['sku','codBarra','nombre','precioCosto','precioVenta','precioFalabella','precioWalmart','precioML','precioParis','stockWoo','stockFalabella','stockWalmart','stockML','stockParis','stockTotal','ancho','largo','alto','peso','pvol','caja','proveedor','obsCompra','imagen','accion'];
+var invColLabels = {sku:'SKU',codBarra:'Cód. Barra',nombre:'Producto',precioCosto:'P. Costo',precioVenta:'P. Venta',precioFalabella:'P. Fala',precioWalmart:'P. Wal',precioML:'P. ML',precioParis:'P. Paris',stockWoo:'Stock Woo',stockFalabella:'Asig. Falabella',stockWalmart:'Asig. Walmart',stockML:'Asig. ML',stockParis:'Asig. Paris',stockTotal:'Stock Total',ancho:'Ancho',largo:'Largo',alto:'Alto',peso:'Peso',pvol:'P. Vol.',caja:'Caja',proveedor:'Proveedor',obsCompra:'Obs. Compra',imagen:'Imagen',accion:'Acción'};
+function getInvColState(){try{return JSON.parse(localStorage.getItem('inv_cols'))||{}}catch(e){return{}}}
+function setInvColState(s){localStorage.setItem('inv_cols',JSON.stringify(s))}
+function isInvColVisible(k){var s=getInvColState();return s[k]!==undefined?s[k]:true}
+var canalCols = ['sku','codBarra','nombre','precioCosto','precioCanal','stockCanal','stockWoo','proveedor','imagen','accion'];
+var canalColLabels = {sku:'SKU',codBarra:'Cód. Barra',nombre:'Producto',precioCosto:'P. Costo',precioCanal:'P. Canal',stockCanal:'Asig. Canal',stockWoo:'Stock Real',proveedor:'Proveedor',imagen:'Imagen',accion:'Acción'};
+function getCanalColState(canal){try{return JSON.parse(localStorage.getItem(canal+'_cols'))||{}}catch(e){return{}}}
+function setCanalColState(canal,s){localStorage.setItem(canal+'_cols',JSON.stringify(s))}
+function isCanalColVisible(canal,k){var s=getCanalColState(canal);return s[k]!==undefined?s[k]:true}
+var ventasCols = ['fecha','canal','sku','nombre','cantidad','precioUnitario','total','cliente','pago','estado','referencia','observacion','accion'];
+var ventasColLabels = {fecha:'Fecha',canal:'Canal',sku:'SKU',nombre:'Producto',cantidad:'Cant.',precioUnitario:'P. Unitario',total:'Total',cliente:'Cliente',pago:'Pago',estado:'Estado',referencia:'Referencia',observacion:'Observación',accion:'Acción'};
+function getVentasColState(){try{return JSON.parse(localStorage.getItem('ventas_cols'))||{}}catch(e){return{}}}
+function setVentasColState(s){localStorage.setItem('ventas_cols',JSON.stringify(s))}
+function isVentasColVisible(k){var s=getVentasColState();return s[k]!==undefined?s[k]:true}
+
+var kardexCols = ['fecha','canal','sku','nombre','tipo','concepto','cantidad','stockAnt','stockRes','referencia','proveedor','obsCompra','obsVenta','accion'];
+var kardexColLabels = {fecha:'Fecha',canal:'Canal',sku:'SKU',nombre:'Producto',tipo:'Tipo',concepto:'Concepto',cantidad:'Cant.',stockAnt:'Stock Ant.',stockRes:'Stock Res.',referencia:'Referencia',proveedor:'Proveedor',obsCompra:'Obs. Compra',obsVenta:'Obs. Venta',accion:'Acción'};
+function getKardexColState(){try{return JSON.parse(localStorage.getItem('kardex_cols'))||{}}catch(e){return{}}}
+function setKardexColState(s){localStorage.setItem('kardex_cols',JSON.stringify(s))}
+function isKardexColVisible(k){var s=getKardexColState();return s[k]!==undefined?s[k]:true}
+
+function toggleColMenu(tab){
+  var el=document.getElementById(tab+'-colmenu');
+  if(el.style.display==='block'){el.style.display='none';return}
+  var cols,labels;
+  if(tab==='inv'){cols=invCols;labels=invColLabels}
+  else if(tab==='ventas'){cols=ventasCols;labels=ventasColLabels}
+  else if(tab==='kardex'){cols=kardexCols;labels=kardexColLabels}
+  else{cols=canalCols;labels=canalColLabels}
+  var isVisible = function(k){
+    if(tab==='inv')return isInvColVisible(k);
+    if(tab==='ventas')return isVentasColVisible(k);
+    if(tab==='kardex')return isKardexColVisible(k);
+    return isCanalColVisible(tab,k);
+  };
+  el.innerHTML=cols.map(function(k){return '<label style="display:block;font-size:12px;padding:2px 0;cursor:pointer"><input type="checkbox" '+(isVisible(k)?'checked':'')+' onchange="toggleColVisibility(\''+tab+'\',\''+k+'\')">'+labels[k]+'</label>'}).join('');
+  el.style.display='block';
+  setTimeout(function(){document.addEventListener('click',function h(e){if(!el.contains(e.target)&&e.target.textContent!=='COLUMNAS'){el.style.display='none';document.removeEventListener('click',h)}},false)},0);
+}
+function toggleColVisibility(tab,k){
+  if(tab==='inv'){toggleInvCol(k)}
+  else if(tab==='ventas'){var sv=getVentasColState();sv[k]=!isVentasColVisible(k);setVentasColState(sv);renderVentas()}
+  else if(tab==='kardex'){var sk=getKardexColState();sk[k]=!isKardexColVisible(k);setKardexColState(sk);renderKardex()}
+  else{var s=getCanalColState(tab);s[k]=!isCanalColVisible(tab,k);setCanalColState(tab,s);renderCanalByTab(tab)}
+}
+function renderCanalByTab(tab){
+  if(tab==='falabella')renderFalabella();
+  else if(tab==='walmart')renderWalmart();
+  else if(tab==='ml')renderML();
+  else if(tab==='paris')renderParis();
+}
+function toggleInvCol(k){var s=getInvColState();s[k]=!isInvColVisible(k);setInvColState(s);renderInventario()}
 
 function renderCanal(canal, stockKey, priceKey, searchId, countId, sortId, bodyId) {
   var statsId = {falabella:'fal-stats',ml:'ml-stats',walmart:'wal-stats',paris:'par-stats'}[canal];
@@ -1389,17 +1472,17 @@ function renderCanal(canal, stockKey, priceKey, searchId, countId, sortId, bodyI
     });
   }
   document.getElementById(countId).textContent = list.length + ' producto(s)';
+  var hdr = '';
+  canalCols.forEach(function(k){if(isCanalColVisible(canal,k))hdr+='<th>'+canalColLabels[k]+'</th>'});
+  var tbl = document.getElementById(bodyId).closest('table');
+  if(tbl) tbl.querySelector('thead tr').innerHTML = hdr;
   document.getElementById(bodyId).innerHTML = list.map(function(p) {
     var skuEnc = esc(p.sku);
     var img = p.imagen ? '<img class="img-preview" src="'+p.imagen+'" alt="">' : '--';
-    return '<tr>' +
-      '<td>'+skuEnc+'</td><td>'+esc(p.codBarra)+'</td><td>'+esc(p.nombre)+'</td>' +
-      '<td>$'+fmt(p.precioCosto)+'</td><td>$'+fmt(p[priceKey] || p.precioVenta)+'</td>' +
-      '<td style="font-weight:700;'+((p[stockKey]||0)>(p.stockWoo||0)?'color:#dc3545;':'')+'">'+(p[stockKey]||0)+'</td><td>'+(p.stockWoo||0)+'</td>' +
-      '<td>'+esc(p.proveedor)+'</td><td>'+img+'</td>' +
-      '<td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido(\''+skuEnc+'\')">Editar</button>' +
-      '<button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto(\''+skuEnc+'\')">Eliminar</button></td>' +
-    '</tr>';
+    var cells = {sku:'<td>'+skuEnc+'</td>',codBarra:'<td>'+esc(p.codBarra)+'</td>',nombre:'<td>'+esc(p.nombre)+'</td>',precioCosto:'<td>$'+fmt(p.precioCosto)+'</td>',precioCanal:'<td>$'+fmt(p[priceKey]||p.precioVenta)+'</td>',stockCanal:'<td style="font-weight:700;'+((p[stockKey]||0)>(p.stockWoo||0)?'color:#dc3545;':'')+'">'+(p[stockKey]||0)+'</td>',stockWoo:'<td>'+(p.stockWoo||0)+'</td>',proveedor:'<td>'+esc(p.proveedor)+'</td>',imagen:'<td>'+img+'</td>',accion:'<td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido(\''+skuEnc+'\')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto(\''+skuEnc+'\')">Eliminar</button></td>'};
+    var row = '';
+    canalCols.forEach(function(k){if(isCanalColVisible(canal,k))row+=cells[k]});
+    return '<tr>'+row+'</tr>';
   }).join('');
 }
 
@@ -1962,19 +2045,27 @@ function renderVentas() {
     if (!groups[key]) groups[key] = [];
     groups[key].push(v);
   });
+  var hdr = '';
+  ventasCols.forEach(function(k){if(isVentasColVisible(k))hdr+='<th>'+ventasColLabels[k]+'</th>'});
+  var tbl = document.querySelector('#contenido-ventas table');
+  if(tbl) tbl.querySelector('thead tr').innerHTML = hdr;
+  var visibleCount = ventasCols.filter(function(k){return isVentasColVisible(k)}).length;
   var html = '';
   Object.keys(groups).forEach(function(key) {
     var items = groups[key];
     var subTotal = 0, subCant = 0;
     items.forEach(function(v) { subTotal += v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0; subCant += v.cantidad || 0; });
-    html += '<tr class="group-header"><td colspan="13"><strong>' + esc(key) + '</strong> &nbsp;|&nbsp; ' + items.length + ' producto(s) &nbsp;|&nbsp; ' + subCant + ' uds. &nbsp;|&nbsp; Total: $' + fmt(subTotal) + '</td></tr>';
+    html += '<tr class="group-header"><td colspan="'+visibleCount+'"><strong>' + esc(key) + '</strong> &nbsp;|&nbsp; ' + items.length + ' producto(s) &nbsp;|&nbsp; ' + subCant + ' uds. &nbsp;|&nbsp; Total: $' + fmt(subTotal) + '</td></tr>';
     items.forEach(function(v) {
       const url = v.referencia ? 'Cot. ' + esc(v.referencia) : '--';
       const vid = v.id;
-      html += '<tr><td>' + esc(v.fecha) + '</td><td>' + canalLabel(v.canal||'') + '</td><td>' + esc(v.sku) + '</td><td>' + esc(v.nombre) + '</td><td>' + v.cantidad + '</td><td>$' + fmt(v.precioUnitario) + '</td><td style="white-space:nowrap">$' + fmt(v.total || ((v.cantidad||0) * (v.precioUnitario||0))) + ' <span onclick="toggleCheckVenta(\'' + vid + '\')" style="cursor:pointer;font-size:16px;margin-left:4px;user-select:none">' + (v.checked ? '✅' : '⬜') + '</span></td><td>' + esc(v.cliente) + '</td><td>' + esc(v.pago) + '</td><td>' + esc(v.estado) + '</td><td>' + url + '</td><td>' + esc(v.observacion) + '</td><td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarVenta(\'' + vid + '\')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta(\'' + vid + '\')">Eliminar</button></td></tr>';
+      var cells = {fecha:'<td>'+esc(v.fecha)+'</td>',canal:'<td>'+canalLabel(v.canal||'')+'</td>',sku:'<td>'+esc(v.sku)+'</td>',nombre:'<td>'+esc(v.nombre)+'</td>',cantidad:'<td>'+v.cantidad+'</td>',precioUnitario:'<td>$'+fmt(v.precioUnitario)+'</td>',total:'<td style="white-space:nowrap">$'+fmt(v.total||((v.cantidad||0)*(v.precioUnitario||0)))+' <span onclick="toggleCheckVenta(\''+vid+'\')" style="cursor:pointer;font-size:16px;margin-left:4px;user-select:none">'+(v.checked?'✅':'⬜')+'</span></td>',cliente:'<td>'+esc(v.cliente)+'</td>',pago:'<td>'+esc(v.pago)+'</td>',estado:'<td>'+esc(v.estado)+'</td>',referencia:'<td>'+url+'</td>',observacion:'<td>'+esc(v.observacion)+'</td>',accion:'<td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarVenta(\''+vid+'\')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta(\''+vid+'\')">Eliminar</button></td>'};
+      var row = '';
+      ventasCols.forEach(function(k){if(isVentasColVisible(k))row+=cells[k]});
+      html += '<tr>'+row+'</tr>';
     });
   });
-  document.getElementById('ventas-body').innerHTML = html || '<tr><td colspan="13" class="empty">No hay ventas registradas</td></tr>';
+  document.getElementById('ventas-body').innerHTML = html || '<tr><td colspan="'+visibleCount+'" class="empty">No hay ventas registradas</td></tr>';
 }
 
 // ===== KARDEX =====
@@ -2017,18 +2108,18 @@ function renderKardex() {
   } else {
     document.getElementById('kardex-stock').textContent = '';
   }
+  var khdr = '';
+  kardexCols.forEach(function(k){if(isKardexColVisible(k))khdr+='<th>'+kardexColLabels[k]+'</th>'});
+  var ktbl = document.querySelector('#contenido-kardex table');
+  if(ktbl) ktbl.querySelector('thead tr').innerHTML = khdr;
+  var kVisible = kardexCols.filter(function(k){return isKardexColVisible(k)}).length;
   document.getElementById('kardex-body').innerHTML = list.map(k => {
     const cantidadClass = k.cantidad < 0 ? 'style="color:#DC2626"' : 'style="color:var(--verde)"';
-    return `<tr>
-      <td>${esc(k.fecha)}</td><td>${canalLabel(k.canal||'')}</td><td>${esc(k.sku)}</td><td>${esc(k.nombre)}</td>
-      <td>${esc(k.tipo)}</td><td>${esc(k.concepto)}</td>
-      <td ${cantidadClass}>${k.cantidad}</td>
-      <td>${k.stockAnt}</td><td>${k.stockRes}</td>
-      <td>${esc(k.referencia)}</td><td>${esc(k.proveedor)}</td>
-      <td>${esc(k.observacionCompra)}</td><td>${esc(k.observacionVenta)}</td>
-      <td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarKardex('${k.id}')">Eliminar</button></td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="14" class="empty">No hay movimientos registrados</td></tr>';
+    var cells = {fecha:'<td>'+esc(k.fecha)+'</td>',canal:'<td>'+canalLabel(k.canal||'')+'</td>',sku:'<td>'+esc(k.sku)+'</td>',nombre:'<td>'+esc(k.nombre)+'</td>',tipo:'<td>'+esc(k.tipo)+'</td>',concepto:'<td>'+esc(k.concepto)+'</td>',cantidad:'<td '+cantidadClass+'>'+k.cantidad+'</td>',stockAnt:'<td>'+k.stockAnt+'</td>',stockRes:'<td>'+k.stockRes+'</td>',referencia:'<td>'+esc(k.referencia)+'</td>',proveedor:'<td>'+esc(k.proveedor)+'</td>',obsCompra:'<td>'+esc(k.observacionCompra||'')+'</td>',obsVenta:'<td>'+esc(k.observacionVenta||'')+'</td>',accion:'<td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarKardex(\''+k.id+'\')">Eliminar</button></td>'};
+    var row = '';
+    kardexCols.forEach(function(c){if(isKardexColVisible(c))row+=cells[c]});
+    return '<tr>'+row+'</tr>';
+  }).join('') || '<tr><td colspan="'+kVisible+'" class="empty">No hay movimientos registrados</td></tr>';
 }
 
 function findProductoBySku(sku) {
