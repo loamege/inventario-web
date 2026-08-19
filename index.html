@@ -404,6 +404,14 @@ tbody tr:hover{background:#F5F0FF}
     </select>
     <input id="ventas-fdesde" type="date" onchange="renderVentas()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Desde">
     <input id="ventas-fhasta" type="date" onchange="renderVentas()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Hasta">
+    <select id="ventas-canal" onchange="renderVentas()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
+      <option value="">Todos los canales</option>
+      <option value="woo">WooCommerce</option>
+      <option value="falabella">Falabella</option>
+      <option value="walmart">Walmart</option>
+      <option value="ml">Mercado Libre</option>
+      <option value="paris">Paris</option>
+    </select>
     <select id="ventas-sort" onchange="renderVentas()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
       <option value="fecha-desc" selected>Más reciente ↑</option>
       <option value="fecha-asc">Más antiguo ↓</option>
@@ -1927,6 +1935,8 @@ function renderVentas() {
   if (fdesde) list = list.filter(function(v) { return v.fecha && v.fecha >= fdesde; });
   var fhasta = document.getElementById('ventas-fhasta').value;
   if (fhasta) list = list.filter(function(v) { return v.fecha && v.fecha <= fhasta; });
+  var canalFiltro = document.getElementById('ventas-canal').value;
+  if (canalFiltro) list = list.filter(function(v) { return (v.canal||'woo') === canalFiltro; });
   var sort = document.getElementById('ventas-sort').value;
   if (sort) {
     list = list.slice().sort(function(a,b) {
