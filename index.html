@@ -411,6 +411,7 @@ tbody tr:hover{background:#F5F0FF}
   <div class="resumen">
     <div class="resumen-item"><div class="label">Total Ventas</div><div class="value verde" id="v-total">$0</div></div>
     <div class="resumen-item"><div class="label">Productos Vendidos</div><div class="value" id="v-cant">0</div></div>
+    <div class="resumen-item"><div class="label">Productos Distintos</div><div class="value" id="v-distintos">0</div></div>
     <div class="resumen-item"><div class="label">&Uacute;ltima Venta</div><div class="value" id="v-ultima" style="font-size:16px">--</div></div>
   </div>
   <div class="search-bar">
@@ -463,6 +464,7 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="search-bar">
     <input id="kardex-search" placeholder="Buscar por SKU, tipo, concepto..." oninput="renderKardex()" style="flex:1;max-width:300px">
+    <span id="kardex-count" style="font-size:13px;color:#888;align-self:center"></span>
     <select id="kardex-mes" onchange="renderKardex()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
       <option value="">Todos los meses</option>
       <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
@@ -1437,6 +1439,7 @@ function renderCanal(canal, stockKey, priceKey, searchId, countId, sortId, bodyI
   var statsEl = document.getElementById(statsId);
   if (statsEl) {
     var totalStockCanal = data.productos.reduce(function(s,p){return s+(p[stockKey]||0)},0);
+    var prodConStock = data.productos.filter(function(p){return (p[stockKey]||0)>0}).length;
     var now = new Date();
     var anioActual = now.getFullYear();
     var mesActual = now.getMonth()+1;
@@ -1451,6 +1454,7 @@ function renderCanal(canal, stockKey, priceKey, searchId, countId, sortId, bodyI
     var opciones = '';
     for (var y=anioActual;y>=anioActual-3;y--) opciones+='<option value="'+y+'"'+(y==anioSel?' selected':'')+'>'+y+'</option>';
     statsEl.innerHTML =
+      '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:8px 14px;font-size:13px"><span style="color:#888">Prod. con stock:</span> <strong>'+prodConStock+'</strong></div>'+
       '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:8px 14px;font-size:13px"><span style="color:#888">Stock total:</span> <strong>'+totalStockCanal+'</strong> uds.</div>'+
       '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:8px 14px;font-size:13px"><span style="color:#888">Ventas '+anioSel+':</span> <strong style="color:#4F46E5">$'+fmt(totalAnio)+'</strong></div>'+
       '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:8px 14px;font-size:13px"><span style="color:#888">Ventas '+mesLabel[mesActual]+' '+anioSel+':</span> <strong style="color:#059669">$'+fmt(totalMes)+'</strong></div>'+
@@ -2038,6 +2042,9 @@ function renderVentas() {
   list.forEach(v => { totalVtas += v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0; totalCant += v.cantidad || 0; });
   document.getElementById('v-total').textContent = '$' + fmt(totalVtas);
   document.getElementById('v-cant').textContent = totalCant;
+  var skusDistintos = {};
+  list.forEach(function(v){if(v.sku)skusDistintos[v.sku]=1});
+  document.getElementById('v-distintos').textContent = Object.keys(skusDistintos).length;
   document.getElementById('v-ultima').textContent = list.length > 0 ? list[list.length-1].fecha : '--';
   var groups = {};
   list.forEach(function(v) {
@@ -2113,6 +2120,9 @@ function renderKardex() {
   var ktbl = document.querySelector('#contenido-kardex table');
   if(ktbl) ktbl.querySelector('thead tr').innerHTML = khdr;
   var kVisible = kardexCols.filter(function(k){return isKardexColVisible(k)}).length;
+  var kSkus = {};
+  list.forEach(function(k){if(k.sku)kSkus[k.sku]=1});
+  document.getElementById('kardex-count').textContent = list.length + ' mov. | ' + Object.keys(kSkus).length + ' prod. distintos';
   document.getElementById('kardex-body').innerHTML = list.map(k => {
     const cantidadClass = k.cantidad < 0 ? 'style="color:#DC2626"' : 'style="color:var(--verde)"';
     var cells = {fecha:'<td>'+esc(k.fecha)+'</td>',canal:'<td>'+canalLabel(k.canal||'')+'</td>',sku:'<td>'+esc(k.sku)+'</td>',nombre:'<td>'+esc(k.nombre)+'</td>',tipo:'<td>'+esc(k.tipo)+'</td>',concepto:'<td>'+esc(k.concepto)+'</td>',cantidad:'<td '+cantidadClass+'>'+k.cantidad+'</td>',stockAnt:'<td>'+k.stockAnt+'</td>',stockRes:'<td>'+k.stockRes+'</td>',referencia:'<td>'+esc(k.referencia)+'</td>',proveedor:'<td>'+esc(k.proveedor)+'</td>',obsCompra:'<td>'+esc(k.observacionCompra||'')+'</td>',obsVenta:'<td>'+esc(k.observacionVenta||'')+'</td>',accion:'<td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarKardex(\''+k.id+'\')">Eliminar</button></td>'};
