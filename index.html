@@ -625,7 +625,7 @@ function datosDefault() {
 }
 
 function totalStock(p) {
-  return (p.stockWoo||0) + (p.stockFalabella||0) + (p.stockWalmart||0) + (p.stockML||0) + (p.stockParis||0);
+  return (p.stockWoo||0);
 }
 function stockKey(canal) {
   if (canal === 'woo' || canal === 'WooCommerce' || canal === 'Woo') return 'stockWoo';
