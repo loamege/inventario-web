@@ -964,6 +964,9 @@ function abrirModal(titulo, html, onConfirm) {
 
 function cerrarModal() {
   document.getElementById('modal').classList.remove('open');
+  var mb = document.querySelector('.modal-box');
+  mb.style.maxWidth = '720px';
+  mb.style.width = '90%';
 }
 
 function inputModalHtml(label, val) {
@@ -1411,59 +1414,141 @@ function updateWalmartMassCount() {
 function abrirModalWalmart(productos) {
   var p = productos[0];
   var esMultiple = productos.length > 1;
+  var modalBox = document.querySelector('.modal-box');
+  if (esMultiple) {
+    modalBox.style.maxWidth = '1200px';
+    modalBox.style.width = '95%';
+  } else {
+    modalBox.style.maxWidth = '720px';
+    modalBox.style.width = '90%';
+  }
   var titulo = esMultiple ? 'Subir ' + productos.length + ' productos a Walmart' : 'Subir producto ' + p.sku + ' a Walmart';
   var html = '';
   if (esMultiple) {
-    html += '<p style="font-size:13px;color:#666;margin-bottom:8px">Productos: ' + productos.map(function(x){return x.sku}).join(', ') + '</p>';
+    html += '<p style="font-size:12px;color:#666;margin-bottom:8px">Edita los campos de cada producto. Los campos marcados se aplican a todos.</p>';
+    html += '<div style="overflow-x:auto;max-height:70vh;overflow-y:auto">';
+    html += '<table style="width:100%;border-collapse:collapse;font-size:12px;min-width:900px">';
+    html += '<thead><tr style="position:sticky;top:0;background:#f5f5f5;z-index:1">';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:100px">SKU</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:180px">Nombre</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:90px">Precio</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:90px">Color</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:80px">Edad Min</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:80px">Edad Max</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:80px">Alto</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:80px">Ancho</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:80px">Largo</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:70px">Peso</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:120px">Material</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:140px">Keywords</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:200px">Img URL</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:200px">Descripción</th>';
+    html += '<th style="padding:6px;border:1px solid #ccc;text-align:left;min-width:160px">Desc. Corta</th>';
+    html += '</tr></thead><tbody>';
+    productos.forEach(function(prod, idx) {
+      html += '<tr>';
+      html += '<td style="padding:4px;border:1px solid #ccc;font-weight:600" data-field="sku">'+esc(prod.sku)+'</td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="nombre" value="'+esc(prod.nombre)+'" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="precio" type="number" value="'+(prod.precioVenta||0)+'" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="color" value="Multicolor" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="edadMin" type="number" value="3" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="edadMax" type="number" value="99" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="alto" type="number" step="0.1" value="'+(prod.alto||0)+'" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="ancho" type="number" step="0.1" value="'+(prod.ancho||0)+'" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="largo" type="number" step="0.1" value="'+(prod.largo||0)+'" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="peso" type="number" step="0.001" value="'+(prod.peso||0)+'" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="material" value="" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="keywords" value="" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="imagen" value="'+esc(prod.imagen||'')+'" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="descripcion" value="'+esc(prod.descripcion||'')+'" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '<td style="padding:4px;border:1px solid #ccc"><input data-idx="'+idx+'" data-field="descCorta" value="'+esc(prod.descCorta||prod.nombre||'')+'" style="width:100%;border:none;padding:2px;font-size:12px"></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    html += '<div style="margin-top:10px"><label style="font-size:11px;font-weight:600">Advertencia (aplica a todos):</label><input id="wm-warning-global" value="Utilizar bajo supervisión de un adulto." style="width:100%;padding:5px;border:1px solid #ccc;border-radius:4px;font-size:12px"></div>';
+  } else {
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+    html += '<div><label style="font-size:12px;font-weight:600">SKU</label><input id="wm-sku" value="'+esc(p.sku)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px" disabled></div>';
+    html += '<div><label style="font-size:12px;font-weight:600">Nombre</label><input id="wm-nombre" value="'+esc(p.nombre)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div><label style="font-size:12px;font-weight:600">Precio</label><input id="wm-precio" type="number" value="'+(p.precioVenta||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div><label style="font-size:12px;font-weight:600">Color</label><input id="wm-color" value="Multicolor" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div><label style="font-size:12px;font-weight:600">Edad mínima</label><input id="wm-edadMin" type="number" value="3" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div><label style="font-size:12px;font-weight:600">Edad máxima</label><input id="wm-edadMax" type="number" value="99" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div><label style="font-size:12px;font-weight:600">Alto envío (cm)</label><input id="wm-alto" type="number" step="0.1" value="'+(p.alto||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div><label style="font-size:12px;font-weight:600">Ancho envío (cm)</label><input id="wm-ancho" type="number" step="0.1" value="'+(p.ancho||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div><label style="font-size:12px;font-weight:600">Profundidad envío (cm)</label><input id="wm-largo" type="number" step="0.1" value="'+(p.largo||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div><label style="font-size:12px;font-weight:600">Peso envío (kg)</label><input id="wm-peso" type="number" step="0.001" value="'+(p.peso||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Material</label><input id="wm-material" value="" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Keywords</label><input id="wm-keywords" value="" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px" placeholder="juguete;juego;niño"></div>';
+    html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Advertencias</label><input id="wm-warning" value="Utilizar bajo supervisión de un adulto." style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Imagen principal (URL)</label><input id="wm-img" value="'+esc(p.imagen||'')+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Imagen secundaria (URL)</label><input id="wm-img2" value="" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Descripción larga</label><textarea id="wm-desc" rows="4" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">'+esc(p.descripcion||'')+'</textarea></div>';
+    html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Descripción corta</label><input id="wm-descCorta" value="'+esc(p.descCorta||p.nombre||'')+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
+    html += '</div>';
   }
-  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
-  html += '<div><label style="font-size:12px;font-weight:600">SKU</label><input id="wm-sku" value="'+esc(p.sku)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px" disabled></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Nombre</label><input id="wm-nombre" value="'+esc(p.nombre)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px" '+(esMultiple?'disabled':'')+'></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Precio</label><input id="wm-precio" type="number" value="'+(p.precioVenta||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Color</label><input id="wm-color" value="Multicolor" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Edad mínima</label><input id="wm-edadMin" type="number" value="3" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Edad máxima</label><input id="wm-edadMax" type="number" value="99" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Alto envío (cm)</label><input id="wm-alto" type="number" step="0.1" value="'+(p.alto||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Ancho envío (cm)</label><input id="wm-ancho" type="number" step="0.1" value="'+(p.ancho||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Profundidad envío (cm)</label><input id="wm-largo" type="number" step="0.1" value="'+(p.largo||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Peso envío (kg)</label><input id="wm-peso" type="number" step="0.001" value="'+(p.peso||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Material</label><input id="wm-material" value="" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Keywords</label><input id="wm-keywords" value="" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px" placeholder="juguete;juego;niño"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Advertencias</label><input id="wm-warning" value="Utilizar bajo supervisión de un adulto." style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Imagen principal (URL)</label><input id="wm-img" value="'+esc(p.imagen||'')+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Imagen secundaria (URL)</label><input id="wm-img2" value="" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Descripción larga</label><textarea id="wm-desc" rows="4" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">'+esc(p.descripcion||'')+'</textarea></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Descripción corta</label><input id="wm-descCorta" value="'+esc(p.descCorta||p.nombre||'')+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '</div>';
   document.getElementById('modal-title').textContent = titulo;
   document.getElementById('modal-body').innerHTML = html;
   var btn = document.getElementById('modal-confirm');
   btn.textContent = 'Generar Excel';
   btn.onclick = function() {
-    var productosExcel = productos.map(function(prod){
-      return {
-        sku: prod.sku,
-        nombre: document.getElementById('wm-nombre').value || prod.nombre,
-        precio: document.getElementById('wm-precio').value || prod.precioVenta,
+    var productosExcel;
+    if (esMultiple) {
+      var inputs = document.querySelectorAll('#modal-body input[data-idx]');
+      var vals = {};
+      inputs.forEach(function(inp){
+        var i = inp.dataset.idx;
+        var f = inp.dataset.field;
+        if (!vals[i]) vals[i] = {};
+        vals[i][f] = inp.value;
+      });
+      var warningG = document.getElementById('wm-warning-global').value;
+      productosExcel = productos.map(function(prod, idx){
+        var v = vals[idx] || {};
+        return {
+          sku: prod.sku,
+          nombre: v.nombre || prod.nombre,
+          precio: v.precio || prod.precioVenta,
+          color: v.color || 'Multicolor',
+          edadMin: v.edadMin || 3,
+          edadMax: v.edadMax || 99,
+          alto: v.alto || prod.alto,
+          ancho: v.ancho || prod.ancho,
+          largo: v.largo || prod.largo,
+          peso: v.peso || prod.peso,
+          material: v.material || '',
+          keywords: v.keywords || '',
+          warning: warningG,
+          imagen: v.imagen || prod.imagen,
+          imagen2: '',
+          descripcion: v.descripcion || prod.descripcion,
+          descCorta: v.descCorta || prod.nombre
+        };
+      });
+    } else {
+      productosExcel = [{
+        sku: p.sku,
+        nombre: document.getElementById('wm-nombre').value || p.nombre,
+        precio: document.getElementById('wm-precio').value || p.precioVenta,
         color: document.getElementById('wm-color').value,
         edadMin: document.getElementById('wm-edadMin').value,
         edadMax: document.getElementById('wm-edadMax').value,
-        alto: document.getElementById('wm-alto').value || prod.alto,
-        ancho: document.getElementById('wm-ancho').value || prod.ancho,
-        largo: document.getElementById('wm-largo').value || prod.largo,
-        peso: document.getElementById('wm-peso').value || prod.peso,
+        alto: document.getElementById('wm-alto').value || p.alto,
+        ancho: document.getElementById('wm-ancho').value || p.ancho,
+        largo: document.getElementById('wm-largo').value || p.largo,
+        peso: document.getElementById('wm-peso').value || p.peso,
         material: document.getElementById('wm-material').value,
         keywords: document.getElementById('wm-keywords').value,
         warning: document.getElementById('wm-warning').value,
-        imagen: document.getElementById('wm-img').value || prod.imagen,
+        imagen: document.getElementById('wm-img').value || p.imagen,
         imagen2: document.getElementById('wm-img2').value,
-        descripcion: document.getElementById('wm-desc').value || prod.descripcion,
-        descCorta: document.getElementById('wm-descCorta').value || prod.nombre
-      };
-    });
+        descripcion: document.getElementById('wm-desc').value || p.descripcion,
+        descCorta: document.getElementById('wm-descCorta').value || p.nombre
+      }];
+    }
     generarExcelWalmart(productosExcel);
     cerrarModal();
-    showToast('Excel generado — revisa tus descargas');
+    showToast('Excel generado — ' + productosExcel.length + ' producto(s) — revisa tus descargas');
   };
   document.getElementById('modal').classList.add('open');
 }
