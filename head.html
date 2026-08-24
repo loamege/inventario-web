@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -134,9 +134,8 @@ tbody tr:hover{background:#F5F0FF}
       <input id="login-user" type="email" placeholder="Ingresa tu correo" autocomplete="email">
       <label>Contrase&ntilde;a</label>
       <input id="login-pass" type="password" placeholder="Ingresa tu contrase&ntilde;a" autocomplete="current-password">
-      <button class="btn btn-primary" onclick="iniciarSesion()">INGRESAR</button>
+      <button class="btn btn-primary" onclick="(function(){var e=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value;document.getElementById('login-error').style.display='none';if(!e||!p){document.getElementById('login-error').textContent='Ingresa correo y contrase├▒a';document.getElementById('login-error').style.display='block';return}if(e!=='loa.ayalam@gmail.com'||p!=='***PASSWORD_REDACTED***'){document.getElementById('login-error').textContent='Credenciales incorrectas';document.getElementById('login-error').style.display='block';return}localStorage.setItem('luciauth','1');document.getElementById('login-overlay').style.display='none';location.reload()})()">INGRESAR</button>
       <div class="error" id="login-error"></div>
-      <div style="text-align:center;margin-top:12px"><a href="#" onclick="recuperarContrasena();return false" style="font-size:12px;color:#2563EB">¿Olvidaste tu contrase&ntilde;a?</a></div>
     </div>
   </div>
 </div>
@@ -149,9 +148,9 @@ tbody tr:hover{background:#F5F0FF}
     <button class="btn" style="background:var(--ambar);color:var(--noche);font-size:12px;padding:5px 12px" onclick="exportarExcelCompleto()">EXPORTAR EXCEL</button>
     <button class="btn" style="background:var(--ambar);color:var(--noche);font-size:12px;padding:5px 12px" onclick="importarExcel()">IMPORTAR EXCEL</button>
     <button class="btn" style="background:#DC2626;color:#fff;font-size:12px;padding:5px 12px" onclick="restaurarStockYkardex()">RESTAURAR STOCK+KARDEX</button>
-    <button class="btn" style="background:#7C3AED;color:#fff;font-size:12px;padding:5px 12px" onclick="exportarBackup()">📦 BACKUP</button>
-    <button class="btn" style="background:#7C3AED;color:#fff;font-size:12px;padding:5px 12px" onclick="importarBackup()">📂 RESTAURAR</button>
-    <button class="btn" style="background:#1E40AF;color:#fff;font-size:12px;padding:5px 12px" onclick="verBackups()">💾 AUTO-BACKUP</button>
+    <button class="btn" style="background:#7C3AED;color:#fff;font-size:12px;padding:5px 12px" onclick="exportarBackup()">­ƒôª BACKUP</button>
+    <button class="btn" style="background:#7C3AED;color:#fff;font-size:12px;padding:5px 12px" onclick="importarBackup()">­ƒôé RESTAURAR</button>
+    <button class="btn" style="background:#1E40AF;color:#fff;font-size:12px;padding:5px 12px" onclick="verBackups()">­ƒÆ¥ AUTO-BACKUP</button>
     <button class="btn" style="background:#2563EB;color:#fff;font-size:12px;padding:5px 12px" onclick="sincronizarFirebase()">SYNC FIREBASE</button>
     <button class="btn btn-outline" style="font-size:12px;padding:5px 12px;margin-left:8px" onclick="cerrarSesion()">SALIR</button>
   </div>
@@ -164,7 +163,6 @@ tbody tr:hover{background:#F5F0FF}
   <button class="tab" data-tab="falabella">Falabella</button>
   <button class="tab" data-tab="ml">Mercado Libre</button>
   <button class="tab" data-tab="walmart">Walmart</button>
-  <button class="tab" data-tab="paris">Paris</button>
   <button class="tab" data-tab="cotizador">Cotizador</button>
   <button class="tab" data-tab="ventas">Ventas</button>
   <button class="tab" data-tab="cotizaciones">Cotizaciones</button>
@@ -206,8 +204,6 @@ tbody tr:hover{background:#F5F0FF}
       <label>Asig. Falabella</label><input id="f-stock-falabella" type="number">
       <label>Asig. Walmart</label><input id="f-stock-walmart" type="number">
       <label>Asig. Mercado Libre</label><input id="f-stock-ml" type="number">
-      <label>Precio Paris</label><input id="f-precio-paris" type="number" step="0.01">
-      <label>Asig. Paris</label><input id="f-stock-paris" type="number">
       <label>Ancho (cm)</label><input id="f-ancho" type="number" step="0.1">
       <label>Largo (cm)</label><input id="f-largo" type="number" step="0.1">
       <label>Alto (cm)</label><input id="f-alto" type="number" step="0.1">
@@ -236,20 +232,15 @@ tbody tr:hover{background:#F5F0FF}
     <input id="inv-search" placeholder="Buscar por SKU o nombre..." oninput="renderInventario()">
     <span id="inv-count" style="font-size:13px;color:#888;align-self:center"></span>
     <select id="inv-sort" onchange="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
-      <option value="sku-asc" selected>SKU A→Z</option>
-      <option value="sku-desc">SKU Z→A</option>
-      <option value="nombre-asc">Nombre A→Z</option>
-      <option value="nombre-desc">Nombre Z→A</option>
-      <option value="stock-asc">Stock ↑</option>
-      <option value="stock-desc">Stock ↓</option>
+      <option value="sku-asc" selected>SKU AÔåÆZ</option>
+      <option value="sku-desc">SKU ZÔåÆA</option>
+      <option value="nombre-asc">Nombre AÔåÆZ</option>
+      <option value="nombre-desc">Nombre ZÔåÆA</option>
+      <option value="stock-asc">Stock Ôåæ</option>
+      <option value="stock-desc">Stock Ôåô</option>
     </select>
     <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="editarSKU()">EDITAR SKU</button>
     <button class="btn btn-ambar" style="font-size:12px;padding:5px 12px" onclick="exportarInventarioPDF()">EXPORTAR PDF</button>
-    <button class="btn btn-primary" id="btn-walmart-mass" style="font-size:12px;padding:5px 12px;background:#7c3aed;border-color:#7c3aed;display:none" onclick="subirAWalmartMassivo()">SUBIR A WALMART (<span id="walmart-mass-count">0</span>)</button>
-    <div style="position:relative">
-      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('inv')">COLUMNAS</button>
-      <div id="inv-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
-    </div>
   </div>
   <div class="search-bar" style="margin-top:6px;gap:6px;flex-wrap:wrap">
     <select id="inv-filtro-prov" onchange="renderInventario()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;flex:1;min-width:120px">
@@ -265,35 +256,29 @@ tbody tr:hover{background:#F5F0FF}
       <option value="falabella">Falabella</option>
       <option value="walmart">Walmart</option>
       <option value="ml">Mercado Libre</option>
-      <option value="paris">Paris</option>
       <option value="sinstock">Sin stock</option>
     </select>
   </div>
   <div class="movil">
     <table><thead><tr>
-      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>P. Fala</th><th>P. Wal</th><th>P. ML</th><th>P. Paris</th><th>Stock Woo</th><th>Asig. Falabella</th><th>Asig. Walmart</th><th>Asig. ML</th><th>Asig. Paris</th><th>Stock Total</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
+      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Venta</th><th>P. Fala</th><th>P. Wal</th><th>P. ML</th><th>Stock Woo</th><th>Asig. Falabella</th><th>Asig. Walmart</th><th>Asig. ML</th><th>Stock Total</th><th>Ancho</th><th>Largo</th><th>Alto</th><th>Peso</th><th>P. Vol.</th><th>Caja</th><th>Proveedor</th><th>Obs. Compra</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="inv-body"></tbody></table>
   </div>
 </div>
 
 <div id="contenido-falabella" class="content">
   <h2>Falabella</h2>
-  <div id="fal-stats" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px"></div>
   <div class="search-bar">
     <input id="fal-search" placeholder="Buscar por SKU o nombre..." oninput="renderFalabella()">
     <span id="fal-count" style="font-size:13px;color:#888;align-self:center"></span>
     <select id="fal-sort" onchange="renderFalabella()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
-      <option value="sku-asc" selected>SKU A→Z</option>
-      <option value="sku-desc">SKU Z→A</option>
-      <option value="nombre-asc">Nombre A→Z</option>
-      <option value="nombre-desc">Nombre Z→A</option>
-      <option value="stock-asc">Stock ↑</option>
-      <option value="stock-desc">Stock ↓</option>
+      <option value="sku-asc" selected>SKU AÔåÆZ</option>
+      <option value="sku-desc">SKU ZÔåÆA</option>
+      <option value="nombre-asc">Nombre AÔåÆZ</option>
+      <option value="nombre-desc">Nombre ZÔåÆA</option>
+      <option value="stock-asc">Stock Ôåæ</option>
+      <option value="stock-desc">Stock Ôåô</option>
     </select>
-    <div style="position:relative">
-      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('fal')">COLUMNAS</button>
-      <div id="fal-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
-    </div>
   </div>
   <div class="movil">
     <table><thead><tr>
@@ -304,22 +289,17 @@ tbody tr:hover{background:#F5F0FF}
 
 <div id="contenido-ml" class="content">
   <h2>Mercado Libre</h2>
-  <div id="ml-stats" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px"></div>
   <div class="search-bar">
     <input id="ml-search" placeholder="Buscar por SKU o nombre..." oninput="renderML()">
     <span id="ml-count" style="font-size:13px;color:#888;align-self:center"></span>
     <select id="ml-sort" onchange="renderML()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
-      <option value="sku-asc" selected>SKU A→Z</option>
-      <option value="sku-desc">SKU Z→A</option>
-      <option value="nombre-asc">Nombre A→Z</option>
-      <option value="nombre-desc">Nombre Z→A</option>
-      <option value="stock-asc">Stock ↑</option>
-      <option value="stock-desc">Stock ↓</option>
+      <option value="sku-asc" selected>SKU AÔåÆZ</option>
+      <option value="sku-desc">SKU ZÔåÆA</option>
+      <option value="nombre-asc">Nombre AÔåÆZ</option>
+      <option value="nombre-desc">Nombre ZÔåÆA</option>
+      <option value="stock-asc">Stock Ôåæ</option>
+      <option value="stock-desc">Stock Ôåô</option>
     </select>
-    <div style="position:relative">
-      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('ml')">COLUMNAS</button>
-      <div id="ml-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
-    </div>
   </div>
   <div class="movil">
     <table><thead><tr>
@@ -330,53 +310,22 @@ tbody tr:hover{background:#F5F0FF}
 
 <div id="contenido-walmart" class="content">
   <h2>Walmart</h2>
-  <div id="wal-stats" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px"></div>
   <div class="search-bar">
     <input id="wal-search" placeholder="Buscar por SKU o nombre..." oninput="renderWalmart()">
     <span id="wal-count" style="font-size:13px;color:#888;align-self:center"></span>
     <select id="wal-sort" onchange="renderWalmart()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
-      <option value="sku-asc" selected>SKU A→Z</option>
-      <option value="sku-desc">SKU Z→A</option>
-      <option value="nombre-asc">Nombre A→Z</option>
-      <option value="nombre-desc">Nombre Z→A</option>
-      <option value="stock-asc">Stock ↑</option>
-      <option value="stock-desc">Stock ↓</option>
+      <option value="sku-asc" selected>SKU AÔåÆZ</option>
+      <option value="sku-desc">SKU ZÔåÆA</option>
+      <option value="nombre-asc">Nombre AÔåÆZ</option>
+      <option value="nombre-desc">Nombre ZÔåÆA</option>
+      <option value="stock-asc">Stock Ôåæ</option>
+      <option value="stock-desc">Stock Ôåô</option>
     </select>
-    <div style="position:relative">
-      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('walmart')">COLUMNAS</button>
-      <div id="walmart-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
-    </div>
   </div>
   <div class="movil">
     <table><thead><tr>
       <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Walmart</th><th>Asig. Walmart</th><th>Stock Real</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
     </tr></thead><tbody id="wal-body"></tbody></table>
-  </div>
-</div>
-
-<div id="contenido-paris" class="content">
-  <h2>Paris (Cencosud)</h2>
-  <div id="par-stats" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px"></div>
-  <div class="search-bar">
-    <input id="par-search" placeholder="Buscar por SKU o nombre..." oninput="renderParis()">
-    <span id="par-count" style="font-size:13px;color:#888;align-self:center"></span>
-    <select id="par-sort" onchange="renderParis()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
-      <option value="sku-asc" selected>SKU A→Z</option>
-      <option value="sku-desc">SKU Z→A</option>
-      <option value="nombre-asc">Nombre A→Z</option>
-      <option value="nombre-desc">Nombre Z→A</option>
-      <option value="stock-asc">Stock ↑</option>
-      <option value="stock-desc">Stock ↓</option>
-    </select>
-    <div style="position:relative">
-      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('paris')">COLUMNAS</button>
-      <div id="paris-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
-    </div>
-  </div>
-  <div class="movil">
-    <table><thead><tr>
-      <th>SKU</th><th>C&oacute;d. Barra</th><th>Producto</th><th>P. Costo</th><th>P. Paris</th><th>Asig. Paris</th><th>Stock Real</th><th>Proveedor</th><th>Imagen</th><th>Acci&oacute;n</th>
-    </tr></thead><tbody id="par-body"></tbody></table>
   </div>
 </div>
 
@@ -412,7 +361,6 @@ tbody tr:hover{background:#F5F0FF}
   <div class="resumen">
     <div class="resumen-item"><div class="label">Total Ventas</div><div class="value verde" id="v-total">$0</div></div>
     <div class="resumen-item"><div class="label">Productos Vendidos</div><div class="value" id="v-cant">0</div></div>
-    <div class="resumen-item"><div class="label">Productos Distintos</div><div class="value" id="v-distintos">0</div></div>
     <div class="resumen-item"><div class="label">&Uacute;ltima Venta</div><div class="value" id="v-ultima" style="font-size:16px">--</div></div>
   </div>
   <div class="search-bar">
@@ -426,27 +374,15 @@ tbody tr:hover{background:#F5F0FF}
     </select>
     <input id="ventas-fdesde" type="date" onchange="renderVentas()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Desde">
     <input id="ventas-fhasta" type="date" onchange="renderVentas()" style="font-size:12px;padding:4px;border:1px solid #ccc;border-radius:4px" title="Hasta">
-    <select id="ventas-canal" onchange="renderVentas()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
-      <option value="">Todos los canales</option>
-      <option value="woo">WooCommerce</option>
-      <option value="falabella">Falabella</option>
-      <option value="walmart">Walmart</option>
-      <option value="ml">Mercado Libre</option>
-      <option value="paris">Paris</option>
-    </select>
-    <div style="position:relative">
-      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('ventas')">COLUMNAS</button>
-      <div id="ventas-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
-    </div>
     <select id="ventas-sort" onchange="renderVentas()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
-      <option value="fecha-desc" selected>Más reciente ↑</option>
-      <option value="fecha-asc">Más antiguo ↓</option>
-      <option value="sku-asc">SKU A→Z</option>
-      <option value="sku-desc">SKU Z→A</option>
-      <option value="nombre-asc">Nombre A→Z</option>
-      <option value="nombre-desc">Nombre Z→A</option>
-      <option value="cant-desc">Cantidad ↑</option>
-      <option value="cant-asc">Cantidad ↓</option>
+      <option value="fecha-desc" selected>M├ís reciente Ôåæ</option>
+      <option value="fecha-asc">M├ís antiguo Ôåô</option>
+      <option value="sku-asc">SKU AÔåÆZ</option>
+      <option value="sku-desc">SKU ZÔåÆA</option>
+      <option value="nombre-asc">Nombre AÔåÆZ</option>
+      <option value="nombre-desc">Nombre ZÔåÆA</option>
+      <option value="cant-desc">Cantidad Ôåæ</option>
+      <option value="cant-asc">Cantidad Ôåô</option>
     </select>
   </div>
   <div class="movil">
@@ -465,7 +401,6 @@ tbody tr:hover{background:#F5F0FF}
   </div>
   <div class="search-bar">
     <input id="kardex-search" placeholder="Buscar por SKU, tipo, concepto..." oninput="renderKardex()" style="flex:1;max-width:300px">
-    <span id="kardex-count" style="font-size:13px;color:#888;align-self:center"></span>
     <select id="kardex-mes" onchange="renderKardex()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
       <option value="">Todos los meses</option>
       <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
@@ -481,21 +416,15 @@ tbody tr:hover{background:#F5F0FF}
       <option value="falabella">Falabella</option>
       <option value="walmart">Walmart</option>
       <option value="ml">Mercado Libre</option>
-      <option value="paris">Paris</option>
     </select>
     <select id="kardex-sort" onchange="renderKardex()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
       <option value="">Sin orden</option>
-      <option value="fecha-asc">Fecha ↑</option>
-      <option value="fecha-desc">Fecha ↓</option>
-      <option value="sku-asc">SKU A→Z</option>
-      <option value="sku-desc">SKU Z→A</option>
-      <option value="tipo-asc">Tipo A→Z</option>
-      <option value="tipo-desc">Tipo Z→A</option>
-    </select>
-    <div style="position:relative">
-      <button class="btn btn-outline" style="font-size:12px;padding:5px 12px" onclick="toggleColMenu('kardex')">COLUMNAS</button>
-      <div id="kardex-colmenu" style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #ccc;border-radius:6px;padding:8px 12px;z-index:100;min-width:160px;box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
-    </div>
+      <option value="fecha-asc">Fecha Ôåæ</option>
+      <option value="fecha-desc">Fecha Ôåô</option>
+      <option value="sku-asc">SKU AÔåÆZ</option>
+      <option value="sku-desc">SKU ZÔåÆA</option>
+      <option value="tipo-asc">Tipo AÔåÆZ</option>
+      <option value="tipo-desc">Tipo ZÔåÆA</option>
     </select>
     <span id="kardex-stock" style="font-size:14px;font-weight:600;color:var(--noche);align-self:center"></span>
   </div>
@@ -540,12 +469,12 @@ tbody tr:hover{background:#F5F0FF}
     <input id="pend-search" placeholder="Buscar por SKU, nombre, tipo..." oninput="renderPendientes()" style="flex:1;max-width:300px">
     <select id="pend-sort" onchange="renderPendientes()" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">
       <option value="">Sin orden</option>
-      <option value="fecha-asc">Fecha ↑</option>
-      <option value="fecha-desc">Fecha ↓</option>
-      <option value="sku-asc">SKU A→Z</option>
-      <option value="sku-desc">SKU Z→A</option>
-      <option value="tipo-asc">Tipo A→Z</option>
-      <option value="tipo-desc">Tipo Z→A</option>
+      <option value="fecha-asc">Fecha Ôåæ</option>
+      <option value="fecha-desc">Fecha Ôåô</option>
+      <option value="sku-asc">SKU AÔåÆZ</option>
+      <option value="sku-desc">SKU ZÔåÆA</option>
+      <option value="tipo-asc">Tipo AÔåÆZ</option>
+      <option value="tipo-desc">Tipo ZÔåÆA</option>
     </select>
   </div>
   <div class="movil">
@@ -580,7 +509,7 @@ tbody tr:hover{background:#F5F0FF}
     </div>
     <div class="movil">
       <table><thead><tr>
-        <th>#</th><th>Nombre</th><th>RUT</th><th>Raz&oacute;n Social</th><th>Contacto</th><th>Tel&eacute;fono</th><th>Redes</th><th>Web</th><th>Estado</th><th>N° Factura</th><th>Adjunto</th><th>Compras</th><th>Total Gastado</th><th>Acci&oacute;n</th>
+        <th>#</th><th>Nombre</th><th>RUT</th><th>Raz&oacute;n Social</th><th>Contacto</th><th>Tel&eacute;fono</th><th>Redes</th><th>Web</th><th>Estado</th><th>N┬░ Factura</th><th>Adjunto</th><th>Compras</th><th>Total Gastado</th><th>Acci&oacute;n</th>
       </tr></thead><tbody id="prov-body"></tbody></table>
     </div>
   </div>
@@ -652,17 +581,10 @@ try {
   if (typeof firebase !== 'undefined' && location.protocol === 'https:') {
     const app = firebase.initializeApp(firebaseConfig);
     fbDoc = app.firestore().doc('inventario/datos');
-    console.log('FIREBASE OK - projectId:', firebaseConfig.projectId, 'doc: inventario/datos');
-    document.getElementById('sync-status').textContent = '🟢 FB conectado';
-    document.getElementById('sync-status').style.color = '#00a32a';
-  } else {
-    console.warn('FIREBASE NO DISPONIBLE - protocolo:', location.protocol, 'firebase defined:', typeof firebase !== 'undefined');
-    document.getElementById('sync-status').textContent = '🔴 FB sin conexión';
-    document.getElementById('sync-status').style.color = '#d63638';
   }
-} catch(e) { console.warn('Firebase error:', e); }
+} catch(e) { console.warn('Firebase no disponible'); }
 
-// ===== DATA LAYER (localStorage síncrono + Firebase async al fondo) =====
+// ===== DATA LAYER (localStorage s├¡ncrono + Firebase async al fondo) =====
 const STORE_KEY = 'lucidata';
 
 function datosDefault() {
@@ -677,20 +599,18 @@ function stockKey(canal) {
   if (canal === 'falabella' || canal === 'Falabella') return 'stockFalabella';
   if (canal === 'walmart' || canal === 'Walmart') return 'stockWalmart';
   if (canal === 'ml' || canal === 'Mercado Libre' || canal === 'MercadoLibre') return 'stockML';
-  if (canal === 'paris' || canal === 'Paris' || canal === 'Cencosud') return 'stockParis';
   return 'stockWoo';
 }
-function canales() { return ['woo','falabella','walmart','ml','paris']; }
+function canales() { return ['woo','falabella','walmart','ml']; }
 function canalLabel(c) {
-  return {woo:'WooCommerce',falabella:'Falabella',walmart:'Walmart',ml:'Mercado Libre',paris:'Paris'}[c]||c;
+  return {woo:'WooCommerce',falabella:'Falabella',walmart:'Walmart',ml:'Mercado Libre'}[c]||c;
 }
 function canalSelectHtml(name, sel) {
   return '<select id="'+name+'" style="font-size:13px;padding:6px;border:1px solid #ccc;border-radius:4px">' +
     '<option value="woo"'+(sel==='woo'?' selected':'')+'>WooCommerce</option>' +
     '<option value="falabella"'+(sel==='falabella'?' selected':'')+'>Falabella</option>' +
     '<option value="walmart"'+(sel==='walmart'?' selected':'')+'>Walmart</option>' +
-    '<option value="ml"'+(sel==='ml'?' selected':'')+'>Mercado Libre</option>' +
-    '<option value="paris"'+(sel==='paris'?' selected':'')+'>Paris</option></select>';
+    '<option value="ml"'+(sel==='ml'?' selected':'')+'>Mercado Libre</option></select>';
 }
 
 function migrarProductos(lista) {
@@ -703,11 +623,9 @@ function migrarProductos(lista) {
     if (p.stockFalabella === undefined) p.stockFalabella = 0;
     if (p.stockWalmart === undefined) p.stockWalmart = 0;
     if (p.stockML === undefined) p.stockML = 0;
-    if (p.stockParis === undefined) p.stockParis = 0;
     if (p.precioFalabella === undefined) p.precioFalabella = 0;
     if (p.precioWalmart === undefined) p.precioWalmart = 0;
     if (p.precioML === undefined) p.precioML = 0;
-    if (p.precioParis === undefined) p.precioParis = 0;
   });
 }
 
@@ -740,17 +658,17 @@ function guardarDatos() {
   localStorage.setItem(STORE_KEY, json);
   console.log('GUARDADO OK. compras='+(data.compras||[]).length+', proveedores='+(data.proveedores||[]).length);
   if (fbDoc) {
-    document.getElementById('sync-status').textContent = '⟳';
+    document.getElementById('sync-status').textContent = 'Ôƒ│';
     fbDoc.set(data).then(function() {
-      document.getElementById('sync-status').textContent = '✓';
+      document.getElementById('sync-status').textContent = 'Ô£ô';
     }).catch(function(e) {
       console.warn('Firebase write failed, retrying...', e);
-      document.getElementById('sync-status').textContent = '✗';
+      document.getElementById('sync-status').textContent = 'Ô£ù';
       setTimeout(function() {
         fbDoc.set(data).then(function() {
-          document.getElementById('sync-status').textContent = '✓';
+          document.getElementById('sync-status').textContent = 'Ô£ô';
         }).catch(function() {
-          document.getElementById('sync-status').textContent = '✗';
+          document.getElementById('sync-status').textContent = 'Ô£ù';
         });
       }, 3000);
     });
@@ -765,9 +683,6 @@ let data = (function() {
     fbDoc.get().then(function(snap) {
       if (snap.exists) {
         var fbData = snap.data();
-        ['ventas','kardex','cotizaciones','pendientes'].forEach(function(k) {
-          if (fbData[k] && !Array.isArray(fbData[k])) { var arr = []; Object.keys(fbData[k]).forEach(function(ik){ arr.push(fbData[k][ik]); }); fbData[k] = arr; }
-        });
         var localVer = d._syncVersion || 0;
         var fbVer = fbData._syncVersion || 0;
         if (fbVer > localVer) {
@@ -781,17 +696,6 @@ let data = (function() {
           renderPendientes();
           renderProveedores();
           toast('Datos sincronizados desde Firebase');
-        } else {
-          var fbVentas = fbData.ventas || [];
-          var localVentas = d.ventas || [];
-          var localRefs = new Set(localVentas.map(function(v){return v.referencia||v.id||''}));
-          var nuevas = fbVentas.filter(function(v){return !localRefs.has(v.referencia||v.id||'')});
-          if (nuevas.length > 0) {
-            d.ventas = localVentas.concat(nuevas);
-            localStorage.setItem(STORE_KEY, JSON.stringify(d));
-            renderVentas();
-            toast(nuevas.length + ' venta(s) nuevas desde Firebase');
-          }
         }
       }
     }).catch(function(){});
@@ -799,7 +703,7 @@ let data = (function() {
   // Limpiar compras hu&eacute;rfanas (proveedor eliminado)
   var idsValidos = new Set((d.proveedores||[]).map(function(x){return x.id;}));
   d.compras = (d.compras||[]).filter(function(c){ return idsValidos.has(c.proveedorId); });
-  // No llamar guardarDatos() aquí: sobrescribiría Firestore con datos locales
+  // No llamar guardarDatos() aqu├¡: sobrescribir├¡a Firestore con datos locales
   // antes de que termine la lectura de Firebase al cargar.
   return d;
 })();
@@ -810,17 +714,7 @@ function sincronizarFirebase() {
   fbDoc.get().then(function(snap) {
     if (snap.exists) {
       var fbData = snap.data();
-      ['ventas','kardex','cotizaciones','pendientes'].forEach(function(k) {
-        if (fbData[k] && !Array.isArray(fbData[k])) { var arr = []; Object.keys(fbData[k]).forEach(function(ik){ arr.push(fbData[k][ik]); }); fbData[k] = arr; }
-      });
-      console.log('SYNC FB - ventas type:', typeof fbData.ventas, 'isArray:', Array.isArray(fbData.ventas), 'count:', (fbData.ventas||[]).length, 'productos:', (fbData.productos||[]).length);
       migrarProductos(fbData.productos);
-      var localVentas = data.ventas || [];
-      var fbVentas = fbData.ventas || [];
-      var localRefs = new Set(localVentas.map(function(v){return v.referencia||v.id||''}));
-      var nuevas = fbVentas.filter(function(v){return !localRefs.has(v.referencia||v.id||'')});
-      fbData.ventas = localVentas.concat(nuevas);
-      console.log('SYNC FB - local:', localVentas.length, 'fb:', fbVentas.length, 'nuevas:', nuevas.length, 'total:', fbData.ventas.length);
       localStorage.setItem(STORE_KEY, JSON.stringify(fbData));
       Object.assign(data, fbData);
       renderCotizador();
@@ -828,8 +722,7 @@ function sincronizarFirebase() {
       renderInventario();
       renderKardex();
       renderPendientes();
-      renderProveedores();
-      toast('Sincronizado: ' + (fbData.productos ? fbData.productos.length : 0) + ' productos, ' + nuevas.length + ' ventas nuevas');
+      toast('Sincronizado desde Firebase: ' + (fbData.productos ? fbData.productos.length : 0) + ' productos');
     } else {
       toast('No hay datos en Firebase');
     }
@@ -875,7 +768,7 @@ function crearBackup(automatico) {
     _backupEnProgreso = false;
     if (!automatico) toast('Backup creado: ' + id);
   }).catch(function(e) {
-    // Fallback: backup sin imágenes si excede tamaño
+    // Fallback: backup sin im├ígenes si excede tama├▒o
     if (e.message && e.message.indexOf('maximum size') >= 0) {
       var sinImgs = JSON.parse(JSON.stringify(backupData));
       if (sinImgs.productos) sinImgs.productos.forEach(function(p) { delete p.imagen; });
@@ -1046,7 +939,6 @@ document.querySelectorAll('.tab').forEach(t => {
     if (id === 'falabella') renderFalabella();
     if (id === 'ml') renderML();
     if (id === 'walmart') renderWalmart();
-    if (id === 'paris') renderParis();
     if (id === 'cotizador') renderCotizador();
     if (id === 'ventas') renderVentas();
     if (id === 'kardex') renderKardex();
@@ -1133,12 +1025,10 @@ function getFormData() {
     precioFalabella: parseFloat(document.getElementById('f-precio-falabella').value) || 0,
     precioWalmart: parseFloat(document.getElementById('f-precio-walmart').value) || 0,
     precioML: parseFloat(document.getElementById('f-precio-ml').value) || 0,
-    precioParis: parseFloat(document.getElementById('f-precio-paris').value) || 0,
     stockWoo: parseInt(document.getElementById('f-stock-woo').value) || 0,
     stockFalabella: parseInt(document.getElementById('f-stock-falabella').value) || 0,
     stockWalmart: parseInt(document.getElementById('f-stock-walmart').value) || 0,
     stockML: parseInt(document.getElementById('f-stock-ml').value) || 0,
-    stockParis: parseInt(document.getElementById('f-stock-paris').value) || 0,
     ancho: parseFloat(document.getElementById('f-ancho').value) || 0,
     largo: parseFloat(document.getElementById('f-largo').value) || 0,
     alto: parseFloat(document.getElementById('f-alto').value) || 0,
@@ -1159,12 +1049,10 @@ function setFormData(p) {
   document.getElementById('f-precio-falabella').value = p.precioFalabella || '';
   document.getElementById('f-precio-walmart').value = p.precioWalmart || '';
   document.getElementById('f-precio-ml').value = p.precioML || '';
-  document.getElementById('f-precio-paris').value = p.precioParis || '';
   document.getElementById('f-stock-woo').value = (p.stockWoo||0);
   document.getElementById('f-stock-falabella').value = (p.stockFalabella||0);
   document.getElementById('f-stock-walmart').value = (p.stockWalmart||0);
   document.getElementById('f-stock-ml').value = (p.stockML||0);
-  document.getElementById('f-stock-paris').value = (p.stockParis||0);
   document.getElementById('f-ancho').value = p.ancho || '';
   document.getElementById('f-largo').value = p.largo || '';
   document.getElementById('f-alto').value = p.alto || '';
@@ -1256,7 +1144,7 @@ function editarSKU() {
         guardarDatos();
         renderInventario();
         document.getElementById('f-sku').value = nuevo;
-        toast('SKU actualizado: ' + oldSku + ' → ' + nuevo);
+        toast('SKU actualizado: ' + oldSku + ' ÔåÆ ' + nuevo);
       }
     );
   });
@@ -1306,7 +1194,7 @@ function anadirNuevoStock() {
           if (!data.pendientes) data.pendientes = [];
           data.pendientes.unshift({ id: Date.now()+Math.random(), fecha: hoy(), tipo: 'producto', sku: prod.sku, nombre: prod.nombre, precio: prod.precioVenta, stock: prod[key], detalle: 'Entrada +'+cant+' ('+canalLabel(canal)+')', estado: 'pendiente' });
           guardarDatos();
-          toast('Stock a&ntilde;adido (' + canalLabel(canal) + '): ' + stockAnt + ' → ' + prod[key]);
+          toast('Stock a&ntilde;adido (' + canalLabel(canal) + '): ' + stockAnt + ' ÔåÆ ' + prod[key]);
         }
       );
       return false;
@@ -1340,7 +1228,6 @@ function renderInventario() {
   else if (canalFiltro === 'falabella') list = list.filter(function(p){return (p.stockFalabella||0) > 0});
   else if (canalFiltro === 'walmart') list = list.filter(function(p){return (p.stockWalmart||0) > 0});
   else if (canalFiltro === 'ml') list = list.filter(function(p){return (p.stockML||0) > 0});
-  else if (canalFiltro === 'paris') list = list.filter(function(p){return (p.stockParis||0) > 0});
   else if (canalFiltro === 'sinstock') list = list.filter(function(p){return totalStock(p) === 0});
   var sort = document.getElementById('inv-sort').value;
   if (sort) {
@@ -1356,9 +1243,6 @@ function renderInventario() {
     });
   }
   document.getElementById('inv-count').textContent = list.length + ' producto(s)';
-  var hdr = '';
-  invCols.forEach(function(k){if(isInvColVisible(k))hdr+='<th>'+invColLabels[k]+'</th>'});
-  document.querySelector('#contenido-inventario thead tr').innerHTML = hdr;
   document.getElementById('inv-body').innerHTML = list.map(p => {
     var skuEnc = esc(p.sku);
     const img = p.imagen ? `<img class="img-preview" src="${p.imagen}" alt="">` : '--';
@@ -1372,255 +1256,20 @@ function renderInventario() {
     var pesoCls = (pesoVal && pvolVal && pesoVal > pvolVal) ? ' style="background:#d4edda;font-weight:700"' : '';
     var pvolCls = (pvolVal && pesoVal && pvolVal > pesoVal) ? ' style="background:#d4edda;font-weight:700"' : '';
     var caja = p.caja || '--';
-    var stockW = p.stockWoo||0, stockF = p.stockFalabella||0, stockM = p.stockWalmart||0, stockL = p.stockML||0, stockP = p.stockParis||0, stockT = totalStock(p);
-    var pf = p.precioFalabella||0, pw = p.precioWalmart||0, pm = p.precioML||0, pp = p.precioParis||0;
-    var cells = {sku:'<td>'+skuEnc+'</td>',codBarra:'<td>'+esc(p.codBarra)+'</td>',nombre:'<td>'+esc(p.nombre)+'</td>',precioCosto:'<td>$'+fmt(p.precioCosto)+'</td>',precioVenta:'<td>$'+fmt(p.precioVenta)+'</td>',precioFalabella:'<td>'+(pf?'$'+fmt(pf):'--')+'</td>',precioWalmart:'<td>'+(pw?'$'+fmt(pw):'--')+'</td>',precioML:'<td>'+(pm?'$'+fmt(pm):'--')+'</td>',precioParis:'<td>'+(pp?'$'+fmt(pp):'--')+'</td>',stockWoo:'<td>'+stockW+'</td>',stockFalabella:'<td'+(stockF>stockW?' style="color:#dc3545;font-weight:700"':'')+'>'+stockF+'</td>',stockWalmart:'<td'+(stockM>stockW?' style="color:#dc3545;font-weight:700"':'')+'>'+stockM+'</td>',stockML:'<td'+(stockL>stockW?' style="color:#dc3545;font-weight:700"':'')+'>'+stockL+'</td>',stockParis:'<td'+(stockP>stockW?' style="color:#dc3545;font-weight:700"':'')+'>'+stockP+'</td>',stockTotal:'<td style="font-weight:700">'+stockT+'</td>',ancho:'<td>'+ancho+'</td>',largo:'<td>'+largo+'</td>',alto:'<td>'+alto+'</td>',peso:'<td'+pesoCls+'>'+peso+'</td>',pvol:'<td'+pvolCls+'>'+pvol+'</td>',caja:'<td>'+esc(caja)+'</td>',proveedor:'<td>'+esc(p.proveedor)+'</td>',obsCompra:'<td>'+esc(p.observacionCompra)+'</td>',imagen:'<td>'+img+'</td>',accion:'<td><input type="checkbox" class="inv-check" data-sku="'+skuEnc+'" style="margin-right:4px" onchange="updateWalmartMassCount()"><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido(\''+skuEnc+'\')">Editar</button><button class="btn btn-primary" style="font-size:11px;padding:2px 6px;margin-right:3px;background:#7c3aed;border-color:#7c3aed" onclick="subirAWalmart(\''+skuEnc+'\')">Subir a Walmart</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto(\''+skuEnc+'\')">Eliminar</button></td>'};
-    var row = '';
-    invCols.forEach(function(k){if(isInvColVisible(k))row+=cells[k]});
-    return '<tr>'+row+'</tr>';
+    var stockW = p.stockWoo||0, stockF = p.stockFalabella||0, stockM = p.stockWalmart||0, stockL = p.stockML||0, stockT = totalStock(p);
+    var pf = p.precioFalabella||0, pw = p.precioWalmart||0, pm = p.precioML||0;
+    return `<tr>
+      <td>${skuEnc}</td><td>${esc(p.codBarra)}</td><td>${esc(p.nombre)}</td>
+      <td>$${fmt(p.precioCosto)}</td><td>$${fmt(p.precioVenta)}</td>
+      <td>${pf ? '$'+fmt(pf) : '--'}</td><td>${pw ? '$'+fmt(pw) : '--'}</td><td>${pm ? '$'+fmt(pm) : '--'}</td>
+      <td>${stockW}</td><td>${stockF}</td><td>${stockM}</td><td>${stockL}</td><td style="font-weight:700">${stockT}</td>
+      <td>${ancho}</td><td>${largo}</td><td>${alto}</td><td${pesoCls}>${peso}</td><td${pvolCls}>${pvol}</td><td>${esc(caja)}</td><td>${esc(p.proveedor)}</td><td>${esc(p.observacionCompra)}</td><td>${img}</td>
+      <td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido('${skuEnc}')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto('${skuEnc}')">Eliminar</button></td>
+    </tr>`;
   }).join('');
 }
 
-function subirAWalmart(sku) {
-  var p = data.productos.find(function(x){return x.sku===sku});
-  if (!p) return;
-  abrirModalWalmart([p]);
-}
-
-function subirAWalmartMassivo() {
-  var checks = document.querySelectorAll('.inv-check:checked');
-  if (!checks.length) { showToast('Selecciona al menos 1 producto'); return; }
-  var skus = [];
-  checks.forEach(function(c){skus.push(c.dataset.sku)});
-  var prods = data.productos.filter(function(p){return skus.indexOf(p.sku)!==-1});
-  if (!prods.length) return;
-  abrirModalWalmart(prods);
-}
-
-function updateWalmartMassCount() {
-  var c = document.querySelectorAll('.inv-check:checked').length;
-  var btn = document.getElementById('btn-walmart-mass');
-  if (c > 0) {
-    btn.style.display = '';
-    document.getElementById('walmart-mass-count').textContent = c;
-  } else {
-    btn.style.display = 'none';
-  }
-}
-
-function abrirModalWalmart(productos) {
-  var p = productos[0];
-  var esMultiple = productos.length > 1;
-  var titulo = esMultiple ? 'Subir ' + productos.length + ' productos a Walmart' : 'Subir producto ' + p.sku + ' a Walmart';
-  var html = '';
-  if (esMultiple) {
-    html += '<p style="font-size:13px;color:#666;margin-bottom:8px">Productos: ' + productos.map(function(x){return x.sku}).join(', ') + '</p>';
-  }
-  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
-  html += '<div><label style="font-size:12px;font-weight:600">SKU</label><input id="wm-sku" value="'+esc(p.sku)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px" disabled></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Nombre</label><input id="wm-nombre" value="'+esc(p.nombre)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px" '+(esMultiple?'disabled':'')+'></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Precio</label><input id="wm-precio" type="number" value="'+(p.precioVenta||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Color</label><input id="wm-color" value="Multicolor" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Edad mínima</label><input id="wm-edadMin" type="number" value="3" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Edad máxima</label><input id="wm-edadMax" type="number" value="99" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Alto envío (cm)</label><input id="wm-alto" type="number" step="0.1" value="'+(p.alto||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Ancho envío (cm)</label><input id="wm-ancho" type="number" step="0.1" value="'+(p.ancho||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Profundidad envío (cm)</label><input id="wm-largo" type="number" step="0.1" value="'+(p.largo||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div><label style="font-size:12px;font-weight:600">Peso envío (kg)</label><input id="wm-peso" type="number" step="0.001" value="'+(p.peso||0)+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Material</label><input id="wm-material" value="" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Keywords</label><input id="wm-keywords" value="" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px" placeholder="juguete;juego;niño"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Advertencias</label><input id="wm-warning" value="Utilizar bajo supervisión de un adulto." style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Imagen principal (URL)</label><input id="wm-img" value="'+esc(p.imagen||'')+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Imagen secundaria (URL)</label><input id="wm-img2" value="" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Descripción larga</label><textarea id="wm-desc" rows="4" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px">'+esc(p.descripcion||'')+'</textarea></div>';
-  html += '<div style="grid-column:1/3"><label style="font-size:12px;font-weight:600">Descripción corta</label><input id="wm-descCorta" value="'+esc(p.descCorta||p.nombre||'')+'" style="width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px"></div>';
-  html += '</div>';
-  document.getElementById('modal-title').textContent = titulo;
-  document.getElementById('modal-body').innerHTML = html;
-  var btn = document.getElementById('modal-confirm');
-  btn.textContent = 'Generar Excel';
-  btn.onclick = function() {
-    var productosExcel = productos.map(function(prod){
-      return {
-        sku: prod.sku,
-        nombre: document.getElementById('wm-nombre').value || prod.nombre,
-        precio: document.getElementById('wm-precio').value || prod.precioVenta,
-        color: document.getElementById('wm-color').value,
-        edadMin: document.getElementById('wm-edadMin').value,
-        edadMax: document.getElementById('wm-edadMax').value,
-        alto: document.getElementById('wm-alto').value || prod.alto,
-        ancho: document.getElementById('wm-ancho').value || prod.ancho,
-        largo: document.getElementById('wm-largo').value || prod.largo,
-        peso: document.getElementById('wm-peso').value || prod.peso,
-        material: document.getElementById('wm-material').value,
-        keywords: document.getElementById('wm-keywords').value,
-        warning: document.getElementById('wm-warning').value,
-        imagen: document.getElementById('wm-img').value || prod.imagen,
-        imagen2: document.getElementById('wm-img2').value,
-        descripcion: document.getElementById('wm-desc').value || prod.descripcion,
-        descCorta: document.getElementById('wm-descCorta').value || prod.nombre
-      };
-    });
-    generarExcelWalmart(productosExcel);
-    cerrarModal();
-    showToast('Excel generado — revisa tus descargas');
-  };
-  document.getElementById('modal').classList.add('open');
-}
-
-function generarExcelWalmart(productos) {
-  var headers = [
-    ['Version=4.46,marketplace,toys_other,es_cl,external,Juguetes'],
-    ['Required to sell on lider.cl / Requerido para vender en lider.cl','','','','Required for the item to be visible on lider.cl / Requerido para que el item sea visible en lider.cl','','','','','','','','','','','','','','','','Recommended to improve search and browse on lider.cl / Recomendado para mejorar la búsqueda y navegación en lider.cl','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','Optional'],
-    ['','','','Product Identifiers (productIdentifiers)','','','','Shipping Dimensions Height (cm) (shippingDimensionsHeight)','','Shipping Dimensions Width (cm) (ShippingDimensionsWidth)','','Shipping Dimensions Depth (cm) (ShippingDimensionsDepth)','','','Price Per Unit (pricePerUnit)','','','Minimum Recommended Age (minimumRecommendedAge)','','Maximum Recommended Age (maximumRecommendedAge)','','Assembled Product Depth (assembledProductLength)','','Assembled Product Width (assembledProductWidth)','','Assembled Product Height (assembledProductHeight)','','Assembled Product Weight (assembledProductWeight)'],
-    ['SKU','Product ID Type','Product ID','Product Name','Brand','Selling Price','Measure','Unit','Measure','Unit','Measure','Unit','Shipping Weight (kg)','PPU Quantity of Units','PPU Unit of Measure','Country of Origin (+)','Manufacturer Name','Warranty Text','Main Image URL','Additional Image URL (+)','Additional Image URL 1 (+)','Key Features (+)','Site Description','Condition','Seller Warranty','Seller Warranty Condition','Seller Warranty Period','Color (+)','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Is Assembly Required','Material (+)','Batteries Required Indicator','Model Number','Keywords','Warning Text'],
-    ['sku','productIdType','productId','productName','brand','price','measure','unit','measure','unit','measure','unit','ShippingWeight','pricePerUnitQuantity','pricePerUnitUom','countryOfOriginAssembly','manufacturer','warrantyText','mainImageUrl','productSecondaryImageURL','productSecondaryImageURL','keyFeatures','shortDescription','condition','sellerWarranty','sellerWarrantyCondition','sellerWarrantyPeriod','color','measure','unit','measure','unit','measure','unit','measure','unit','measure','unit','measure','unit','measure','unit','isAssemblyRequired','material','batteriesRequired','modelNumber','keywords','warningText'],
-    ['String','String','String','String','String','Decimal','Decimal','String','Decimal','String','Decimal','String','Decimal','Decimal','String','String','String','URL','URL','URL','String','String','String','String','String','Integer','String','Decimal','String','Decimal','String','Decimal','String','Decimal','String','Decimal','String','Decimal','String','Boolean','String','Boolean','String','String','String']
-  ];
-  var rows = [];
-  productos.forEach(function(p) {
-    rows.push([
-      p.sku,
-      'GTIN',
-      'CUSTOM',
-      p.nombre,
-      'GENERICO',
-      p.precio,
-      p.alto,
-      'cm',
-      p.ancho,
-      'cm',
-      p.largo,
-      'cm',
-      p.peso,
-      1,
-      'un',
-      'CN - China',
-      'GENERICO',
-      'Tiene garantía de 6 meses por defectos de fabricación. No cubre mal uso, golpes, ni desgaste normal. Se requiere boleta.',
-      p.imagen,
-      p.imagen2,
-      '',
-      p.descripcion,
-      p.descCorta,
-      'Nuevo',
-      'Este producto tiene garantía',
-      'Por defectos de fabricación. No cubre mal uso, golpes, ni desgaste normal. Se requiere boleta.',
-      6,
-      p.color,
-      p.edadMin,
-      'años',
-      p.edadMax,
-      'años',
-      p.largo,
-      'cm',
-      p.ancho,
-      'cm',
-      p.alto,
-      'cm',
-      p.peso,
-      'kg',
-      'No',
-      p.material,
-      'No',
-      'no aplica',
-      p.keywords,
-      p.warning
-    ]);
-  });
-  var allRows = headers.concat(rows);
-  var csv = allRows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join('\t')}).join('\n');
-  var blob = new Blob(['\ufeff'+csv], {type:'text/tab-separated-values;charset=utf-8'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = 'walmart_juguetes_' + new Date().toISOString().slice(0,10) + '.xlsx';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-var invCols = ['sku','codBarra','nombre','precioCosto','precioVenta','precioFalabella','precioWalmart','precioML','precioParis','stockWoo','stockFalabella','stockWalmart','stockML','stockParis','stockTotal','ancho','largo','alto','peso','pvol','caja','proveedor','obsCompra','imagen','accion'];
-var invColLabels = {sku:'SKU',codBarra:'Cód. Barra',nombre:'Producto',precioCosto:'P. Costo',precioVenta:'P. Venta',precioFalabella:'P. Fala',precioWalmart:'P. Wal',precioML:'P. ML',precioParis:'P. Paris',stockWoo:'Stock Woo',stockFalabella:'Asig. Falabella',stockWalmart:'Asig. Walmart',stockML:'Asig. ML',stockParis:'Asig. Paris',stockTotal:'Stock Total',ancho:'Ancho',largo:'Largo',alto:'Alto',peso:'Peso',pvol:'P. Vol.',caja:'Caja',proveedor:'Proveedor',obsCompra:'Obs. Compra',imagen:'Imagen',accion:'Acción'};
-function getInvColState(){try{return JSON.parse(localStorage.getItem('inv_cols'))||{}}catch(e){return{}}}
-function setInvColState(s){localStorage.setItem('inv_cols',JSON.stringify(s))}
-function isInvColVisible(k){var s=getInvColState();return s[k]!==undefined?s[k]:true}
-var canalCols = ['sku','codBarra','nombre','precioCosto','precioCanal','stockCanal','stockWoo','proveedor','imagen','accion'];
-var canalColLabels = {sku:'SKU',codBarra:'Cód. Barra',nombre:'Producto',precioCosto:'P. Costo',precioCanal:'P. Canal',stockCanal:'Asig. Canal',stockWoo:'Stock Real',proveedor:'Proveedor',imagen:'Imagen',accion:'Acción'};
-function getCanalColState(canal){try{return JSON.parse(localStorage.getItem(canal+'_cols'))||{}}catch(e){return{}}}
-function setCanalColState(canal,s){localStorage.setItem(canal+'_cols',JSON.stringify(s))}
-function isCanalColVisible(canal,k){var s=getCanalColState(canal);return s[k]!==undefined?s[k]:true}
-var ventasCols = ['fecha','canal','sku','nombre','cantidad','precioUnitario','total','cliente','pago','estado','referencia','observacion','accion'];
-var ventasColLabels = {fecha:'Fecha',canal:'Canal',sku:'SKU',nombre:'Producto',cantidad:'Cant.',precioUnitario:'P. Unitario',total:'Total',cliente:'Cliente',pago:'Pago',estado:'Estado',referencia:'Referencia',observacion:'Observación',accion:'Acción'};
-function getVentasColState(){try{return JSON.parse(localStorage.getItem('ventas_cols'))||{}}catch(e){return{}}}
-function setVentasColState(s){localStorage.setItem('ventas_cols',JSON.stringify(s))}
-function isVentasColVisible(k){var s=getVentasColState();return s[k]!==undefined?s[k]:true}
-
-var kardexCols = ['fecha','canal','sku','nombre','tipo','concepto','cantidad','stockAnt','stockRes','referencia','proveedor','obsCompra','obsVenta','accion'];
-var kardexColLabels = {fecha:'Fecha',canal:'Canal',sku:'SKU',nombre:'Producto',tipo:'Tipo',concepto:'Concepto',cantidad:'Cant.',stockAnt:'Stock Ant.',stockRes:'Stock Res.',referencia:'Referencia',proveedor:'Proveedor',obsCompra:'Obs. Compra',obsVenta:'Obs. Venta',accion:'Acción'};
-function getKardexColState(){try{return JSON.parse(localStorage.getItem('kardex_cols'))||{}}catch(e){return{}}}
-function setKardexColState(s){localStorage.setItem('kardex_cols',JSON.stringify(s))}
-function isKardexColVisible(k){var s=getKardexColState();return s[k]!==undefined?s[k]:true}
-
-function toggleColMenu(tab){
-  var el=document.getElementById(tab+'-colmenu');
-  if(el.style.display==='block'){el.style.display='none';return}
-  var cols,labels;
-  if(tab==='inv'){cols=invCols;labels=invColLabels}
-  else if(tab==='ventas'){cols=ventasCols;labels=ventasColLabels}
-  else if(tab==='kardex'){cols=kardexCols;labels=kardexColLabels}
-  else{cols=canalCols;labels=canalColLabels}
-  var isVisible = function(k){
-    if(tab==='inv')return isInvColVisible(k);
-    if(tab==='ventas')return isVentasColVisible(k);
-    if(tab==='kardex')return isKardexColVisible(k);
-    return isCanalColVisible(tab,k);
-  };
-  el.innerHTML=cols.map(function(k){return '<label style="display:block;font-size:12px;padding:2px 0;cursor:pointer"><input type="checkbox" '+(isVisible(k)?'checked':'')+' onchange="toggleColVisibility(\''+tab+'\',\''+k+'\')">'+labels[k]+'</label>'}).join('');
-  el.style.display='block';
-  setTimeout(function(){document.addEventListener('click',function h(e){if(!el.contains(e.target)&&e.target.textContent!=='COLUMNAS'){el.style.display='none';document.removeEventListener('click',h)}},false)},0);
-}
-function toggleColVisibility(tab,k){
-  if(tab==='inv'){toggleInvCol(k)}
-  else if(tab==='ventas'){var sv=getVentasColState();sv[k]=!isVentasColVisible(k);setVentasColState(sv);renderVentas()}
-  else if(tab==='kardex'){var sk=getKardexColState();sk[k]=!isKardexColVisible(k);setKardexColState(sk);renderKardex()}
-  else{var s=getCanalColState(tab);s[k]=!isCanalColVisible(tab,k);setCanalColState(tab,s);renderCanalByTab(tab)}
-}
-function renderCanalByTab(tab){
-  if(tab==='falabella')renderFalabella();
-  else if(tab==='walmart')renderWalmart();
-  else if(tab==='ml')renderML();
-  else if(tab==='paris')renderParis();
-}
-function toggleInvCol(k){var s=getInvColState();s[k]=!isInvColVisible(k);setInvColState(s);renderInventario()}
-
 function renderCanal(canal, stockKey, priceKey, searchId, countId, sortId, bodyId) {
-  var statsId = {falabella:'fal-stats',ml:'ml-stats',walmart:'wal-stats',paris:'par-stats'}[canal];
-  var statsEl = document.getElementById(statsId);
-  if (statsEl) {
-    var totalStockCanal = data.productos.reduce(function(s,p){return s+(p[stockKey]||0)},0);
-    var prodConStock = data.productos.filter(function(p){return (p[stockKey]||0)>0}).length;
-    var now = new Date();
-    var anioActual = now.getFullYear();
-    var mesActual = now.getMonth()+1;
-    var filterKey = 'canalYear_'+canal;
-    if (!window[filterKey]) window[filterKey] = anioActual;
-    var anioSel = window[filterKey];
-    var ventasCanal = (data.ventas||[]).filter(function(v){return (v.canal||'woo')===canal});
-    var ventasAnio = ventasCanal.filter(function(v){return v.fecha && v.fecha.substring(0,4)==String(anioSel)});
-    var totalAnio = ventasAnio.reduce(function(s,v){return s+(v.total||((v.cantidad||0)*(v.precioUnitario||0))||0)},0);
-    var mesLabel = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    var totalMes = ventasAnio.filter(function(v){return v.fecha && parseInt(v.fecha.substring(5,7),10)===mesActual}).reduce(function(s,v){return s+(v.total||((v.cantidad||0)*(v.precioUnitario||0))||0)},0);
-    var opciones = '';
-    for (var y=anioActual;y>=anioActual-3;y--) opciones+='<option value="'+y+'"'+(y==anioSel?' selected':'')+'>'+y+'</option>';
-    statsEl.innerHTML =
-      '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:8px 14px;font-size:13px"><span style="color:#888">Prod. con stock:</span> <strong>'+prodConStock+'</strong></div>'+
-      '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:8px 14px;font-size:13px"><span style="color:#888">Stock total:</span> <strong>'+totalStockCanal+'</strong> uds.</div>'+
-      '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:8px 14px;font-size:13px"><span style="color:#888">Ventas '+anioSel+':</span> <strong style="color:#4F46E5">$'+fmt(totalAnio)+'</strong></div>'+
-      '<div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:8px 14px;font-size:13px"><span style="color:#888">Ventas '+mesLabel[mesActual]+' '+anioSel+':</span> <strong style="color:#059669">$'+fmt(totalMes)+'</strong></div>'+
-      '<select onchange="window[\''+filterKey+'\']=parseInt(this.value);renderCanal(\''+canal+'\',\''+stockKey+'\',\''+priceKey+'\',\''+searchId+'\',\''+countId+'\',\''+sortId+'\',\''+bodyId+'\')" style="font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:4px">'+opciones+'</select>';
-  }
   var q = (document.getElementById(searchId).value || '').toLowerCase();
   var list = data.productos.filter(function(p){return (p[stockKey]||0) > 0});
   if (q) list = list.filter(function(p){return p.sku.toLowerCase().includes(q) || p.nombre.toLowerCase().includes(q)});
@@ -1637,24 +1286,23 @@ function renderCanal(canal, stockKey, priceKey, searchId, countId, sortId, bodyI
     });
   }
   document.getElementById(countId).textContent = list.length + ' producto(s)';
-  var hdr = '';
-  canalCols.forEach(function(k){if(isCanalColVisible(canal,k))hdr+='<th>'+canalColLabels[k]+'</th>'});
-  var tbl = document.getElementById(bodyId).closest('table');
-  if(tbl) tbl.querySelector('thead tr').innerHTML = hdr;
   document.getElementById(bodyId).innerHTML = list.map(function(p) {
     var skuEnc = esc(p.sku);
     var img = p.imagen ? '<img class="img-preview" src="'+p.imagen+'" alt="">' : '--';
-    var cells = {sku:'<td>'+skuEnc+'</td>',codBarra:'<td>'+esc(p.codBarra)+'</td>',nombre:'<td>'+esc(p.nombre)+'</td>',precioCosto:'<td>$'+fmt(p.precioCosto)+'</td>',precioCanal:'<td>$'+fmt(p[priceKey]||p.precioVenta)+'</td>',stockCanal:'<td style="font-weight:700;'+((p[stockKey]||0)>(p.stockWoo||0)?'color:#dc3545;':'')+'">'+(p[stockKey]||0)+'</td>',stockWoo:'<td>'+(p.stockWoo||0)+'</td>',proveedor:'<td>'+esc(p.proveedor)+'</td>',imagen:'<td>'+img+'</td>',accion:'<td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido(\''+skuEnc+'\')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto(\''+skuEnc+'\')">Eliminar</button></td>'};
-    var row = '';
-    canalCols.forEach(function(k){if(isCanalColVisible(canal,k))row+=cells[k]});
-    return '<tr>'+row+'</tr>';
+    return '<tr>' +
+      '<td>'+skuEnc+'</td><td>'+esc(p.codBarra)+'</td><td>'+esc(p.nombre)+'</td>' +
+      '<td>$'+fmt(p.precioCosto)+'</td><td>$'+fmt(p[priceKey] || p.precioVenta)+'</td>' +
+      '<td style="font-weight:700">'+(p[stockKey]||0)+'</td><td>'+(p.stockWoo||0)+'</td>' +
+      '<td>'+esc(p.proveedor)+'</td><td>'+img+'</td>' +
+      '<td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarProductoRapido(\''+skuEnc+'\')">Editar</button>' +
+      '<button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarProductoDirecto(\''+skuEnc+'\')">Eliminar</button></td>' +
+    '</tr>';
   }).join('');
 }
 
 function renderFalabella() { renderCanal('falabella', 'stockFalabella', 'precioFalabella', 'fal-search', 'fal-count', 'fal-sort', 'fal-body'); }
 function renderML() { renderCanal('ml', 'stockML', 'precioML', 'ml-search', 'ml-count', 'ml-sort', 'ml-body'); }
 function renderWalmart() { renderCanal('walmart', 'stockWalmart', 'precioWalmart', 'wal-search', 'wal-count', 'wal-sort', 'wal-body'); }
-function renderParis() { renderCanal('paris', 'stockParis', 'precioParis', 'par-search', 'par-count', 'par-sort', 'par-body'); }
 
 function exportarInventarioPDF() {
   var q = (document.getElementById('inv-search').value || '').toLowerCase();
@@ -1693,10 +1341,10 @@ function exportarInventarioPDF() {
   doc.setTextColor(136);
   doc.text('Generado: ' + hoy() + ' - ' + list.length + ' producto(s)', 14, 27);
   var rows = list.map(function(p) {
-    return [p.sku||'', p.nombre||'', p.stockWoo||0, p.stockFalabella||0, p.stockWalmart||0, p.stockML||0, p.stockParis||0, totalStock(p), p.caja||'', p.imagen ? ' ' : ''];
+    return [p.sku||'', p.nombre||'', p.stockWoo||0, p.stockFalabella||0, p.stockWalmart||0, p.stockML||0, totalStock(p), p.caja||'', p.imagen ? ' ' : ''];
   });
   doc.autoTable({
-    head: [['SKU', 'Producto', 'Stock Woo', 'Asig. Falabella', 'Asig. Walmart', 'Asig. ML', 'Asig. Paris', 'Stock Total', 'Caja', 'Imagen']],
+    head: [['SKU', 'Producto', 'Stock Woo', 'Asig. Falabella', 'Asig. Walmart', 'Asig. ML', 'Stock Total', 'Caja', 'Imagen']],
     body: rows,
     startY: 33,
     theme: 'grid',
@@ -1941,7 +1589,7 @@ function exportarPDF() {
 
   doc.setFontSize(8);
   doc.setTextColor(180);
-  doc.text('Generado por Luz de Luci&eacute;rnaga — ' + fecha, 105, 285, { align: 'center' });
+  doc.text('Generado por Luz de Luci&eacute;rnaga ÔÇö ' + fecha, 105, 285, { align: 'center' });
 
   const blob = doc.output('blob');
   const file = new File([blob], codigo + '.pdf', { type: 'application/pdf' });
@@ -2169,10 +1817,7 @@ async function registrarVenta() {
 
 // ===== VENTAS =====
 function renderVentas() {
-  var raw = data.ventas;
-  if (raw && !Array.isArray(raw)) { var arr = []; Object.keys(raw).forEach(function(k){ arr.push(raw[k]); }); data.ventas = arr; raw = arr; }
-  let list = raw || [];
-  console.log('renderVentas - total:', list.length, 'falabella:', list.filter(function(v){return (v.canal||'')==='falabella'}).length);
+  let list = data.ventas;
   const q = (document.getElementById('ventas-search').value || '').toLowerCase();
   if (q) list = list.filter(function(v) {
     return (v.sku||'').toLowerCase().includes(q) || (v.nombre||'').toLowerCase().includes(q) || (v.cliente||'').toLowerCase().includes(q);
@@ -2183,8 +1828,6 @@ function renderVentas() {
   if (fdesde) list = list.filter(function(v) { return v.fecha && v.fecha >= fdesde; });
   var fhasta = document.getElementById('ventas-fhasta').value;
   if (fhasta) list = list.filter(function(v) { return v.fecha && v.fecha <= fhasta; });
-  var canalFiltro = document.getElementById('ventas-canal').value;
-  if (canalFiltro) list = list.filter(function(v) { return (v.canal||'woo') === canalFiltro; });
   var sort = document.getElementById('ventas-sort').value;
   if (sort) {
     list = list.slice().sort(function(a,b) {
@@ -2200,12 +1843,9 @@ function renderVentas() {
     });
   }
   let totalVtas = 0, totalCant = 0;
-  list.forEach(v => { totalVtas += v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0; totalCant += v.cantidad || 0; });
+  list.forEach(v => { totalVtas += v.total || 0; totalCant += v.cantidad || 0; });
   document.getElementById('v-total').textContent = '$' + fmt(totalVtas);
   document.getElementById('v-cant').textContent = totalCant;
-  var skusDistintos = {};
-  list.forEach(function(v){if(v.sku)skusDistintos[v.sku]=1});
-  document.getElementById('v-distintos').textContent = Object.keys(skusDistintos).length;
   document.getElementById('v-ultima').textContent = list.length > 0 ? list[list.length-1].fecha : '--';
   var groups = {};
   list.forEach(function(v) {
@@ -2213,35 +1853,25 @@ function renderVentas() {
     if (!groups[key]) groups[key] = [];
     groups[key].push(v);
   });
-  var hdr = '';
-  ventasCols.forEach(function(k){if(isVentasColVisible(k))hdr+='<th>'+ventasColLabels[k]+'</th>'});
-  var tbl = document.querySelector('#contenido-ventas table');
-  if(tbl) tbl.querySelector('thead tr').innerHTML = hdr;
-  var visibleCount = ventasCols.filter(function(k){return isVentasColVisible(k)}).length;
   var html = '';
   Object.keys(groups).forEach(function(key) {
     var items = groups[key];
     var subTotal = 0, subCant = 0;
-    items.forEach(function(v) { subTotal += v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0; subCant += v.cantidad || 0; });
-    html += '<tr class="group-header"><td colspan="'+visibleCount+'"><strong>' + esc(key) + '</strong> &nbsp;|&nbsp; ' + items.length + ' producto(s) &nbsp;|&nbsp; ' + subCant + ' uds. &nbsp;|&nbsp; Total: $' + fmt(subTotal) + '</td></tr>';
+    items.forEach(function(v) { subTotal += v.total || 0; subCant += v.cantidad || 0; });
+    html += '<tr class="group-header"><td colspan="13"><strong>' + esc(key) + '</strong> &nbsp;|&nbsp; ' + items.length + ' producto(s) &nbsp;|&nbsp; ' + subCant + ' uds. &nbsp;|&nbsp; Total: $' + fmt(subTotal) + '</td></tr>';
     items.forEach(function(v) {
       const url = v.referencia ? 'Cot. ' + esc(v.referencia) : '--';
       const vid = v.id;
-      var cells = {fecha:'<td>'+esc(v.fecha)+'</td>',canal:'<td>'+canalLabel(v.canal||'')+'</td>',sku:'<td>'+esc(v.sku)+'</td>',nombre:'<td>'+esc(v.nombre)+'</td>',cantidad:'<td>'+v.cantidad+'</td>',precioUnitario:'<td>$'+fmt(v.precioUnitario)+'</td>',total:'<td style="white-space:nowrap">$'+fmt(v.total||((v.cantidad||0)*(v.precioUnitario||0)))+' <span onclick="toggleCheckVenta(\''+vid+'\')" style="cursor:pointer;font-size:16px;margin-left:4px;user-select:none">'+(v.checked?'✅':'⬜')+'</span></td>',cliente:'<td>'+esc(v.cliente)+'</td>',pago:'<td>'+esc(v.pago)+'</td>',estado:'<td>'+esc(v.estado)+'</td>',referencia:'<td>'+url+'</td>',observacion:'<td>'+esc(v.observacion)+'</td>',accion:'<td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarVenta(\''+vid+'\')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta(\''+vid+'\')">Eliminar</button></td>'};
-      var row = '';
-      ventasCols.forEach(function(k){if(isVentasColVisible(k))row+=cells[k]});
-      html += '<tr>'+row+'</tr>';
+      html += '<tr><td>' + esc(v.fecha) + '</td><td>' + canalLabel(v.canal||'') + '</td><td>' + esc(v.sku) + '</td><td>' + esc(v.nombre) + '</td><td>' + v.cantidad + '</td><td>$' + fmt(v.precioUnitario) + '</td><td style="white-space:nowrap">$' + fmt(v.total) + ' <span onclick="toggleCheckVenta(\'' + vid + '\')" style="cursor:pointer;font-size:16px;margin-left:4px;user-select:none">' + (v.checked ? 'Ô£à' : 'Ô¼£') + '</span></td><td>' + esc(v.cliente) + '</td><td>' + esc(v.pago) + '</td><td>' + esc(v.estado) + '</td><td>' + url + '</td><td>' + esc(v.observacion) + '</td><td><button class="btn btn-outline" style="font-size:11px;padding:2px 6px;margin-right:3px" onclick="editarVenta(\'' + vid + '\')">Editar</button><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarVenta(\'' + vid + '\')">Eliminar</button></td></tr>';
     });
   });
-  document.getElementById('ventas-body').innerHTML = html || '<tr><td colspan="'+visibleCount+'" class="empty">No hay ventas registradas</td></tr>';
+  document.getElementById('ventas-body').innerHTML = html || '<tr><td colspan="13" class="empty">No hay ventas registradas</td></tr>';
 }
 
 // ===== KARDEX =====
 function renderKardex() {
-  var rawK = data.kardex;
-  if (rawK && !Array.isArray(rawK)) { var arrK = []; Object.keys(rawK).forEach(function(k){ arrK.push(rawK[k]); }); data.kardex = arrK; rawK = arrK; }
   const q = (document.getElementById('kardex-search').value || '').toLowerCase();
-  let list = rawK || [];
+  let list = data.kardex;
   if (q) list = list.filter(function(k) {
     return k.sku.toLowerCase().includes(q) || (k.tipo||'').toLowerCase().includes(q) || (k.concepto||'').toLowerCase().includes(q);
   });
@@ -2276,21 +1906,18 @@ function renderKardex() {
   } else {
     document.getElementById('kardex-stock').textContent = '';
   }
-  var khdr = '';
-  kardexCols.forEach(function(k){if(isKardexColVisible(k))khdr+='<th>'+kardexColLabels[k]+'</th>'});
-  var ktbl = document.querySelector('#contenido-kardex table');
-  if(ktbl) ktbl.querySelector('thead tr').innerHTML = khdr;
-  var kVisible = kardexCols.filter(function(k){return isKardexColVisible(k)}).length;
-  var kSkus = {};
-  list.forEach(function(k){if(k.sku)kSkus[k.sku]=1});
-  document.getElementById('kardex-count').textContent = list.length + ' mov. | ' + Object.keys(kSkus).length + ' prod. distintos';
   document.getElementById('kardex-body').innerHTML = list.map(k => {
     const cantidadClass = k.cantidad < 0 ? 'style="color:#DC2626"' : 'style="color:var(--verde)"';
-    var cells = {fecha:'<td>'+esc(k.fecha)+'</td>',canal:'<td>'+canalLabel(k.canal||'')+'</td>',sku:'<td>'+esc(k.sku)+'</td>',nombre:'<td>'+esc(k.nombre)+'</td>',tipo:'<td>'+esc(k.tipo)+'</td>',concepto:'<td>'+esc(k.concepto)+'</td>',cantidad:'<td '+cantidadClass+'>'+k.cantidad+'</td>',stockAnt:'<td>'+k.stockAnt+'</td>',stockRes:'<td>'+k.stockRes+'</td>',referencia:'<td>'+esc(k.referencia)+'</td>',proveedor:'<td>'+esc(k.proveedor)+'</td>',obsCompra:'<td>'+esc(k.observacionCompra||'')+'</td>',obsVenta:'<td>'+esc(k.observacionVenta||'')+'</td>',accion:'<td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarKardex(\''+k.id+'\')">Eliminar</button></td>'};
-    var row = '';
-    kardexCols.forEach(function(c){if(isKardexColVisible(c))row+=cells[c]});
-    return '<tr>'+row+'</tr>';
-  }).join('') || '<tr><td colspan="'+kVisible+'" class="empty">No hay movimientos registrados</td></tr>';
+    return `<tr>
+      <td>${esc(k.fecha)}</td><td>${canalLabel(k.canal||'')}</td><td>${esc(k.sku)}</td><td>${esc(k.nombre)}</td>
+      <td>${esc(k.tipo)}</td><td>${esc(k.concepto)}</td>
+      <td ${cantidadClass}>${k.cantidad}</td>
+      <td>${k.stockAnt}</td><td>${k.stockRes}</td>
+      <td>${esc(k.referencia)}</td><td>${esc(k.proveedor)}</td>
+      <td>${esc(k.observacionCompra)}</td><td>${esc(k.observacionVenta)}</td>
+      <td><button class="btn btn-danger" style="font-size:11px;padding:2px 6px" onclick="eliminarKardex('${k.id}')">Eliminar</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="14" class="empty">No hay movimientos registrados</td></tr>';
 }
 
 function findProductoBySku(sku) {
@@ -2350,7 +1977,7 @@ async function registrarEntrada() {
         guardarDatos();
         renderKardex();
         renderPendientes();
-        toast('Entrada registrada ('+canalLabel(canal)+'): ' + stockAnt + ' → ' + prod[key]);
+        toast('Entrada registrada ('+canalLabel(canal)+'): ' + stockAnt + ' ÔåÆ ' + prod[key]);
       }
     );
   });
@@ -2382,7 +2009,7 @@ async function registrarSalida() {
         guardarDatos();
         renderKardex();
         renderPendientes();
-        toast('Salida registrada ('+canalLabel(canal)+'): ' + stockAnt + ' → ' + prod[key]);
+        toast('Salida registrada ('+canalLabel(canal)+'): ' + stockAnt + ' ÔåÆ ' + prod[key]);
       }
     );
   });
@@ -2416,7 +2043,7 @@ async function registrarAjuste() {
         guardarDatos();
         renderKardex();
         renderPendientes();
-        toast('Ajuste registrado ('+canalLabel(canal)+'): ' + stockAnt + ' → ' + prod[key]);
+        toast('Ajuste registrado ('+canalLabel(canal)+'): ' + stockAnt + ' ÔåÆ ' + prod[key]);
       }
     );
   });
@@ -2430,8 +2057,8 @@ function exportarExcelCompleto() {
   const prodData = data.productos.map(p => ({
     SKU: p.sku, 'C&oacute;d. Barra': p.codBarra, Producto: p.nombre,
     'Precio Costo': p.precioCosto, 'Precio Venta': p.precioVenta,
-    'Precio Falabella': p.precioFalabella||0, 'Precio Walmart': p.precioWalmart||0, 'Precio Mercado Libre': p.precioML||0, 'Precio Paris': p.precioParis||0,
-    'Stock WooCommerce': p.stockWoo||0, 'Asig. Falabella': p.stockFalabella||0, 'Asig. Walmart': p.stockWalmart||0, 'Asig. Mercado Libre': p.stockML||0, 'Asig. Paris': p.stockParis||0, 'Stock Total': totalStock(p),
+    'Precio Falabella': p.precioFalabella||0, 'Precio Walmart': p.precioWalmart||0, 'Precio Mercado Libre': p.precioML||0,
+    'Stock WooCommerce': p.stockWoo||0, 'Asig. Falabella': p.stockFalabella||0, 'Asig. Walmart': p.stockWalmart||0, 'Asig. Mercado Libre': p.stockML||0, 'Stock Total': p.stockWoo||0,
     'Ancho (cm)': p.ancho || 0, 'Largo (cm)': p.largo || 0, 'Alto (cm)': p.alto || 0, 'Peso (kg)': p.peso || 0, 'Peso Vol. (kg)': (p.ancho && p.largo && p.alto) ? parseFloat(((p.ancho * p.largo * p.alto) / 4000).toFixed(2)) : 0, 'Caja': p.caja || '',
     Proveedor: p.proveedor, 'Observaci&oacute;n Compra': p.observacionCompra
   }));
@@ -2441,7 +2068,7 @@ function exportarExcelCompleto() {
   // Ventas
   const vtData = data.ventas.map(v => ({
     Fecha: v.fecha, Canal: canalLabel(v.canal||''), SKU: v.sku, Producto: v.nombre,
-    Cant: v.cantidad, 'P. Unitario': v.precioUnitario, Total: v.total || ((v.cantidad||0) * (v.precioUnitario||0)),
+    Cant: v.cantidad, 'P. Unitario': v.precioUnitario, Total: v.total,
     Cliente: v.cliente, Pago: v.pago, Estado: v.estado,
     Referencia: v.referencia, 'Observaci&oacute;n': v.observacion
   }));
@@ -2473,8 +2100,8 @@ function exportarExcelCompleto() {
 
   // Proveedores
   const provData = (data.proveedores||[]).map(p => ({
-    ID: p.id, Nombre: p.nombre, RUT: p.rut||'', 'Razón Social': p.razonSocial||'', Contacto: p.contacto||'', Email: p.email||'',
-    Teléfono: p.telefono||'', Dirección: p.direccion||'', Instagram: p.instagram||'', TikTok: p.tiktok||'', Web: p.web||'', Notas: p.notas||''
+    ID: p.id, Nombre: p.nombre, RUT: p.rut||'', 'Raz├│n Social': p.razonSocial||'', Contacto: p.contacto||'', Email: p.email||'',
+    Tel├®fono: p.telefono||'', Direcci├│n: p.direccion||'', Instagram: p.instagram||'', TikTok: p.tiktok||'', Web: p.web||'', Notas: p.notas||''
   }));
   if (provData.length) {
     const wsProv = XLSX.utils.json_to_sheet(provData);
@@ -2527,7 +2154,7 @@ function importarBackup() {
         renderCotizador(); renderVentas(); renderInventario(); renderKardex(); renderPendientes(); renderCotizaciones(); renderProveedores();
         toast('Datos restaurados correctamente');
       } catch(err) {
-        toast('Error: archivo inválido');
+        toast('Error: archivo inv├ílido');
       }
     };
     reader.readAsText(e.target.files[0]);
@@ -2618,11 +2245,11 @@ function importarExcel() {
             id: String(r['ID'] || r['id'] || 'PROV-' + String(Date.now()).slice(-4)),
             nombre: String(r['Nombre'] || r['nombre'] || ''),
             rut: String(r['RUT'] || r['rut'] || ''),
-            razonSocial: String(r['Razón Social'] || r['Razon Social'] || r['razonSocial'] || ''),
+            razonSocial: String(r['Raz├│n Social'] || r['Razon Social'] || r['razonSocial'] || ''),
             contacto: String(r['Contacto'] || r['contacto'] || ''),
             email: String(r['Email'] || r['email'] || ''),
-            telefono: String(r['Teléfono'] || r['Telefono'] || r['telefono'] || ''),
-            direccion: String(r['Dirección'] || r['Direccion'] || r['direccion'] || ''),
+            telefono: String(r['Tel├®fono'] || r['Telefono'] || r['telefono'] || ''),
+            direccion: String(r['Direcci├│n'] || r['Direccion'] || r['direccion'] || ''),
             instagram: String(r['Instagram'] || r['instagram'] || ''),
             tiktok: String(r['TikTok'] || r['tiktok'] || ''),
             web: String(r['Web'] || r['web'] || ''),
@@ -2733,7 +2360,7 @@ function restaurarStockYkardex() {
               existente.largo = parseFloat(r['Largo (cm)'] || r['largo'] || 0);
               existente.alto = parseFloat(r['Alto (cm)'] || r['alto'] || 0);
               existente.peso = parseFloat(r['Peso (kg)'] || r['peso'] || 0);
-              // NO toca imagen — se conserva la que ya tiene
+              // NO toca imagen ÔÇö se conserva la que ya tiene
               prodImportados++;
             }
           });
@@ -2877,7 +2504,7 @@ function editarCotizacion(codigo) {
       '<td><input id="edit-cant-' + i + '" type="number" min="1" value="' + it.cantidad + '" style="width:50px;padding:4px;border:1px solid #ccc;border-radius:4px;font-size:13px"></td>' +
       '<td><input id="edit-precio-' + i + '" type="number" step="0.01" min="0" value="' + it.precioUnitario + '" style="width:80px;padding:4px;border:1px solid #ccc;border-radius:4px;font-size:13px"></td>' +
       '<td id="edit-subtotal-' + i + '">$' + fmt(it.cantidad * it.precioUnitario) + '</td>' +
-      '<td><button class="btn btn-danger" style="font-size:10px;padding:2px 6px" onclick="eliminarItemCotizacion(\'' + esc(c.codigo) + '\',' + i + ')">✕</button></td></tr>';
+      '<td><button class="btn btn-danger" style="font-size:10px;padding:2px 6px" onclick="eliminarItemCotizacion(\'' + esc(c.codigo) + '\',' + i + ')">Ô£ò</button></td></tr>';
   }).join('');
   const total = c.items.reduce(function(s, it) { return s + (it.cantidad || 0) * (it.precioUnitario || 0); }, 0);
   const selVendida = c.estado === 'Vendida' ? 'selected' : '';
@@ -3034,7 +2661,6 @@ function guardarEdicionCotizacion(codigo) {
   renderInventario();
   cerrarModal();
   toast('Cotizaci&oacute;n actualizada: ' + codigo);
-}
 
 // ===== Eliminar registros =====
 function eliminarProductoDirecto(sku) {
@@ -3075,10 +2701,10 @@ function abrirModalVenta(titulo, venta) {
   html += '</div>';
   html += '<div style="margin-top:8px"><label style="font-weight:600">Total</label><input id="vf-total" type="number" class="modal-input" value="' + (f.total||0) + '"></div>';
   html += '<div style="margin-top:8px"><label style="font-weight:600">Cliente</label><input id="vf-cliente" class="modal-input" value="' + esc(f.cliente||'') + '"></div>';
-  html += '<div style="margin-top:8px"><label style="font-weight:600">Método Pago</label><input id="vf-pago" class="modal-input" value="' + esc(f.pago||'') + '"></div>';
+  html += '<div style="margin-top:8px"><label style="font-weight:600">M├®todo Pago</label><input id="vf-pago" class="modal-input" value="' + esc(f.pago||'') + '"></div>';
   html += '<div style="margin-top:8px"><label style="font-weight:600">Estado</label><select id="vf-estado" class="modal-input"><option value="Pagado"' + ((f.estado||'')==='Pagado'?' selected':'') + '>Pagado</option><option value="Pendiente"' + ((f.estado||'')==='Pendiente'?' selected':'') + '>Pendiente</option><option value="Anulada"' + ((f.estado||'')==='Anulada'?' selected':'') + '>Anulada</option></select></div>';
   html += '<div style="margin-top:8px"><label style="font-weight:600">Referencia</label><input id="vf-referencia" class="modal-input" value="' + esc(f.referencia||'') + '"></div>';
-  html += '<div style="margin-top:8px"><label style="font-weight:600">Observación</label><textarea id="vf-observacion" class="modal-input" rows="2">' + esc(f.observacion||'') + '</textarea></div>';
+  html += '<div style="margin-top:8px"><label style="font-weight:600">Observaci├│n</label><textarea id="vf-observacion" class="modal-input" rows="2">' + esc(f.observacion||'') + '</textarea></div>';
   html += '<style>.modal-input{width:100%;padding:6px;border:1px solid #ccc;border-radius:4px;font-size:13px;box-sizing:border-box}</style>';
   abrirModal(titulo, html, function() {
     var fecha = document.getElementById('vf-fecha').value;
@@ -3193,8 +2819,8 @@ function autoFillPrecioVenta() {
 }
 
 function agregarVenta() {
-  var html = '<p style="font-size:13px;color:#666">Busca un cliente o cotización para pre-completar los campos, o agrega una venta nueva en blanco.</p>';
-  html += '<input id="buscar-venta-cliente" placeholder="Buscar cliente o cotización..." style="width:100%;padding:10px;border:2px solid var(--noche);border-radius:4px;font-size:15px;margin-bottom:8px" oninput="filtrarClientesVenta()">';
+  var html = '<p style="font-size:13px;color:#666">Busca un cliente o cotizaci├│n para pre-completar los campos, o agrega una venta nueva en blanco.</p>';
+  html += '<input id="buscar-venta-cliente" placeholder="Buscar cliente o cotizaci├│n..." style="width:100%;padding:10px;border:2px solid var(--noche);border-radius:4px;font-size:15px;margin-bottom:8px" oninput="filtrarClientesVenta()">';
   html += '<div id="resultados-venta-cliente" style="max-height:360px;overflow-y:auto"></div>';
   html += '<div style="margin-top:12px;text-align:right"><button class="btn btn-outline" onclick="cerrarModal();abrirModalVenta(\'Agregar Venta\', null)" style="font-size:12px">Venta en blanco</button></div>';
   abrirModal('Agregar Venta', html, function() { return false; });
@@ -3218,9 +2844,9 @@ function filtrarClientesVenta() {
   if (uniq.length === 0) { div.innerHTML = '<p style="color:#aaa;font-size:13px">Sin resultados</p>'; return; }
   window._ventaBusqueda = uniq.slice(0, 30);
   div.innerHTML = window._ventaBusqueda.map(function(v, i) {
-    var label = v.referencia ? ('Cot. ' + esc(v.referencia) + ' — ' + esc(v.cliente)) : esc(v.cliente);
+    var label = v.referencia ? ('Cot. ' + esc(v.referencia) + ' ÔÇö ' + esc(v.cliente)) : esc(v.cliente);
     return '<div style="padding:10px 8px;border-bottom:1px solid #eee;cursor:pointer" onclick="seleccionarClienteVentaIdx(' + i + ')">' +
-      '<strong>' + label + '</strong><br><span style="font-size:12px;color:#666">Última: ' + esc(v.fecha) + ' | $' + fmt(v.total || ((v.cantidad||0) * (v.precioUnitario||0))) + '</span></div>';
+      '<strong>' + label + '</strong><br><span style="font-size:12px;color:#666">├Ültima: ' + esc(v.fecha) + ' | $' + fmt(v.total) + '</span></div>';
   }).join('');
 }
 function seleccionarClienteVentaIdx(idx) {
@@ -3265,60 +2891,34 @@ function eliminarKardex(idStr) {
 
 // ===== AUTH =====
 function iniciarSesion() {
-  var email = document.getElementById('login-user').value.trim();
-  var pass = document.getElementById('login-pass').value;
-  document.getElementById('login-error').style.display = 'none';
-  if (!email || !pass) {
-    document.getElementById('login-error').textContent = 'Ingresa correo y contraseña';
-    document.getElementById('login-error').style.display = 'block';
-    return;
-  }
-  var btn = document.querySelector('#login-card .btn');
-  if (btn) btn.disabled = true;
-  var finError = function(msg) {
-    document.getElementById('login-error').textContent = msg;
-    document.getElementById('login-error').style.display = 'block';
-    if (btn) btn.disabled = false;
-  };
-  if (typeof firebase !== 'undefined' && firebase.auth) {
-    firebase.auth().signInWithEmailAndPassword(email, pass).then(function() {
-      localStorage.setItem('luciauth', '1');
-      document.getElementById('login-overlay').style.display = 'none';
-      toast('Bienvenido');
-      iniciarApp();
-    }).catch(function(e) {
-      if (e && (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password')) {
-        finError('Credenciales incorrectas');
-      } else if (e && e.code === 'auth/invalid-email') {
-        finError('Correo inv&aacute;lido');
-      } else {
-        finError((e && e.message) || 'Error al iniciar sesi&oacute;n');
-      }
-    });
-  } else {
-    // Modo local (archivo o servidor sin Firebase): acceso directo
+  try {
+    const email = document.getElementById('login-user').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    document.getElementById('login-error').style.display = 'none';
+    if (!email || !pass) {
+      document.getElementById('login-error').textContent = 'Ingresa correo y contrase├▒a';
+      document.getElementById('login-error').style.display = 'block';
+      return;
+    }
+    if (email !== 'loa.ayalam@gmail.com' || pass !== '***PASSWORD_REDACTED***') {
+      document.getElementById('login-error').textContent = 'Credenciales incorrectas';
+      document.getElementById('login-error').style.display = 'block';
+      return;
+    }
     localStorage.setItem('luciauth', '1');
     document.getElementById('login-overlay').style.display = 'none';
-    toast('Bienvenido (modo local)');
+    toast('Bienvenido');
     iniciarApp();
+  } catch(e) {
+    document.getElementById('login-error').textContent = 'Error: ' + e.message;
+    document.getElementById('login-error').style.display = 'block';
   }
 }
-
-function recuperarContrasena() {
-  var email = document.getElementById('login-user').value.trim();
-  if (!email) { alert('Ingresa tu correo para enviar el enlace de recuperaci&oacute;n'); return; }
-  if (typeof firebase === 'undefined' || !firebase.auth) { alert('Modo local: la recuperaci&oacute;n no aplica'); return; }
-  firebase.auth().sendPasswordResetEmail(email).then(function() {
-    alert('Te enviamos un correo para restablecer tu contrase&ntilde;a');
-  }).catch(function(e) { alert('Error: ' + (e.message || 'no se pudo enviar el correo')); });
 }
 
 function cerrarSesion() {
-  if (!confirm('¿Cerrar sesión?')) return;
+  if (!confirm('┬┐Cerrar sesi├│n?')) return;
   localStorage.removeItem('luciauth');
-  if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
-    firebase.auth().signOut();
-  }
   location.reload();
 }
 
@@ -3346,24 +2946,14 @@ function renderDashboard() {
   var valCosto = prods.reduce(function(s, p) { return s + totalStock(p) * (p.precioCosto || 0); }, 0);
   var ganancia = valVenta - valCosto;
   var stockBajo = prods.filter(function(p) { return totalStock(p) <= 3; }).length;
-  var ventasTotal = ventas.reduce(function(s, v) { return s + (v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0); }, 0);
-  var vByCanal = {};
-  ventas.forEach(function(v) {
-    var c = v.canal || 'woo';
-    vByCanal[c] = (vByCanal[c]||0) + (v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0);
-  });
+  var ventasTotal = ventas.reduce(function(s, v) { return s + (v.total || 0); }, 0);
   var cotisPend = cotis.filter(function(c) { return c.estado === 'Enviada'; }).length;
   var cards = [
     { label: 'Total Productos', value: String(totalProd), color: '#4F46E5' },
     { label: 'Valor Inventario (Venta)', value: '$' + fmt(valVenta), color: '#059669' },
     { label: 'Ganancia Potencial', value: '$' + fmt(ganancia), color: '#D97706' },
     { label: 'Stock Bajo (<=3)', value: String(stockBajo), color: '#DC2626' },
-    { label: 'Ventas WooCommerce', value: '$' + fmt(vByCanal['woo']||0), color: '#7C3AED' },
-    { label: 'Ventas Falabella', value: '$' + fmt(vByCanal['falabella']||0), color: '#E11D48' },
-    { label: 'Ventas Walmart', value: '$' + fmt(vByCanal['walmart']||0), color: '#0EA5E9' },
-    { label: 'Ventas Mercado Libre', value: '$' + fmt(vByCanal['ml']||0), color: '#F59E0B' },
-    { label: 'Ventas Paris', value: '$' + fmt(vByCanal['paris']||0), color: '#10B981' },
-    { label: 'Ventas Globales', value: '$' + fmt(ventasTotal), color: '#000' },
+    { label: 'Ventas Totales', value: '$' + fmt(ventasTotal), color: '#7C3AED' },
     { label: 'Cotizaciones Pendientes', value: String(cotisPend), color: '#0891B2' }
   ];
   document.getElementById('dash-grid').innerHTML = cards.map(function(c) {
@@ -3379,39 +2969,35 @@ function renderDashboard() {
     if (!v.fecha) return;
     var m = v.fecha.substring(0, 7);
     if (!meses[m]) meses[m] = 0;
-    meses[m] += v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0;
+    meses[m] += v.total || 0;
     if (ventasConCanal) {
       var c = v.canal || 'woo';
       var key = m + '|' + c;
       if (!mesesCanal[key]) mesesCanal[key] = 0;
-      mesesCanal[key] += v.total || ((v.cantidad||0) * (v.precioUnitario||0)) || 0;
+      mesesCanal[key] += v.total || 0;
     }
   });
   var nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  var sorted = Object.keys(meses).sort();
+  var sorted = Object.keys(meses).sort().reverse();
   var html = '<h3 style="margin-top:20px;margin-bottom:10px;font-size:16px">Ventas por Mes</h3>';
   if (sorted.length === 0) {
     html += '<p style="color:#888">Sin ventas registradas</p>';
   } else {
     if (ventasConCanal) {
-      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:400px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">WooCommerce</th><th style="text-align:right">Falabella</th><th style="text-align:right">Walmart</th><th style="text-align:right">Mercado Libre</th><th style="text-align:right">Paris</th><th style="text-align:right">Total</th><th style="text-align:right">Acumulado</th></tr></thead><tbody>';
-      var acumulado = 0;
+      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">WooCommerce</th><th style="text-align:right">Falabella</th><th style="text-align:right">Walmart</th><th style="text-align:right">Mercado Libre</th><th style="text-align:right">Total</th></tr></thead><tbody>';
       sorted.forEach(function(m) {
         var parts = m.split('-');
         var label = nombresMes[parseInt(parts[1],10)-1] + ' ' + parts[0];
-        var vWoo = mesesCanal[m+'|woo']||0, vFal = mesesCanal[m+'|falabella']||0, vWal = mesesCanal[m+'|walmart']||0, vML = mesesCanal[m+'|ml']||0, vPar = mesesCanal[m+'|paris']||0;
-        acumulado += meses[m];
-        html += '<tr><td>' + label + '</td><td style="text-align:right">$' + fmt(vWoo) + '</td><td style="text-align:right">$' + fmt(vFal) + '</td><td style="text-align:right">$' + fmt(vWal) + '</td><td style="text-align:right">$' + fmt(vML) + '</td><td style="text-align:right">$' + fmt(vPar) + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td><td style="text-align:right;font-weight:700;color:#4F46E5">$' + fmt(acumulado) + '</td></tr>';
+        var vWoo = mesesCanal[m+'|woo']||0, vFal = mesesCanal[m+'|falabella']||0, vWal = mesesCanal[m+'|walmart']||0, vML = mesesCanal[m+'|ml']||0;
+        html += '<tr><td>' + label + '</td><td style="text-align:right">$' + fmt(vWoo) + '</td><td style="text-align:right">$' + fmt(vFal) + '</td><td style="text-align:right">$' + fmt(vWal) + '</td><td style="text-align:right">$' + fmt(vML) + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td></tr>';
       });
       html += '</tbody></table></div>';
     } else {
-      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">Total</th><th style="text-align:right">Acumulado</th></tr></thead><tbody>';
-      var acumulado = 0;
+      html += '<div style="overflow-x:auto"><table class="tabla" style="min-width:300px"><thead><tr><th style="text-align:left">Mes</th><th style="text-align:right">Total</th></tr></thead><tbody>';
       sorted.forEach(function(m) {
         var parts = m.split('-');
         var label = nombresMes[parseInt(parts[1],10)-1] + ' ' + parts[0];
-        acumulado += meses[m];
-        html += '<tr><td>' + label + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td><td style="text-align:right;font-weight:700;color:#4F46E5">$' + fmt(acumulado) + '</td></tr>';
+        html += '<tr><td>' + label + '</td><td style="text-align:right;font-weight:700">$' + fmt(meses[m]) + '</td></tr>';
       });
       html += '</tbody></table></div>';
     }
@@ -3562,18 +3148,18 @@ function renderProveedores() {
     // 1. Estado de pago
     var okEstado = comprasProv.filter(function(c){ return c.estado === 'Pagado' || c.estado === 'Completo'; }).length;
     var badgeEstado = numCompras === 0 ? '<span style="color:#ccc">-</span>'
-      : okEstado === numCompras ? '<span style="color:#059669;font-weight:700">✓ '+okEstado+'/'+numCompras+'</span>'
-      : '<span style="color:#DC2626;font-weight:700">○ '+okEstado+'/'+numCompras+'</span>';
-    // 2. N° Factura
+      : okEstado === numCompras ? '<span style="color:#059669;font-weight:700">Ô£ô '+okEstado+'/'+numCompras+'</span>'
+      : '<span style="color:#DC2626;font-weight:700">Ôùï '+okEstado+'/'+numCompras+'</span>';
+    // 2. N┬░ Factura
     var okFactura = comprasProv.filter(function(c){ return !!(c.factura||'').trim(); }).length;
     var badgeFactura = numCompras === 0 ? '<span style="color:#ccc">-</span>'
-      : okFactura === numCompras ? '<span style="color:#059669;font-weight:700">✓ '+okFactura+'/'+numCompras+'</span>'
-      : '<span style="color:#DC2626;font-weight:700">○ '+okFactura+'/'+numCompras+'</span>';
+      : okFactura === numCompras ? '<span style="color:#059669;font-weight:700">Ô£ô '+okFactura+'/'+numCompras+'</span>'
+      : '<span style="color:#DC2626;font-weight:700">Ôùï '+okFactura+'/'+numCompras+'</span>';
     // 3. Adjunto
     var okAdjunto = comprasProv.filter(function(c){ return !!c.facturaArchivo; }).length;
     var badgeAdjunto = numCompras === 0 ? '<span style="color:#ccc">-</span>'
-      : okAdjunto === numCompras ? '<span style="color:#059669;font-weight:700">✓ '+okAdjunto+'/'+numCompras+'</span>'
-      : '<span style="color:#DC2626;font-weight:700">○ '+okAdjunto+'/'+numCompras+'</span>';
+      : okAdjunto === numCompras ? '<span style="color:#059669;font-weight:700">Ô£ô '+okAdjunto+'/'+numCompras+'</span>'
+      : '<span style="color:#DC2626;font-weight:700">Ôùï '+okAdjunto+'/'+numCompras+'</span>';
     var redesTxt = (p.instagram||'') + (p.instagram && p.web ? ' | ' : '') + (p.tiktok||'');
     if ((p.instagram||'') && (p.tiktok||'')) redesTxt = (p.instagram||'') + ' | ' + (p.tiktok||'');
     return '<tr><td>' + (i+1) + '</td><td><strong>' + esc(p.nombre) + '</strong></td><td>' + esc(p.rut||'') + '</td><td>' + esc(p.razonSocial||'') + '</td><td>' + esc(p.contacto||'') + '</td><td>' + esc(p.telefono||'') + '</td>' +
@@ -4031,7 +3617,7 @@ function mostrarFormNuevaCompra() {
     '<p><label style="font-weight:600;display:block;font-size:13px;color:var(--noche)">Fecha</label><input id="comp-fecha" type="date" value="' + hoy() + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Estado</label><select id="comp-estado" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<option value="Pendiente">Pendiente</option><option value="Pagado">Pagado</option><option value="Recibido Parcial">Recibido Parcial</option><option value="Completo">Completo</option></select>' +
-    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Factura / N° Boleta</label><input id="comp-factura" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Factura / N┬░ Boleta</label><input id="comp-factura" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;color:var(--noche);margin-top:8px">Nota</label><input id="comp-nota" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<hr style="margin:12px 0">' +
     '<p style="font-size:13px;font-weight:600;color:var(--noche)">Productos <button class="btn btn-outline" style="font-size:11px;padding:3px 8px;margin-left:8px" onclick="mostrarBuscadorCompra()">+ Agregar producto</button></p>' +
@@ -4119,7 +3705,7 @@ function actualizarCompraItemsUI() {
   div.innerHTML = '<table style="font-size:12px;width:100%"><thead><tr><th>SKU</th><th>Producto</th><th>Cant.</th><th>Costo U.</th><th>Total</th><th></th></tr></thead><tbody>' +
     items.map(function(it, i) {
       return '<tr><td>' + esc(it.sku) + '</td><td>' + esc(it.nombre) + '</td><td>' + it.cantidad + '</td><td>$' + fmt(it.precioCosto) + '</td><td>$' + fmt(it.total) + '</td>' +
-        '<td><button class="btn btn-danger" style="font-size:10px;padding:2px 5px" onclick="eliminarItemCompra(' + i + ')">✕</button></td></tr>';
+        '<td><button class="btn btn-danger" style="font-size:10px;padding:2px 5px" onclick="eliminarItemCompra(' + i + ')">Ô£ò</button></td></tr>';
     }).join('') + '</tbody></table>';
   var total = items.reduce(function(s, it) { return s + (it.total||0); }, 0);
   document.getElementById('comp-total-label').textContent = 'Total: $' + fmt(total);
@@ -4163,14 +3749,14 @@ function editarCompra(id) {
       '<td><input id="ec-cant-' + i + '" type="number" min="1" value="' + it.cantidad + '" style="width:50px;padding:4px;border:1px solid #ccc;border-radius:4px;font-size:13px"></td>' +
       '<td><input id="ec-costo-' + i + '" type="number" step="0.01" min="0" value="' + it.precioCosto + '" style="width:80px;padding:4px;border:1px solid #ccc;border-radius:4px;font-size:13px"></td>' +
       '<td id="ec-total-' + i + '">$' + fmt(it.total||(it.cantidad*it.precioCosto)) + '</td>' +
-      '<td><button class="btn btn-danger" style="font-size:10px;padding:2px 5px" onclick="eliminarItemCompraEdit(\'' + escId(c.id) + '\',' + i + ')">✕</button></td></tr>';
+      '<td><button class="btn btn-danger" style="font-size:10px;padding:2px 5px" onclick="eliminarItemCompraEdit(\'' + escId(c.id) + '\',' + i + ')">Ô£ò</button></td></tr>';
   }).join('');
   var total = (c.items||[]).reduce(function(s, it) { return s + (it.total||(it.cantidad*it.precioCosto)); }, 0);
 
   abrirModal('Editar Compra ' + esc(c.id),
     '<p><label style="font-weight:600;display:block;font-size:13px">Fecha</label><input id="ec-fecha" type="date" value="' + c.fecha + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;margin-top:6px">Estado</label><select id="ec-estado" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' + estadoOpts + '</select>' +
-    '<label style="font-weight:600;display:block;font-size:13px;margin-top:6px">Factura / N° Boleta</label><input id="ec-factura" value="' + esc(c.factura||'') + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
+    '<label style="font-weight:600;display:block;font-size:13px;margin-top:6px">Factura / N┬░ Boleta</label><input id="ec-factura" value="' + esc(c.factura||'') + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<label style="font-weight:600;display:block;font-size:13px;margin-top:6px">Nota</label><input id="ec-nota" value="' + esc(c.nota||'') + '" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:14px">' +
     '<div style="overflow-x:auto;margin-top:12px"><table style="font-size:12px;min-width:500px"><thead><tr><th>#</th><th>SKU</th><th>Producto</th><th>Cant.</th><th>Costo U.</th><th>Total</th><th></th></tr></thead><tbody>' + itemsHtml +
     '</tbody><tfoot><tr><td colspan="5"></td><td><strong id="ec-total-label">$' + fmt(total) + '</strong></td><td></td></tr></tfoot></table></div>' +
@@ -4303,7 +3889,7 @@ function verFacturaArchivo(compraId) {
   }
 }
 
-// ===== CONFIG PESTAÑAS =====
+// ===== CONFIG PESTA├æAS =====
 function aplicarPestanasVisibles() {
   var ocultas = JSON.parse(localStorage.getItem('pestanasOcultas') || '[]');
   document.querySelectorAll('.tab').forEach(function(t) {
@@ -4311,8 +3897,8 @@ function aplicarPestanasVisibles() {
   });
 }
 function configurarPestanas() {
-  var todas = ['formulario','inventario','falabella','ml','walmart','paris','cotizador','ventas','cotizaciones','kardex','pendientes','proveedores','dashboard'];
-  var etiquetas = {formulario:'Formulario',inventario:'Inventario',falabella:'Falabella',ml:'Mercado Libre',walmart:'Walmart',paris:'Paris',cotizador:'Cotizador',ventas:'Ventas',cotizaciones:'Cotizaciones',kardex:'Kardex',pendientes:'Pendientes WC',proveedores:'Proveedores',dashboard:'Dashboard'};
+  var todas = ['formulario','inventario','falabella','ml','walmart','cotizador','ventas','cotizaciones','kardex','pendientes','proveedores','dashboard'];
+  var etiquetas = {formulario:'Formulario',inventario:'Inventario',falabella:'Falabella',ml:'Mercado Libre',walmart:'Walmart',cotizador:'Cotizador',ventas:'Ventas',cotizaciones:'Cotizaciones',kardex:'Kardex',pendientes:'Pendientes WC',proveedores:'Proveedores',dashboard:'Dashboard'};
   var ocultas = JSON.parse(localStorage.getItem('pestanasOcultas') || '[]');
   var html = '<p style="font-size:13px;color:#888;margin-bottom:12px">Marca las pesta&ntilde;as que quieres ocultar:</p>';
   todas.forEach(function(id) {
@@ -4334,18 +3920,9 @@ function configurarPestanas() {
 // ===== INIT =====
 (function() {
   aplicarPestanasVisibles();
-  var esLocal = (typeof firebase === 'undefined' || !firebase.auth);
-  if (esLocal) {
+  if (localStorage.getItem('luciauth')) {
     document.getElementById('login-overlay').style.display = 'none';
     iniciarApp();
-  } else {
-    firebase.auth().onAuthStateChanged(function(user) {
-      if (user) {
-        localStorage.setItem('luciauth', '1');
-        document.getElementById('login-overlay').style.display = 'none';
-        iniciarApp();
-      }
-    });
   }
   document.getElementById('login-pass').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') document.querySelector('#login-card .btn').click();
