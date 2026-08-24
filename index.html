@@ -1469,76 +1469,36 @@ function abrirModalWalmart(productos) {
 }
 
 function generarExcelWalmart(productos) {
-  var headers = [
-    ['Version=4.46,marketplace,toys_other,es_cl,external,Juguetes'],
-    ['Required to sell on lider.cl / Requerido para vender en lider.cl','','','','Required for the item to be visible on lider.cl / Requerido para que el item sea visible en lider.cl','','','','','','','','','','','','','','','','Recommended to improve search and browse on lider.cl / Recomendado para mejorar la búsqueda y navegación en lider.cl','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','Optional'],
-    ['','','','Product Identifiers (productIdentifiers)','','','','Shipping Dimensions Height (cm) (shippingDimensionsHeight)','','Shipping Dimensions Width (cm) (ShippingDimensionsWidth)','','Shipping Dimensions Depth (cm) (ShippingDimensionsDepth)','','','Price Per Unit (pricePerUnit)','','','Minimum Recommended Age (minimumRecommendedAge)','','Maximum Recommended Age (maximumRecommendedAge)','','Assembled Product Depth (assembledProductLength)','','Assembled Product Width (assembledProductWidth)','','Assembled Product Height (assembledProductHeight)','','Assembled Product Weight (assembledProductWeight)'],
-    ['SKU','Product ID Type','Product ID','Product Name','Brand','Selling Price','Measure','Unit','Measure','Unit','Measure','Unit','Shipping Weight (kg)','PPU Quantity of Units','PPU Unit of Measure','Country of Origin (+)','Manufacturer Name','Warranty Text','Main Image URL','Additional Image URL (+)','Additional Image URL 1 (+)','Key Features (+)','Site Description','Condition','Seller Warranty','Seller Warranty Condition','Seller Warranty Period','Color (+)','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Is Assembly Required','Material (+)','Batteries Required Indicator','Model Number','Keywords','Warning Text'],
-    ['sku','productIdType','productId','productName','brand','price','measure','unit','measure','unit','measure','unit','ShippingWeight','pricePerUnitQuantity','pricePerUnitUom','countryOfOriginAssembly','manufacturer','warrantyText','mainImageUrl','productSecondaryImageURL','productSecondaryImageURL','keyFeatures','shortDescription','condition','sellerWarranty','sellerWarrantyCondition','sellerWarrantyPeriod','color','measure','unit','measure','unit','measure','unit','measure','unit','measure','unit','measure','unit','measure','unit','isAssemblyRequired','material','batteriesRequired','modelNumber','keywords','warningText'],
-    ['String','String','String','String','String','Decimal','Decimal','String','Decimal','String','Decimal','String','Decimal','Decimal','String','String','String','URL','URL','URL','String','String','String','String','String','Integer','String','Decimal','String','Decimal','String','Decimal','String','Decimal','String','Decimal','String','Decimal','String','Boolean','String','Boolean','String','String','String']
-  ];
-  var rows = [];
+  if (typeof XLSX === 'undefined') { showToast('Error: librería XLSX no cargada'); return; }
+  var wb = XLSX.utils.book_new();
+  var ws = [];
+  ws.push(['Version=4.46,marketplace,toys_other,es_cl,external,Juguetes']);
+  ws.push(['Required to sell on lider.cl / Requerido para vender en lider.cl','','','','Required for the item to be visible on lider.cl / Requerido para que el item sea visible en lider.cl','','','','','','','','','','','','','','','','Recommended to improve search and browse on lider.cl / Recomendado para mejorar la búsqueda y navegación en lider.cl','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','','Optional']);
+  ws.push(['','','','Product Identifiers (productIdentifiers)','','','','Shipping Dimensions Height (cm) (shippingDimensionsHeight)','','Shipping Dimensions Width (cm) (ShippingDimensionsWidth)','','Shipping Dimensions Depth (cm) (ShippingDimensionsDepth)','','','Price Per Unit (pricePerUnit)','','','Minimum Recommended Age (minimumRecommendedAge)','','Maximum Recommended Age (maximumRecommendedAge)','','Assembled Product Depth (assembledProductLength)','','Assembled Product Width (assembledProductWidth)','','Assembled Product Height (assembledProductHeight)','','Assembled Product Weight (assembledProductWeight)']);
+  ws.push(['SKU','Product ID Type','Product ID','Product Name','Brand','Selling Price','Measure','Unit','Measure','Unit','Measure','Unit','Shipping Weight (kg)','PPU Quantity of Units','PPU Unit of Measure','Country of Origin (+)','Manufacturer Name','Warranty Text','Main Image URL','Additional Image URL (+)','Additional Image URL 1 (+)','Key Features (+)','Site Description','Condition','Seller Warranty','Seller Warranty Condition','Seller Warranty Period','Color (+)','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Measure','Unit','Is Assembly Required','Material (+)','Batteries Required Indicator','Model Number','Keywords','Warning Text']);
+  ws.push(['sku','productIdType','productId','productName','brand','price','measure','unit','measure','unit','measure','unit','ShippingWeight','pricePerUnitQuantity','pricePerUnitUom','countryOfOriginAssembly','manufacturer','warrantyText','mainImageUrl','productSecondaryImageURL','productSecondaryImageURL','keyFeatures','shortDescription','condition','sellerWarranty','sellerWarrantyCondition','sellerWarrantyPeriod','color','measure','unit','measure','unit','measure','unit','measure','unit','measure','unit','measure','unit','measure','unit','isAssemblyRequired','material','batteriesRequired','modelNumber','keywords','warningText']);
+  ws.push(['String','String','String','String','String','Decimal','Decimal','String','Decimal','String','Decimal','String','Decimal','Decimal','String','String','String','URL','URL','URL','String','String','String','String','String','Integer','String','Decimal','String','Decimal','String','Decimal','String','Decimal','String','Decimal','String','Decimal','String','Boolean','String','Boolean','String','String','String']);
   productos.forEach(function(p) {
-    rows.push([
-      p.sku,
-      'GTIN',
-      'CUSTOM',
-      p.nombre,
-      'GENERICO',
-      p.precio,
-      p.alto,
-      'cm',
-      p.ancho,
-      'cm',
-      p.largo,
-      'cm',
-      p.peso,
-      1,
-      'un',
-      'CN - China',
-      'GENERICO',
+    ws.push([
+      p.sku, 'GTIN', 'CUSTOM', p.nombre, 'GENERICO', Number(p.precio)||0,
+      Number(p.alto)||0, 'cm', Number(p.ancho)||0, 'cm', Number(p.largo)||0, 'cm',
+      Number(p.peso)||0, 1, 'un', 'CN - China', 'GENERICO',
       'Tiene garantía de 6 meses por defectos de fabricación. No cubre mal uso, golpes, ni desgaste normal. Se requiere boleta.',
-      p.imagen,
-      p.imagen2,
-      '',
-      p.descripcion,
-      p.descCorta,
-      'Nuevo',
+      p.imagen||'', p.imagen2||'', '',
+      p.descripcion||'', p.descCorta||p.nombre||'', 'Nuevo',
       'Este producto tiene garantía',
       'Por defectos de fabricación. No cubre mal uso, golpes, ni desgaste normal. Se requiere boleta.',
-      6,
-      p.color,
-      p.edadMin,
-      'años',
-      p.edadMax,
-      'años',
-      p.largo,
-      'cm',
-      p.ancho,
-      'cm',
-      p.alto,
-      'cm',
-      p.peso,
-      'kg',
-      'No',
-      p.material,
-      'No',
-      'no aplica',
-      p.keywords,
-      p.warning
+      6, p.color||'Multicolor',
+      Number(p.edadMin)||3, 'años', Number(p.edadMax)||99, 'años',
+      Number(p.largo)||0, 'cm', Number(p.ancho)||0, 'cm', Number(p.alto)||0, 'cm',
+      Number(p.peso)||0, 'kg', 'No', p.material||'', 'No', 'no aplica',
+      p.keywords||'', p.warning||'Utilizar bajo supervisión de un adulto.'
     ]);
   });
-  var allRows = headers.concat(rows);
-  var csv = allRows.map(function(r){return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join('\t')}).join('\n');
-  var blob = new Blob(['\ufeff'+csv], {type:'text/tab-separated-values;charset=utf-8'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = 'walmart_juguetes_' + new Date().toISOString().slice(0,10) + '.xlsx';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  var sheet = XLSX.utils.aoa_to_sheet(ws);
+  sheet['!cols'] = [{wch:14},{wch:14},{wch:14},{wch:40},{wch:12},{wch:12},{wch:8},{wch:6},{wch:8},{wch:6},{wch:8},{wch:6},{wch:14},{wch:14},{wch:14},{wch:18},{wch:16},{wch:60},{wch:50},{wch:50},{wch:10},{wch:60},{wch:40},{wch:8},{wch:40},{wch:40},{wch:10},{wch:14},{wch:8},{wch:6},{wch:8},{wch:6},{wch:8},{wch:6},{wch:8},{wch:6},{wch:8},{wch:6},{wch:8},{wch:6},{wch:8},{wch:16},{wch:20},{wch:12},{wch:20},{wch:20},{wch:40}];
+  XLSX.utils.book_append_sheet(wb, sheet, 'Juguetes');
+  XLSX.writeFile(wb, 'walmart_juguetes_' + new Date().toISOString().slice(0,10) + '.xlsx');
 }
 
 var invCols = ['sku','codBarra','nombre','precioCosto','precioVenta','precioFalabella','precioWalmart','precioML','precioParis','stockWoo','stockFalabella','stockWalmart','stockML','stockParis','stockTotal','ancho','largo','alto','peso','pvol','caja','proveedor','obsCompra','imagen','accion'];
